@@ -614,6 +614,15 @@
             .print-insight-item.warning {
                 border-left: 3px solid #d97706;
             }
+
+            .print-chart-image {
+                max-width: 70%;
+                height: auto;
+                margin-bottom: 20px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
             
             .print-footer {
                 margin-top: 30px;
@@ -882,18 +891,17 @@
         };
         
         // Chart Components
-        const TaxComparisonChart = ({ baseline, withStrategies }) => {
+        const TaxComparisonChart = ({ baseline, withStrategies, chartInstanceRef }) => {
             const chartRef = useRef(null);
-            const chartInstance = useRef(null);
 
             useEffect(() => {
                 if (!baseline || !withStrategies || !chartRef.current || !window.Chart) return;
 
-                if (chartInstance.current) {
-                    chartInstance.current.destroy();
+                if (chartInstanceRef.current) {
+                    chartInstanceRef.current.destroy();
                 }
                 const ctx = chartRef.current.getContext('2d');
-                chartInstance.current = new Chart(ctx, {
+                chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['Baseline Scenario', 'Optimized Strategy'],
@@ -929,7 +937,7 @@
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value) => '$' + value + 'k'
+                                    callback: (value) => '$' + Math.round(value) + 'k'
                                 }
                             }
                         },
@@ -960,13 +968,13 @@
                         }
                     }
                 });
-
+                
                 return () => {
-                    if (chartInstance.current) {
-                        chartInstance.current.destroy();
+                    if (chartInstanceRef.current) {
+                        chartInstanceRef.current.destroy();
                     }
                 };
-            }, [baseline, withStrategies]);
+            }, [baseline, withStrategies, chartInstanceRef]);
 
             return (
                 <div className="chart-container">
@@ -979,67 +987,47 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax }) => {
+        const StrategicSavingsChart = ({ strategyImpacts, chartInstanceRef }) => {
             const chartRef = useRef(null);
-            const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!baseline || !strategyImpacts || !chartRef.current || !window.Chart) return;
+                if (!strategyImpacts || !chartRef.current || !window.Chart) return;
                 
-                if (chartInstance.current) {
-                    chartInstance.current.destroy();
+                if (chartInstanceRef.current) {
+                    chartInstanceRef.current.destroy();
                 }
                 
-                const labels = ['Baseline'];
-                const waterfallData = [];
-                const colors = [];
-
-                waterfallData.push([0, baseline.totalTax / 1000]);
-                colors.push('rgba(30, 64, 175, 0.9)');
-
-                let runningTotal = baseline.totalTax;
-                strategyImpacts.forEach(impact => {
-                    if (impact.savings > 100) {
-                        labels.push(impact.name);
-                        const start = (runningTotal - impact.savings) / 1000;
-                        const end = runningTotal / 1000;
-                        waterfallData.push([start, end]);
-                        colors.push('rgba(5, 150, 105, 0.9)');
-                        runningTotal -= impact.savings;
-                    }
-                });
-
-                labels.push('Optimized');
-                waterfallData.push([0, finalTax / 1000]);
-                colors.push('rgba(212, 175, 55, 0.9)');
+                const filteredImpacts = strategyImpacts.filter(impact => impact.savings > 0);
+                const labels = filteredImpacts.map(impact => impact.name);
+                const data = filteredImpacts.map(impact => impact.savings);
 
                 const ctx = chartRef.current.getContext('2d');
-                chartInstance.current = new Chart(ctx, {
+                chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Tax Liability',
-                            data: waterfallData,
-                            backgroundColor: colors,
+                            label: 'Tax Savings',
+                            data: data,
+                            backgroundColor: 'rgba(5, 150, 105, 0.9)',
                         }]
                     },
                     options: {
+                        indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        indexAxis: 'x',
                         scales: {
                             x: {
-                                grid: { display: false },
-                                ticks: { font: { family: 'Inter', size: 10 } }
-                            },
-                            y: {
                                 beginAtZero: true,
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value) => '$' + value + 'k'
+                                    callback: (value) => formatCurrency(value)
                                 }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 10 } }
                             }
                         },
                         plugins: {
@@ -1052,14 +1040,7 @@
                                 bodyFont: { family: 'Inter', size: 12 },
                                 callbacks: {
                                     label: function(context) {
-                                        const raw = context.raw;
-                                        const isTotal = context.dataIndex === 0 || context.dataIndex === context.chart.data.labels.length - 1;
-                                        if (isTotal) {
-                                            return `${context.chart.data.labels[context.dataIndex]} Total: ${formatCurrency(raw[1] * 1000)}`;
-                                        } else {
-                                            const savings = (raw[1] - raw[0]) * 1000;
-                                            return `${context.chart.data.labels[context.dataIndex]} Savings: ${formatCurrency(savings)}`;
-                                        }
+                                        return `Savings: ${formatCurrency(context.parsed.x)}`;
                                     }
                                 }
                             }
@@ -1068,16 +1049,16 @@
                 });
 
                 return () => {
-                    if (chartInstance.current) {
-                        chartInstance.current.destroy();
+                    if (chartInstanceRef.current) {
+                        chartInstanceRef.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax]);
+            }, [strategyImpacts, chartInstanceRef]);
 
             return (
                 <div className="chart-container">
-                    <div className="chart-title">Strategic Impact Waterfall Analysis</div>
-                    <div className="chart-subtitle">Individual strategy contributions to overall tax optimization</div>
+                    <div className="chart-title">Strategic Savings Analysis</div>
+                    <div className="chart-subtitle">Individual contribution of each implemented strategy</div>
                     <div className="chart-canvas-container">
                         <canvas ref={chartRef}></canvas>
                     </div>
@@ -1311,7 +1292,7 @@
             );
         };
 
-        const ChartsSection = ({ results }) => {
+        const ChartsSection = ({ results, comparisonChartInstance, savingsChartInstance }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1321,11 +1302,11 @@
                     <TaxComparisonChart 
                         baseline={results.baseline} 
                         withStrategies={results.withStrategies}
+                        chartInstanceRef={comparisonChartInstance}
                     />
-                    <WaterfallChart 
-                        baseline={results.baseline}
+                    <StrategicSavingsChart
                         strategyImpacts={results.strategyImpacts || []}
-                        finalTax={results.withStrategies.totalTax}
+                        chartInstanceRef={savingsChartInstance}
                     />
                 </div>
             );
@@ -1383,26 +1364,12 @@
         );
 
         // Printable Report Component
-        const PrintableReport = ({ clientData, results }) => {
+        const PrintableReport = ({ clientData, results, chartImages }) => {
             if (!results || !results.baseline) return null;
             
             const { baseline, withStrategies, enabledStrategies } = results;
             const totalSavings = baseline.totalTax - withStrategies.totalTax;
             const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-            const inputDataMap = [
-                { label: 'W-2 Income', value: formatCurrency(clientData.w2Income) },
-                { label: 'Business Income', value: formatCurrency(clientData.businessIncome) },
-                { label: 'Long-Term Capital Gains', value: formatCurrency(clientData.capitalGains) },
-                { label: 'State of Residence', value: clientData.state },
-            ];
-            
-            const appliedStrategiesData = STRATEGY_LIBRARY
-                .filter(s => enabledStrategies[s.id])
-                .map(s => ({
-                    label: s.name,
-                    value: formatCurrency(clientData[s.inputRequired])
-                }));
 
             return (
                 <div className="printable-area">
@@ -1431,6 +1398,11 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <div className="print-section">
+                        <h2 className="print-section-title">Visual Analysis</h2>
+                        {chartImages.comparison && <img src={chartImages.comparison} className="print-chart-image" alt="Tax Comparison Chart" />}
+                    </div>
 
                     <div className="print-section">
                         <h2 className="print-section-title">Client Financial Profile</h2>
@@ -1442,12 +1414,10 @@
                                </tr>
                            </thead>
                            <tbody>
-                                {inputDataMap.map(item => (
-                                    <tr key={item.label}>
-                                        <td>{item.label}</td>
-                                        <td>{item.value}</td>
-                                    </tr>
-                                ))}
+                                <tr><td>W-2 Income</td><td>{formatCurrency(clientData.w2Income)}</td></tr>
+                                <tr><td>Business Income</td><td>{formatCurrency(clientData.businessIncome)}</td></tr>
+                                <tr><td>Long-Term Capital Gains</td><td>{formatCurrency(clientData.capitalGains)}</td></tr>
+                                <tr><td>State of Residence</td><td>{clientData.state}</td></tr>
                            </tbody>
                         </table>
                     </div>
@@ -1462,43 +1432,16 @@
                                </tr>
                            </thead>
                            <tbody>
-                                {appliedStrategiesData.map(item => (
-                                    <tr key={item.label}>
-                                        <td>{item.label}</td>
-                                        <td>{item.value}</td>
-                                    </tr>
-                                ))}
+                                {STRATEGY_LIBRARY
+                                    .filter(s => enabledStrategies[s.id])
+                                    .map(s => (
+                                        <tr key={s.id}>
+                                            <td>{s.name}</td>
+                                            <td>{formatCurrency(clientData[s.inputRequired])}</td>
+                                        </tr>
+                                    ))
+                                }
                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="print-section">
-                        <h2 className="print-section-title">Tax Liability Breakdown</h2>
-                        <table className="print-table">
-                            <thead>
-                                <tr>
-                                    <th>Component</th>
-                                    <th>Baseline Scenario</th>
-                                    <th>Optimized Scenario</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Federal Tax</td>
-                                    <td>{formatCurrency(baseline.fedTax)}</td>
-                                    <td>{formatCurrency(withStrategies.fedTax)}</td>
-                                </tr>
-                                <tr>
-                                    <td>State Tax</td>
-                                    <td>{formatCurrency(baseline.stateTax)}</td>
-                                    <td>{formatCurrency(withStrategies.stateTax)}</td>
-                                </tr>
-                                <tr>
-                                    <th>Total Tax Liability</th>
-                                    <th>{formatCurrency(baseline.totalTax)}</th>
-                                    <th>{formatCurrency(withStrategies.totalTax)}</th>
-                                </tr>
-                            </tbody>
                         </table>
                     </div>
 
@@ -1527,7 +1470,10 @@
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            const [chartImages, setChartImages] = useState({ comparison: null, savings: null });
             const printRootRef = useRef(null);
+            const comparisonChartInstance = useRef(null);
+            const savingsChartInstance = useRef(null);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1551,157 +1497,167 @@
                     baseline.totalTax = baseline.fedTax + baseline.stateTax;
 
                     // --- STRATEGY CALCULATIONS ---
-                    const withStrategies = {};
+                    let currentTax = baseline.totalTax;
+                    const withStrategies = { ...baseline }; // Start with baseline
                     let insights = [];
                     let strategyImpacts = [];
                     
-                    let qbiBaseIncome = clientData.businessIncome || 0;
-                    let currentFedCapitalGains = clientData.capitalGains || 0;
-                    let currentStateCapitalGains = clientData.capitalGains || 0;
-                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
-                    let stateDeductions = { total: 0 };
-                    let njAddBack = 0;
-                    
-                    // --- Process Above-the-Line Deductions to find AGI ---
-                    STRATEGY_LIBRARY.filter(s => s.type === 'aboveAGI' && enabledStrategies[s.id]).forEach(strategy => {
+                    let tempFedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let tempStateDeductions = { total: 0 };
+                    let tempNjAddBack = 0;
+                    let tempCurrentFedCapitalGains = clientData.capitalGains || 0;
+                    let tempCurrentStateCapitalGains = clientData.capitalGains || 0;
+                    let tempQbiBaseIncome = clientData.businessIncome || 0;
+
+                    const calculateCurrentTotalTax = (fedDeductions, stateDeductions, njAddBack, currentFedCG, currentStateCG, qbiBaseIncome, qbiEnabled) => {
+                        const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                        
+                        let qbiDeduction = 0;
+                        if (qbiEnabled && qbiBaseIncome > 0) {
+                            const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
+                            const threshold = 383900;
+                            if (fedTaxableIncomePreQBI <= threshold) {
+                                qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                            }
+                        }
+
+                        const fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - qbiDeduction);
+                        const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
+                        const fedCapitalGainsTax = Math.max(0, currentFedCG) * 0.20;
+                        const fedTax = fedOrdinaryTax + fedCapitalGainsTax;
+
+                        const stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - stateDeductions.total + njAddBack + currentStateCG);
+                        const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
+                        
+                        return fedTax + stateTax;
+                    };
+
+
+                    STRATEGY_LIBRARY.filter(s => enabledStrategies[s.id] && s.type !== 'qbi').forEach(strategy => {
+                        const taxBefore = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
+
                         let fedDed = 0;
                         let stateDed = 0;
-                        
+
                         switch (strategy.id) {
-                            case 'EQUIP_S179_01':
-                                fedDed = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                             case 'EQUIP_S179_01':
+                                fedDed = Math.min(clientData.equipmentCost || 0, tempQbiBaseIncome, 1220000);
                                 if (clientData.state === 'NY') {
                                     stateDed = fedDed;
                                 } else { // NJ
                                     const njDed = Math.min(clientData.equipmentCost || 0, 25000);
                                     const addBack = Math.max(0, (clientData.equipmentCost || 0) - njDed);
                                     stateDed = njDed;
-                                    njAddBack += addBack;
+                                    tempNjAddBack += addBack;
                                     if (addBack > 0) insights.push({ type: 'warning', text: `NJ requires a ${formatCurrency(addBack)} depreciation add-back.` });
                                 }
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Section 179 provides a ${formatCurrency(fedDed)} federal deduction.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'SOLO401K_EMPLOYEE_01':
                                 fedDed = Math.min(clientData.solo401kEmployee || 0, 23000);
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 else { // NJ
-                                    njAddBack += fedDed;
+                                    tempNjAddBack += fedDed;
                                     insights.push({ type: 'warning', text: `NJ taxes Solo 401(k) employee deferrals. ${formatCurrency(fedDed)} add-back required.` });
                                 }
                                 insights.push({ type: 'success', text: `Solo 401(k) employee contribution of ${formatCurrency(fedDed)} reduces federal AGI.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'SOLO401K_EMPLOYER_01':
                                 fedDed = clientData.solo401kEmployer || 0;
                                 stateDed = fedDed;
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Solo 401(k) employer contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'DB_PLAN_01':
                                 fedDed = clientData.dbContribution || 0;
                                 stateDed = fedDed;
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Defined Benefit plan contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
-                        }
-                        fedDeductions.aboveAGI += fedDed;
-                        stateDeductions.total += stateDed;
-                    });
-
-                    const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
-
-                    // --- Process Below-the-Line & Capital Deductions ---
-                    STRATEGY_LIBRARY.filter(s => (s.type === 'belowAGI' || s.type === 'capital') && enabledStrategies[s.id]).forEach(strategy => {
-                        let fedDed = 0;
-                        let stateDed = 0;
-                        switch (strategy.id) {
                             case 'QUANT_DEALS_01':
                                 const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
                                 const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
                                 const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
-                                const gainOffset = Math.min(currentFedCapitalGains, shortTermLosses);
+                                const gainOffset = Math.min(tempCurrentFedCapitalGains, shortTermLosses);
                                 const ordinaryOffset = Math.min(3000, shortTermLosses - gainOffset);
                                 
-                                currentFedCapitalGains = currentFedCapitalGains - gainOffset + longTermGains;
-                                currentStateCapitalGains = currentStateCapitalGains - gainOffset + longTermGains;
-                                fedDeductions.belowAGI += ordinaryOffset;
-                                stateDeductions.total += ordinaryOffset;
+                                tempCurrentFedCapitalGains = tempCurrentFedCapitalGains - gainOffset + longTermGains;
+                                tempCurrentStateCapitalGains = tempCurrentStateCapitalGains - gainOffset + longTermGains;
+                                tempFedDeductions.belowAGI += ordinaryOffset;
+                                tempStateDeductions.total += ordinaryOffset;
                                 insights.push({ type: 'success', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` });
                                 break;
                             case 'CHAR_CLAT_01':
-                                fedDed = Math.min(clientData.charitableIntent || 0, fedAGI * 0.30);
+                                const fedAGIForClat = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - tempFedDeductions.aboveAGI;
+                                fedDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                                 if (fedDed < (clientData.charitableIntent || 0)) insights.push({ type: 'warning', text: `Charitable deduction limited by AGI to ${formatCurrency(fedDed)}.` });
                                 if (clientData.state === 'NY') stateDed = fedDed * 0.5;
                                 insights.push({ type: 'success', text: `CLAT provides a ${formatCurrency(fedDed)} federal itemized deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'OG_USENERGY_01':
                                 fedDed = (clientData.ogInvestment || 0) * 0.70;
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 insights.push({ type: 'success', text: `Oil & Gas investment generates a ${formatCurrency(fedDed)} deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'FILM_SEC181_01':
                                 fedDed = clientData.filmInvestment || 0;
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 insights.push({ type: 'success', text: `Film financing provides a ${formatCurrency(fedDed)} deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                         }
-                        fedDeductions.belowAGI += fedDed;
-                        stateDeductions.total += stateDed;
+
+                        const taxAfter = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
+                        const savings = taxBefore - taxAfter;
+                        if (savings > 0) {
+                            strategyImpacts.push({ name: strategy.name, savings: savings });
+                        }
                     });
+
+                    // QBI Calculation (final step)
+                    const taxBeforeQBI = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
                     
-                    // --- Process QBI Deduction ---
-                    if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
-                        const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
+                    const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - tempFedDeductions.aboveAGI;
+                    let qbiDeduction = 0;
+                    if (enabledStrategies['QBI_FINAL_01'] && tempQbiBaseIncome > 0) {
+                        const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - tempFedDeductions.belowAGI);
                         const threshold = 383900;
                         if (fedTaxableIncomePreQBI <= threshold) {
-                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
-                            fedDeductions.qbi = qbiDeduction;
+                            qbiDeduction = Math.min(tempQbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
                             insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked.` });
                         } else {
                             insights.push({ type: 'warning', text: `Taxable income exceeds QBI threshold. No QBI deduction available.` });
                         }
                     }
+                    tempFedDeductions.qbi = qbiDeduction;
 
-                    // --- FINAL CALCULATIONS ---
-                    withStrategies.fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi);
+                    withStrategies.fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - tempFedDeductions.belowAGI - tempFedDeductions.qbi);
                     withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
-                    withStrategies.fedCapitalGainsTax = Math.max(0, currentFedCapitalGains) * 0.20;
+                    withStrategies.fedCapitalGainsTax = Math.max(0, tempCurrentFedCapitalGains) * 0.20;
                     withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
 
-                    withStrategies.stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - stateDeductions.total + njAddBack + currentStateCapitalGains);
+                    withStrategies.stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - tempStateDeductions.total + tempNjAddBack + tempCurrentStateCapitalGains);
                     withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
                     withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
                     withStrategies.insights = insights;
-                    
-                    // --- Waterfall Chart Impact Calculation ---
-                    const totalSavings = baseline.totalTax - withStrategies.totalTax;
-                    const getMarginalRate = (income, brackets) => {
-                        for (const bracket of brackets) {
-                            if (income >= (bracket.min || 0) && income <= bracket.max) return bracket.rate;
-                        }
-                        return brackets[brackets.length - 1].rate;
-                    };
-                    const fedMarginalRate = getMarginalRate(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
-                    const stateMarginalRate = getMarginalRate(withStrategies.stateTaxableIncome, stateBrackets);
 
-                    const approxImpacts = STRATEGY_LIBRARY
-                        .filter(s => enabledStrategies[s.id])
-                        .map(s => {
-                            const value = clientData[s.inputRequired] || 0;
-                            // This is a simplified approximation. A real calc would be more complex.
-                            const saving = value * (fedMarginalRate + (clientData.state === 'NY' ? stateMarginalRate : 0));
-                            return { name: s.name, savings: saving };
-                        });
-
-                    const totalApproxSavings = approxImpacts.reduce((sum, impact) => sum + impact.savings, 0);
-                    
-                    if (totalApproxSavings > 0) {
-                        strategyImpacts = approxImpacts.map(impact => ({
-                            ...impact,
-                            savings: (impact.savings / totalApproxSavings) * totalSavings
-                        }));
-                    } else {
-                        strategyImpacts = [];
+                    const qbiSavings = taxBeforeQBI - withStrategies.totalTax;
+                    if (qbiSavings > 0) {
+                        strategyImpacts.push({ name: 'QBI Optimization', savings: qbiSavings });
                     }
 
                     return { baseline, withStrategies, enabledStrategies, strategyImpacts };
@@ -1722,11 +1678,18 @@
                 if (!printRootRef.current) {
                     printRootRef.current = createRoot(printContainer);
                 }
-                printRootRef.current.render(<PrintableReport clientData={clientData} results={calculationResults} />);
-            }, [clientData, calculationResults]);
+                printRootRef.current.render(<PrintableReport clientData={clientData} results={calculationResults} chartImages={chartImages} />);
+            }, [clientData, calculationResults, chartImages]);
 
             const handlePrint = () => {
-                window.print();
+                const comparisonImg = comparisonChartInstance.current?.toBase64Image();
+                const savingsImg = savingsChartInstance.current?.toBase64Image();
+                
+                setChartImages({ comparison: comparisonImg, savings: savingsImg });
+                
+                setTimeout(() => {
+                    window.print();
+                }, 100);
             };
 
             return (
@@ -1736,7 +1699,11 @@
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
                         <ResultsDashboard results={calculationResults} />
-                        <ChartsSection results={calculationResults} />
+                        <ChartsSection 
+                            results={calculationResults}
+                            comparisonChartInstance={comparisonChartInstance}
+                            savingsChartInstance={savingsChartInstance}
+                        />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                     <AppFooter />
