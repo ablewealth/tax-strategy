@@ -888,18 +888,17 @@
         };
         
         // Chart Components
-        const TaxComparisonChart = ({ baseline, withStrategies, onChartRender }) => {
+        const TaxComparisonChart = ({ baseline, withStrategies, chartInstanceRef }) => {
             const chartRef = useRef(null);
-            const chartInstance = useRef(null);
 
             useEffect(() => {
                 if (!baseline || !withStrategies || !chartRef.current || !window.Chart) return;
 
-                if (chartInstance.current) {
-                    chartInstance.current.destroy();
+                if (chartInstanceRef.current) {
+                    chartInstanceRef.current.destroy();
                 }
                 const ctx = chartRef.current.getContext('2d');
-                chartInstance.current = new Chart(ctx, {
+                chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: ['Baseline Scenario', 'Optimized Strategy'],
@@ -923,13 +922,6 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        animation: {
-                            onComplete: () => {
-                                if(chartInstance.current) {
-                                    onChartRender(chartInstance.current.toBase64Image());
-                                }
-                            }
-                        },
                         scales: {
                             x: {
                                 stacked: true,
@@ -942,7 +934,7 @@
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value) => '$' + value + 'k'
+                                    callback: (value) => '$' + Math.round(value) + 'k'
                                 }
                             }
                         },
@@ -973,13 +965,13 @@
                         }
                     }
                 });
-
+                
                 return () => {
-                    if (chartInstance.current) {
-                        chartInstance.current.destroy();
+                    if (chartInstanceRef.current) {
+                        chartInstanceRef.current.destroy();
                     }
                 };
-            }, [baseline, withStrategies, onChartRender]);
+            }, [baseline, withStrategies, chartInstanceRef]);
 
             return (
                 <div className="chart-container">
@@ -992,15 +984,14 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, onChartRender }) => {
+        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, chartInstanceRef }) => {
             const chartRef = useRef(null);
-            const chartInstance = useRef(null);
 
             useEffect(() => {
                 if (!baseline || !strategyImpacts || !chartRef.current || !window.Chart) return;
                 
-                if (chartInstance.current) {
-                    chartInstance.current.destroy();
+                if (chartInstanceRef.current) {
+                    chartInstanceRef.current.destroy();
                 }
                 
                 const labels = ['Baseline'];
@@ -1026,11 +1017,10 @@
                 waterfallData.push([0, finalTax / 1000]);
                 colors.push('rgba(212, 175, 55, 0.9)');
                 
-                // Dynamically set the y-axis min to "zoom in"
                 const yMin = finalTax > 0 ? (finalTax / 1000) * 0.95 : 0;
 
                 const ctx = chartRef.current.getContext('2d');
-                chartInstance.current = new Chart(ctx, {
+                chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
@@ -1044,13 +1034,6 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         indexAxis: 'x',
-                        animation: {
-                            onComplete: () => {
-                                if(chartInstance.current) {
-                                    onChartRender(chartInstance.current.toBase64Image());
-                                }
-                            }
-                        },
                         scales: {
                             x: {
                                 grid: { display: false },
@@ -1061,7 +1044,7 @@
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value) => '$' + value + 'k'
+                                    callback: (value) => '$' + Math.round(value) + 'k'
                                 }
                             }
                         },
@@ -1091,11 +1074,11 @@
                 });
 
                 return () => {
-                    if (chartInstance.current) {
-                        chartInstance.current.destroy();
+                    if (chartInstanceRef.current) {
+                        chartInstanceRef.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax, onChartRender]);
+            }, [baseline, strategyImpacts, finalTax, chartInstanceRef]);
 
             return (
                 <div className="chart-container">
@@ -1334,7 +1317,7 @@
             );
         };
 
-        const ChartsSection = ({ results, onComparisonRender, onWaterfallRender }) => {
+        const ChartsSection = ({ results, comparisonChartInstance, waterfallChartInstance }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1344,13 +1327,13 @@
                     <TaxComparisonChart 
                         baseline={results.baseline} 
                         withStrategies={results.withStrategies}
-                        onChartRender={onComparisonRender}
+                        chartInstanceRef={comparisonChartInstance}
                     />
                     <WaterfallChart 
                         baseline={results.baseline}
                         strategyImpacts={results.strategyImpacts || []}
                         finalTax={results.withStrategies.totalTax}
-                        onChartRender={onWaterfallRender}
+                        chartInstanceRef={waterfallChartInstance}
                     />
                 </div>
             );
@@ -1517,6 +1500,8 @@
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
             const [chartImages, setChartImages] = useState({ comparison: null, waterfall: null });
             const printRootRef = useRef(null);
+            const comparisonChartInstance = useRef(null);
+            const waterfallChartInstance = useRef(null);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1714,7 +1699,14 @@
             }, [clientData, calculationResults, chartImages]);
 
             const handlePrint = () => {
-                window.print();
+                const comparisonImg = comparisonChartInstance.current?.toBase64Image();
+                const waterfallImg = waterfallChartInstance.current?.toBase64Image();
+                
+                setChartImages({ comparison: comparisonImg, waterfall: waterfallImg });
+                
+                setTimeout(() => {
+                    window.print();
+                }, 100);
             };
 
             return (
@@ -1726,8 +1718,8 @@
                         <ResultsDashboard results={calculationResults} />
                         <ChartsSection 
                             results={calculationResults}
-                            onComparisonRender={(img) => setChartImages(prev => ({...prev, comparison: img}))}
-                            onWaterfallRender={(img) => setChartImages(prev => ({...prev, waterfall: img}))}
+                            comparisonChartInstance={comparisonChartInstance}
+                            waterfallChartInstance={waterfallChartInstance}
                         />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
