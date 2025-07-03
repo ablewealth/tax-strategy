@@ -790,19 +790,17 @@
         };
 
         // Chart Components
-        const TaxComparisonChart = ({ baseline, withStrategies, isReady }) => {
+        const TaxComparisonChart = ({ baseline, withStrategies }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!isReady || !chartRef.current || !baseline || !withStrategies) return;
+                if (!baseline || !withStrategies || !chartRef.current || !window.Chart) return;
 
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
                 }
-
                 const ctx = chartRef.current.getContext('2d');
-                
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -830,30 +828,16 @@
                         scales: {
                             x: {
                                 stacked: true,
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Inter',
-                                        size: 12
-                                    }
-                                }
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 12 } }
                             },
                             y: {
                                 stacked: true,
                                 beginAtZero: true,
-                                grid: {
-                                    color: '#e2e8f0'
-                                },
+                                grid: { color: '#e2e8f0' },
                                 ticks: {
-                                    font: {
-                                        family: 'Inter',
-                                        size: 12
-                                    },
-                                    callback: function(value) {
-                                        return '$' + value + 'k';
-                                    }
+                                    font: { family: 'Inter', size: 12 },
+                                    callback: (value) => '$' + value + 'k'
                                 }
                             }
                         },
@@ -861,10 +845,7 @@
                             legend: {
                                 position: 'top',
                                 labels: {
-                                    font: {
-                                        family: 'Inter',
-                                        size: 12
-                                    },
+                                    font: { family: 'Inter', size: 12 },
                                     usePointStyle: true,
                                     padding: 20
                                 }
@@ -878,12 +859,8 @@
                                 callbacks: {
                                     label: function(context) {
                                         let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed.y !== null) {
-                                            label += formatCurrency(context.parsed.y * 1000);
-                                        }
+                                        if (label) label += ': ';
+                                        if (context.parsed.y !== null) label += formatCurrency(context.parsed.y * 1000);
                                         return label;
                                     }
                                 }
@@ -897,7 +874,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, withStrategies, isReady]);
+            }, [baseline, withStrategies]);
 
             return (
                 <div className="chart-container">
@@ -910,42 +887,39 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, isReady }) => {
+        const WaterfallChart = ({ baseline, strategyImpacts, finalTax }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!isReady || !chartRef.current || !baseline || !strategyImpacts) return;
-
+                if (!baseline || !strategyImpacts || !chartRef.current || !window.Chart) return;
+                
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
                 }
                 
-                // Prepare waterfall data
                 const labels = ['Baseline'];
                 const waterfallData = [];
                 const colors = [];
 
-                // Baseline bar
                 waterfallData.push([0, baseline.totalTax / 1000]);
-                colors.push('rgba(30, 64, 175, 0.9)'); // var(--primary-blue)
+                colors.push('rgba(30, 64, 175, 0.9)');
 
                 let runningTotal = baseline.totalTax;
-
                 strategyImpacts.forEach(impact => {
-                    if (impact.savings > 100) { // Only show significant impacts
+                    if (impact.savings > 100) {
                         labels.push(impact.name);
                         const start = (runningTotal - impact.savings) / 1000;
                         const end = runningTotal / 1000;
                         waterfallData.push([start, end]);
-                        colors.push('rgba(5, 150, 105, 0.9)'); // var(--success)
+                        colors.push('rgba(5, 150, 105, 0.9)');
                         runningTotal -= impact.savings;
                     }
                 });
 
                 labels.push('Optimized');
                 waterfallData.push([0, finalTax / 1000]);
-                colors.push('rgba(212, 175, 55, 0.9)'); // var(--accent-gold)
+                colors.push('rgba(212, 175, 55, 0.9)');
 
                 const ctx = chartRef.current.getContext('2d');
                 chartInstance.current = new Chart(ctx, {
@@ -986,10 +960,8 @@
                                 bodyFont: { family: 'Inter', size: 12 },
                                 callbacks: {
                                     label: function(context) {
-                                        const label = context.dataset.label || '';
                                         const raw = context.raw;
                                         const isTotal = context.dataIndex === 0 || context.dataIndex === context.chart.data.labels.length - 1;
-
                                         if (isTotal) {
                                             return `${context.chart.data.labels[context.dataIndex]} Total: ${formatCurrency(raw[1] * 1000)}`;
                                         } else {
@@ -1008,7 +980,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax, isReady]);
+            }, [baseline, strategyImpacts, finalTax]);
 
             return (
                 <div className="chart-container">
@@ -1109,7 +1081,7 @@
                                 { value: 'NY', label: 'New York (NY)' },
                                 { value: 'NJ', label: 'New Jersey (NJ)' }
                             ])}
-                            {renderFormField('investmentAmount', 'Quantinno DEALS Investment', 'Total investment in DEALS strategy')}
+                            {renderFormField('investmentAmount', 'Quantino DEALS Investment', 'Total investment in DEALS strategy')}
                             {renderSelectField('dealsExposure', 'DEALS Exposure Level', 'Long/short exposure ratio', 
                                 Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, level]) => ({
                                     value: key,
@@ -1217,7 +1189,7 @@
             );
         };
 
-        const ChartsSection = ({ results, isReady }) => {
+        const ChartsSection = ({ results }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1227,13 +1199,11 @@
                     <TaxComparisonChart 
                         baseline={results.baseline} 
                         withStrategies={results.withStrategies}
-                        isReady={isReady}
                     />
                     <WaterfallChart 
                         baseline={results.baseline}
                         strategyImpacts={results.strategyImpacts || []}
                         finalTax={results.withStrategies.totalTax}
-                        isReady={isReady}
                     />
                 </div>
             );
@@ -1284,19 +1254,6 @@
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
-            const [isChartJsReady, setIsChartJsReady] = useState(false);
-
-            useEffect(() => {
-                // Poll to ensure Chart.js is loaded before attempting to render charts
-                const chartJsPoll = setInterval(() => {
-                    if (window.Chart) {
-                        setIsChartJsReady(true);
-                        clearInterval(chartJsPoll);
-                    }
-                }, 100);
-
-                return () => clearInterval(chartJsPoll);
-            }, []);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1493,7 +1450,7 @@
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
                         <ResultsDashboard results={calculationResults} />
-                        <ChartsSection results={calculationResults} isReady={isChartJsReady} />
+                        <ChartsSection results={calculationResults} />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                 </div>
