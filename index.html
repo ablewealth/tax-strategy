@@ -673,9 +673,15 @@
             const recommendations = useMemo(() => generateRecommendations(), [baseline, withStrategies]);
 
             const handleInputChange = (field, value) => {
-                const numericValue = typeof value === 'string' ? 
-                    parseFloat(value.replace(/[^0-9.-]+/g, "")) || 0 : value;
-                setClientData(prev => ({ ...prev, [field]: numericValue }));
+                if (field === 'state' || field === 'pension_plan_type') {
+                    // Handle non-numeric fields directly
+                    setClientData(prev => ({ ...prev, [field]: value }));
+                } else {
+                    // Handle numeric fields with parsing
+                    const numericValue = typeof value === 'string' ? 
+                        parseFloat(value.replace(/[^0-9.-]+/g, "")) || 0 : value;
+                    setClientData(prev => ({ ...prev, [field]: numericValue }));
+                }
             };
 
             const handleStrategyToggle = (strategyId) => {
