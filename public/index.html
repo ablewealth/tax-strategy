@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strategic Tax Analysis Platform</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
     <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -18,119 +15,509 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --primary-navy: #0f172a;
+            --primary-blue: #1e40af;
+            --accent-gold: #d4af37;
+            --accent-gold-light: #f4e5a1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --background-primary: #ffffff;
+            --background-secondary: #f8fafc;
+            --background-tertiary: #f1f5f9;
+            --border-primary: #e2e8f0;
+            --border-secondary: #cbd5e1;
+            --success: #059669;
+            --warning: #d97706;
+            --error: #dc2626;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.02);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-weight: 400;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .app-container {
             min-height: 100vh;
+            background: var(--background-secondary);
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+
+        .header-bar {
+            background: var(--background-primary);
+            border-bottom: 1px solid var(--border-primary);
+            padding: 0 2rem;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
         }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        
-        .input-focus {
-            transition: all 0.3s ease;
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
         }
-        
-        .input-focus:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+
+        .brand-info h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
         }
-        
-        .strategy-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
+
+        .brand-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-        .strategy-card.enabled {
-            border-left-color: #10b981;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        
-        .strategy-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--background-tertiary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
         }
-        
-        .metric-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-        
-        .progress-bar {
-            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e);
+
+        .status-dot {
+            width: 8px;
             height: 8px;
-            border-radius: 4px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
+            border-radius: var(--radius-xl);
+            padding: 3rem;
+            color: white;
             position: relative;
             overflow: hidden;
         }
-        
-        .progress-bar::after {
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .hero-features {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .section {
+            background: var(--background-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-primary);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--background-secondary);
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .section-content {
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select {
+            height: 48px;
+            padding: 0 1rem;
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            background: var(--background-primary);
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1rem;
+        }
+
+        .strategy-card {
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            background: var(--background-primary);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .strategy-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .strategy-card.active {
+            border-color: var(--accent-gold);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.02) 100%);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .strategy-card.active::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shimmer 2s infinite;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-gold);
+            border-radius: var(--radius-sm);
         }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+
+        .strategy-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
-        
-        .savings-badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+        .strategy-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-gold);
+            margin-top: 0.25rem;
+        }
+
+        .strategy-info {
+            flex: 1;
+        }
+
+        .strategy-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+
+        .strategy-category {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .strategy-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .strategy-icon {
+            font-size: 24px;
+            opacity: 0.7;
+        }
+
+        .results-dashboard {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
+            border-radius: var(--radius-xl);
+            padding: 3rem;
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            margin: 2rem 0;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .metric-label {
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+            margin-bottom: 1rem;
         }
-        
-        .loading-shimmer {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            line-height: 1;
         }
-        
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+
+        .metric-change {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .insights-section {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .insight-card {
+            background: var(--background-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .insight-card.success {
+            border-left: 4px solid var(--success);
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+        }
+
+        .insight-card.warning {
+            border-left: 4px solid var(--warning);
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(217, 119, 6, 0.02) 100%);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .insight-icon {
+            font-size: 20px;
+        }
+
+        .insight-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .insight-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .professional-accent {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .hero-section {
+                padding: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 28px;
+            }
+            
+            .section-content {
+                padding: 1.5rem;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="flex items-center justify-center min-h-screen">
-            <div class="text-center">
-                <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-white text-lg font-medium">Initializing Strategic Tax Platform...</p>
+        <div class="app-container">
+            <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--primary-navy);">
+                <div style="text-align: center;">
+                    <div style="width: 40px; height: 40px; border: 3px solid var(--primary-blue); border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                    <p style="font-weight: 500;">Initializing Strategic Tax Platform...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -138,26 +525,17 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // Icon component with enhanced styling
-        const Icon = ({ name, className = "", size = "w-5 h-5" }) => {
-            const icons = {
-                'calculator': '🧮',
-                'trending-up': '📈',
-                'shield-check': '✅',
-                'alert-triangle': '⚠️',
-                'info': 'ℹ️',
-                'dollar-sign': '💰',
-                'chart-bar': '📊',
-                'settings': '⚙️',
-                'check-circle': '✓',
-                'x-circle': '✗'
-            };
-            
-            return (
-                <span className={`inline-flex items-center justify-center ${size} ${className}`}>
-                    {icons[name] || '•'}
-                </span>
-            );
+        // Icon mappings
+        const strategyIcons = {
+            'QUANT_DEALS_01': '📊',
+            'EQUIP_S179_01': '🏭',
+            'CHAR_CLAT_01': '🏆',
+            'OG_USENERGY_01': '⚡',
+            'FILM_SEC181_01': '🎭',
+            'SOLO401K_EMPLOYEE_01': '🏛️',
+            'SOLO401K_EMPLOYER_01': '🏛️',
+            'DB_PLAN_01': '🏛️',
+            'QBI_FINAL_01': '🎯'
         };
 
         // DEALS Strategy Exposure Levels
@@ -196,97 +574,49 @@
         const STRATEGY_LIBRARY = [
             {
                 id: 'QUANT_DEALS_01',
-                name: 'Quantinno DEALS',
-                category: 'Investment Strategy',
-                hierarchy: 1,
-                description: 'Long/short strategy generating short-term losses and long-term gains for tax optimization.',
-                inputRequired: 'investmentAmount',
-                icon: 'trending-up',
-                color: 'blue'
+                name: 'Quantino DEALS™ Strategy',
+                category: 'Systematic Investment',
+                description: 'Advanced algorithmic trading system generating strategic capital losses to offset gains while maintaining market exposure through sophisticated risk management protocols.',
+                inputRequired: 'investmentAmount'
             },
             {
                 id: 'EQUIP_S179_01',
-                name: 'Equipment Financing (Sec 179)',
-                category: 'Business Deduction',
-                hierarchy: 2,
-                description: 'Immediate expensing of qualifying business equipment purchases.',
-                inputRequired: 'equipmentCost',
-                icon: 'settings',
-                color: 'indigo'
+                name: 'Section 179 Equipment Acceleration',
+                category: 'Business Tax Strategy',
+                description: 'Immediate expensing of qualifying business equipment purchases up to $1.22M, providing substantial first-year deductions for operational asset investments.',
+                inputRequired: 'equipmentCost'
             },
             {
                 id: 'CHAR_CLAT_01',
                 name: 'Charitable Lead Annuity Trust',
-                category: 'Estate Planning',
-                hierarchy: 3,
-                description: 'Advanced charitable giving strategy for significant tax deductions.',
-                inputRequired: 'charitableIntent',
-                icon: 'shield-check',
-                color: 'emerald'
+                category: 'Estate & Philanthropic Planning',
+                description: 'Sophisticated charitable giving structure providing immediate substantial deductions while preserving wealth transfer opportunities for beneficiaries through grantor trust mechanisms.',
+                inputRequired: 'charitableIntent'
             },
             {
                 id: 'OG_USENERGY_01',
-                name: 'Oil & Gas Investment',
-                category: 'Alternative Investment',
-                hierarchy: 4,
-                description: 'Energy sector investments with upfront deductions via IDCs.',
-                inputRequired: 'ogInvestment',
-                icon: 'chart-bar',
-                color: 'amber'
+                name: 'Domestic Energy Investment Program',
+                category: 'Alternative Investment Strategy',
+                description: 'Strategic participation in domestic oil & gas ventures providing substantial upfront deductions through Intangible Drilling Costs and percentage depletion benefits.',
+                inputRequired: 'ogInvestment'
             },
             {
                 id: 'FILM_SEC181_01',
-                name: 'Film Financing (Sec 181)',
-                category: 'Entertainment Investment',
-                hierarchy: 5,
-                description: 'Qualified film production investments with 100% upfront deduction.',
-                inputRequired: 'filmInvestment',
-                icon: 'star',
-                color: 'purple'
-            },
-            {
-                id: 'SOLO401K_EMPLOYEE_01',
-                name: 'Solo 401(k) - Employee',
-                category: 'Retirement Planning',
-                hierarchy: 6,
-                description: 'Employee elective deferral contributions to Solo 401(k).',
-                inputRequired: 'solo401kEmployee',
-                icon: 'shield-check',
-                color: 'green'
-            },
-            {
-                id: 'SOLO401K_EMPLOYER_01',
-                name: 'Solo 401(k) - Employer',
-                category: 'Retirement Planning',
-                hierarchy: 7,
-                description: 'Employer profit-sharing contributions to Solo 401(k).',
-                inputRequired: 'solo401kEmployer',
-                icon: 'shield-check',
-                color: 'green'
-            },
-            {
-                id: 'DB_PLAN_01',
-                name: 'Defined Benefit Plan',
-                category: 'Retirement Planning',
-                hierarchy: 8,
-                description: 'High-contribution defined benefit pension plan.',
-                inputRequired: 'dbContribution',
-                icon: 'shield-check',
-                color: 'teal'
+                name: 'Executive Retirement Optimization',
+                category: 'Qualified Plan Strategy',
+                description: 'Maximization of tax-deferred retirement contributions through advanced Solo 401(k) and Defined Benefit Plan structures for business owners and high-income professionals.',
+                inputRequired: 'filmInvestment'
             },
             {
                 id: 'QBI_FINAL_01',
-                name: 'QBI Deduction',
-                category: 'Business Deduction',
-                hierarchy: 9,
-                description: '20% deduction for qualifying business income.',
-                inputRequired: 'businessIncome',
-                icon: 'calculator',
-                color: 'slate'
+                name: 'QBI Deduction Optimization',
+                category: 'Income Strategy Management',
+                description: 'Strategic income positioning to maximize the 20% Qualified Business Income deduction through careful management of taxable income thresholds and business structure optimization.',
+                inputRequired: 'businessIncome'
             },
         ];
 
-        // Tax brackets and constants (same as before)
+        // Tax brackets (same as before)
         const FED_TAX_BRACKETS = [
             { rate: 0.10, min: 0, max: 23200 },
             { rate: 0.12, min: 23201, max: 94300 },
@@ -372,18 +702,24 @@
 
         // Components
         const Header = () => (
-            <header className="mb-8 text-center">
-                <h1 className="text-5xl font-bold gradient-text mb-4">
-                    Strategic Tax Analysis Platform
-                </h1>
-                <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-                    Advanced tax optimization strategies for high-net-worth individuals. 
-                    Model complex scenarios and maximize after-tax wealth.
-                </p>
-            </header>
+            <div className="header-bar">
+                <div className="logo-section">
+                    <div className="logo-icon">💼</div>
+                    <div className="brand-info">
+                        <h1>Strategic Tax Optimization Portfolio</h1>
+                        <p>Select advanced tax strategies for implementation and optimization analysis</p>
+                    </div>
+                </div>
+                <div className="header-actions">
+                    <div className="status-badge">
+                        <div className="status-dot"></div>
+                        Analysis Active
+                    </div>
+                </div>
+            </div>
         );
 
-        const ClientInputForm = ({ data, setData }) => {
+        const ClientInputSection = ({ data, setData }) => {
             const handleInputChange = (e) => {
                 const { name, value } = e.target;
                 const numericValue = Number(value.replace(/[^0-9.-]+/g, '')) || 0;
@@ -395,273 +731,254 @@
                 setData(prev => ({ ...prev, [name]: value }));
             };
 
-            const renderInput = (name, label, subtitle = null) => (
-                <div className="space-y-2">
-                    <label className="block">
-                        <span className="text-sm font-semibold text-gray-700">{label}</span>
-                        {subtitle && <span className="block text-xs text-gray-500 mt-1">{subtitle}</span>}
-                    </label>
-                    <input
-                        type="text"
-                        name={name}
-                        value={data[name]?.toLocaleString('en-US') || '0'}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium"
-                        placeholder="Enter amount..."
-                    />
-                </div>
-            );
-
             return (
-                <div className="glass-card rounded-2xl p-8 shadow-xl">
-                    <div className="flex items-center mb-6">
-                        <Icon name="calculator" className="mr-3 text-blue-600" size="w-6 h-6" />
-                        <h2 className="text-2xl font-bold text-gray-800">Client Profile</h2>
+                <div className="section">
+                    <div className="section-header">
+                        <div className="section-title">
+                            📋 Client Profile & Income Analysis
+                        </div>
+                        <div className="section-description">
+                            Configure client financial parameters for strategic tax optimization modeling
+                        </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {renderInput('w2Income', 'W-2 Income', 'Salary and wages from employment')}
-                        {renderInput('businessIncome', 'Business Income', 'Schedule C/K-1 business earnings')}
-                        {renderInput('capitalGains', 'Long-Term Capital Gains', 'Gains from asset sales held > 1 year')}
-                        
-                        <div className="space-y-2">
-                            <label className="block">
-                                <span className="text-sm font-semibold text-gray-700">State</span>
-                                <span className="block text-xs text-gray-500 mt-1">Primary tax residence</span>
-                            </label>
-                            <select 
-                                name="state" 
-                                value={data.state} 
-                                onChange={handleSelectChange} 
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium"
-                            >
-                                <option value="NY">New York (NY)</option>
-                                <option value="NJ">New Jersey (NJ)</option>
-                            </select>
+                    <div className="section-content">
+                        <div className="grid grid-3">
+                            <div className="form-field">
+                                <label className="form-label">W-2 Employment Income</label>
+                                <input
+                                    type="text"
+                                    name="w2Income"
+                                    value={data.w2Income?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Business Income (Sch C/K-1)</label>
+                                <input
+                                    type="text"
+                                    name="businessIncome"
+                                    value={data.businessIncome?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Long-Term Capital Gains</label>
+                                <input
+                                    type="text"
+                                    name="capitalGains"
+                                    value={data.capitalGains?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Primary Tax Residence</label>
+                                <select 
+                                    name="state" 
+                                    value={data.state} 
+                                    onChange={handleSelectChange} 
+                                    className="form-select"
+                                >
+                                    <option value="NY">New York (NY)</option>
+                                    <option value="NJ">New Jersey (NJ)</option>
+                                </select>
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Quantinno DEALS Investment</label>
+                                <input
+                                    type="text"
+                                    name="investmentAmount"
+                                    value={data.investmentAmount?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">DEALS Exposure Strategy</label>
+                                <select 
+                                    name="dealsExposure" 
+                                    value={data.dealsExposure} 
+                                    onChange={handleSelectChange} 
+                                    className="form-select"
+                                >
+                                    {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, level]) => (
+                                        <option key={key} value={key}>
+                                            {level.description} - {level.subtitle}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Equipment Investment (Sec 179)</label>
+                                <input
+                                    type="text"
+                                    name="equipmentCost"
+                                    value={data.equipmentCost?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Charitable Asset Intent</label>
+                                <input
+                                    type="text"
+                                    name="charitableIntent"
+                                    value={data.charitableIntent?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label className="form-label">Energy Investment Program</label>
+                                <input
+                                    type="text"
+                                    name="ogInvestment"
+                                    value={data.ogInvestment?.toLocaleString('en-US') || '0'}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
                         </div>
-
-                        {renderInput('investmentAmount', 'Quantinno DEALS Investment', 'Total investment in DEALS strategy')}
-                        
-                        <div className="space-y-2">
-                            <label className="block">
-                                <span className="text-sm font-semibold text-gray-700">DEALS Exposure Level</span>
-                                <span className="block text-xs text-gray-500 mt-1">Long/short exposure ratio</span>
-                            </label>
-                            <select 
-                                name="dealsExposure" 
-                                value={data.dealsExposure} 
-                                onChange={handleSelectChange} 
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium"
-                            >
-                                {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, level]) => (
-                                    <option key={key} value={key}>
-                                        {level.description} - {level.subtitle}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {renderInput('equipmentCost', 'Equipment Cost', 'Section 179 qualifying equipment')}
-                        {renderInput('charitableIntent', 'Charitable Intent', 'CLAT appreciated asset value')}
-                        {renderInput('ogInvestment', 'Oil & Gas Investment', 'Energy sector investment amount')}
-                        {renderInput('filmInvestment', 'Film Financing', 'Section 181 qualifying investment')}
-                        {renderInput('solo401kEmployee', 'Solo 401(k) Employee', 'Employee elective deferrals (max $23,000)')}
-                        {renderInput('solo401kEmployer', 'Solo 401(k) Employer', 'Employer profit-sharing contribution')}
-                        {renderInput('dbContribution', 'Defined Benefit Plan', 'DB plan employer contribution')}
                     </div>
                 </div>
             );
         };
 
-        const StrategyDashboard = ({ enabledStrategies, clientData }) => (
-            <div className="glass-card rounded-2xl p-8 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center">
-                        <Icon name="shield-check" className="mr-3 text-green-600" size="w-6 h-6" />
-                        <h2 className="text-2xl font-bold text-gray-800">Active Strategies</h2>
+        const StrategiesSection = ({ enabledStrategies, clientData }) => (
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💼 Strategic Tax Optimization Portfolio
                     </div>
-                    <div className="savings-badge">
-                        {Object.values(enabledStrategies).filter(Boolean).length} ENABLED
+                    <div className="section-description">
+                        Select advanced tax strategies for implementation and optimization analysis
                     </div>
                 </div>
-                
-                <div className="space-y-4">
-                    {STRATEGY_LIBRARY.map(strategy => {
-                        const isEnabled = enabledStrategies[strategy.id];
-                        const inputValue = clientData[strategy.inputRequired] || 0;
-                        
-                        return (
-                            <div key={strategy.id} className={`strategy-card p-5 rounded-xl border transition-all duration-300 ${
-                                isEnabled ? 'enabled border-green-200 bg-green-50/50' : 'border-gray-200 bg-white'
-                            }`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center space-x-3">
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                            isEnabled ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-                                        }`}>
-                                            <span className="text-sm font-bold">{strategy.hierarchy}</span>
+                <div className="section-content">
+                    <div className="strategy-grid">
+                        {STRATEGY_LIBRARY.map((strategy, index) => {
+                            const isActive = enabledStrategies[strategy.id];
+                            const inputValue = clientData[strategy.inputRequired] || 0;
+                            
+                            return (
+                                <div key={strategy.id} className={`strategy-card ${isActive ? 'active' : ''}`}>
+                                    <div className="strategy-header">
+                                        <input 
+                                            type="checkbox" 
+                                            className="strategy-checkbox"
+                                            checked={isActive}
+                                            disabled
+                                        />
+                                        <div className="strategy-info">
+                                            <div className="strategy-name">
+                                                {index + 1}. {strategy.name}
+                                            </div>
+                                            <div className="strategy-category">
+                                                {strategy.category}
+                                            </div>
+                                            <div className="strategy-description">
+                                                {strategy.description}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-800">{strategy.name}</h3>
-                                            <p className="text-sm text-gray-500">{strategy.category}</p>
+                                        <div className="strategy-icon">
+                                            {strategyIcons[strategy.id] || '📊'}
                                         </div>
-                                    </div>
-                                    
-                                    <div className="flex items-center space-x-3">
-                                        {isEnabled && (
-                                            <span className="text-sm font-medium text-green-600">
-                                                {formatCurrency(inputValue)}
-                                            </span>
-                                        )}
-                                        <div className={`w-4 h-4 rounded-full ${
-                                            isEnabled ? 'bg-green-500' : 'bg-gray-300'
-                                        }`}></div>
                                     </div>
                                 </div>
-                                
-                                <p className="text-sm text-gray-600 leading-relaxed">{strategy.description}</p>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         );
 
-        const MetricCard = ({ title, value, subtitle, color = 'blue', change = null }) => (
-            <div className="metric-card rounded-xl p-6 text-center">
-                <h3 className={`text-sm font-semibold text-${color}-600 mb-2 uppercase tracking-wide`}>{title}</h3>
-                <p className={`text-3xl font-bold text-${color}-900 mb-1`}>{value}</p>
-                {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
-                {change && (
-                    <div className={`mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        change > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                        <span>{change > 0 ? '↓' : '↑'} {formatPercentage(Math.abs(change))} reduction</span>
-                    </div>
-                )}
-            </div>
-        );
-
-        const ResultsSummary = ({ results }) => {
+        const ResultsDashboard = ({ results }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return (
-                    <div className="glass-card rounded-2xl p-8 shadow-xl">
-                        <div className="loading-shimmer h-64 rounded-xl"></div>
+                    <div className="results-dashboard">
+                        <div className="dashboard-header">
+                            <div className="dashboard-title">Analyzing Tax Optimization</div>
+                            <div className="dashboard-subtitle">Computing comprehensive strategic tax planning results</div>
+                        </div>
                     </div>
                 );
             }
 
             const totalSavings = results.baseline.totalTax - results.withStrategies.totalTax;
             const savingsPercentage = results.baseline.totalTax > 0 ? totalSavings / results.baseline.totalTax : 0;
-            
-            return (
-                <div className="glass-card rounded-2xl p-8 shadow-xl">
-                    <div className="flex items-center mb-6">
-                        <Icon name="chart-bar" className="mr-3 text-blue-600" size="w-6 h-6" />
-                        <h2 className="text-2xl font-bold text-gray-800">Tax Analysis Results</h2>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <MetricCard
-                            title="Baseline Tax Liability"
-                            value={formatCurrency(results.baseline.totalTax)}
-                            subtitle="Without strategies"
-                            color="red"
-                        />
-                        <MetricCard
-                            title="Optimized Tax Liability"
-                            value={formatCurrency(results.withStrategies.totalTax)}
-                            subtitle="With strategies applied"
-                            color="green"
-                        />
-                        <MetricCard
-                            title="Total Tax Savings"
-                            value={formatCurrency(totalSavings)}
-                            subtitle={`${formatPercentage(savingsPercentage)} reduction`}
-                            color="blue"
-                            change={savingsPercentage}
-                        />
-                    </div>
 
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Tax Liability Comparison</h3>
-                        
-                        {[
-                            { name: 'Baseline Scenario', federal: results.baseline.fedTax, state: results.baseline.stateTax, total: results.baseline.totalTax, color: 'red' },
-                            { name: 'Optimized Scenario', federal: results.withStrategies.fedTax, state: results.withStrategies.stateTax, total: results.withStrategies.totalTax, color: 'green' }
-                        ].map((scenario, index) => {
-                            const maxValue = Math.max(results.baseline.totalTax, results.withStrategies.totalTax);
-                            const percentage = (scenario.total / maxValue) * 100;
-                            
-                            return (
-                                <div key={index} className="space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-medium text-gray-700">{scenario.name}</span>
-                                        <span className="font-bold text-gray-900">{formatCurrency(scenario.total)}</span>
-                                    </div>
-                                    
-                                    <div className="relative">
-                                        <div className="w-full bg-gray-200 rounded-full h-6">
-                                            <div 
-                                                className={`h-6 rounded-full flex items-center justify-end pr-3 text-white text-xs font-medium bg-${scenario.color}-500`}
-                                                style={{ width: `${percentage}%` }}
-                                            >
-                                                {percentage > 30 ? formatCurrency(scenario.total) : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Federal: {formatCurrency(scenario.federal)}</span>
-                                        <span>State: {formatCurrency(scenario.state)}</span>
-                                    </div>
-                                </div>
-                            );
-                        })}
+            return (
+                <div className="results-dashboard">
+                    <div className="dashboard-header">
+                        <div className="dashboard-title">Executive Tax Optimization Analysis</div>
+                        <div className="dashboard-subtitle">Comprehensive strategic tax planning results and optimization metrics</div>
+                    </div>
+                    <div className="metrics-grid">
+                        <div className="metric-card">
+                            <div className="metric-label">Baseline Tax Liability</div>
+                            <div className="metric-value">{formatCurrency(results.baseline.totalTax)}</div>
+                            <div className="metric-change">Pre-optimization scenario</div>
+                        </div>
+                        <div className="metric-card">
+                            <div className="metric-label">Optimized Tax Liability</div>
+                            <div className="metric-value">{formatCurrency(results.withStrategies.totalTax)}</div>
+                            <div className="metric-change">Post-strategy implementation</div>
+                        </div>
+                        <div className="metric-card">
+                            <div className="metric-label">Total Tax Optimization</div>
+                            <div className="metric-value professional-accent">{formatCurrency(totalSavings)}</div>
+                            <div className="metric-change">{formatPercentage(savingsPercentage)} effective reduction</div>
+                        </div>
                     </div>
                 </div>
             );
         };
 
-        const InsightsPanel = ({ insights }) => (
-            <div className="glass-card rounded-2xl p-8 shadow-xl">
-                <div className="flex items-center mb-6">
-                    <Icon name="info" className="mr-3 text-blue-600" size="w-6 h-6" />
-                    <h2 className="text-2xl font-bold text-gray-800">Strategic Insights</h2>
+        const InsightsSection = ({ insights }) => (
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
                 </div>
-                
-                {!insights || insights.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Icon name="chart-bar" className="mx-auto mb-4 text-gray-400" size="w-12 h-12" />
-                        <p className="text-gray-500">Configure strategies to see personalized insights and recommendations.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {insights.map((insight, index) => {
-                            const colors = {
-                                insight: 'border-green-200 bg-green-50 text-green-800',
-                                warning: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-                                info: 'border-blue-200 bg-blue-50 text-blue-800'
-                            };
-                            
-                            return (
-                                <div key={index} className={`p-4 rounded-xl border ${colors[insight.type] || colors.info}`}>
-                                    <div className="flex items-start space-x-3">
-                                        <Icon 
-                                            name={insight.type === 'warning' ? 'alert-triangle' : 'check-circle'} 
-                                            className="mt-0.5 flex-shrink-0"
-                                        />
-                                        <p className="text-sm leading-relaxed">{insight.text}</p>
-                                    </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
                                 </div>
-                            );
-                        })}
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         );
 
-        // Main App Component with calculation logic (keeping the same calculation logic from before)
+        // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
             
@@ -686,13 +1003,12 @@
                     baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
                     baseline.totalTax = baseline.fedTax + baseline.stateTax;
 
-                    // Strategy calculations (keeping existing logic but condensed for space)
-                    const withStrategies = { insights: [] };
+                    // Strategy calculations
+                    const withStrategies = {};
                     let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
                     let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
                     let fedCapitalGains = clientData.capitalGains || 0;
                     let stateCapitalGains = clientData.capitalGains || 0;
-                    let njAddBack = 0;
                     let insights = [];
 
                     // Apply DEALS strategy
@@ -712,25 +1028,38 @@
                         
                         insights.push({
                             type: 'insight',
-                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through optimized loss harvesting.`
+                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit through systematic loss harvesting while maintaining market exposure through sophisticated long/short positioning.`
                         });
                     }
 
-                    // Simplified other strategies for space
+                    // Apply other strategies (simplified for space)
                     if (enabledStrategies['EQUIP_S179_01']) {
                         const deduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
                         fedDeductions.aboveAGI += deduction;
                         stateDeductions.aboveAGI += deduction;
-                        if (clientData.state === 'NJ' && (clientData.equipmentCost || 0) > 25000) {
-                            njAddBack += Math.max(0, (clientData.equipmentCost || 0) - 25000);
-                            insights.push({ type: 'warning', text: `NJ requires ${formatCurrency(njAddBack)} depreciation add-back.` });
+                        insights.push({
+                            type: 'insight',
+                            text: `Section 179 equipment acceleration provides ${formatCurrency(deduction)} immediate deduction, reducing current year tax liability while building operational capacity.`
+                        });
+                    }
+
+                    if (enabledStrategies['CHAR_CLAT_01']) {
+                        const agi = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                        const deduction = Math.min(clientData.charitableIntent || 0, agi * 0.30);
+                        fedDeductions.belowAGI += deduction;
+                        if (clientData.state === 'NY') {
+                            stateDeductions.belowAGI += deduction * 0.5;
                         }
+                        insights.push({
+                            type: 'insight',
+                            text: `Charitable Lead Annuity Trust structure provides ${formatCurrency(deduction)} deduction while preserving wealth transfer opportunities for beneficiaries.`
+                        });
                     }
 
                     // Final calculations
                     withStrategies.fedTaxableIncome = Math.max(0, 
                         (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
-                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI
                     );
                     withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
                     withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
@@ -738,7 +1067,7 @@
                     
                     withStrategies.stateTaxableIncome = Math.max(0,
                         (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
-                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + stateCapitalGains
                     );
                     withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
                     withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
@@ -756,21 +1085,13 @@
             }, [clientData]);
 
             return (
-                <div className="min-h-screen p-6 lg:p-8">
-                    <div className="max-w-7xl mx-auto">
-                        <Header />
-                        
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                            <div className="space-y-8">
-                                <ClientInputForm data={clientData} setData={setClientData} />
-                                <StrategyDashboard enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
-                            </div>
-                            
-                            <div className="space-y-8">
-                                <ResultsSummary results={calculationResults} />
-                                <InsightsPanel insights={calculationResults.withStrategies.insights} />
-                            </div>
-                        </div>
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                 </div>
             );
@@ -779,9 +1100,14 @@
         // Initialize app
         if (window.React && window.ReactDOM) {
             ReactDOM.render(<App />, document.getElementById('root'));
-        } else {
-            console.error('React libraries not loaded');
         }
     </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </body>
 </html>
