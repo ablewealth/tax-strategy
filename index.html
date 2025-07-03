@@ -1442,7 +1442,7 @@
                            </thead>
                            <tbody>
                                 {STRATEGY_LIBRARY
-                                    .filter(s => enabledStrategies[s.id])
+                                    .filter(s => enabledStrategies[s.id] && s.id !== 'QBI_FINAL_01')
                                     .map(s => (
                                         <tr key={s.id}>
                                             <td>{s.name}</td>
