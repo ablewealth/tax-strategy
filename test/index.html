@@ -795,8 +795,7 @@
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                // FIX: Check if Chart.js is loaded and data is available
-                if (!chartRef.current || !window.Chart || !baseline || !withStrategies) return;
+                if (!chartRef.current || !baseline || !withStrategies) return;
 
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
@@ -916,8 +915,7 @@
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                // FIX: Check if Chart.js is loaded and data is available
-                if (!chartRef.current || !window.Chart || !baseline || !strategyImpacts) return;
+                if (!chartRef.current || !baseline || !strategyImpacts) return;
 
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
@@ -1284,6 +1282,19 @@
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            const [isChartJsReady, setIsChartJsReady] = useState(false);
+
+            useEffect(() => {
+                // Poll to ensure Chart.js is loaded before attempting to render charts
+                const chartJsPoll = setInterval(() => {
+                    if (window.Chart) {
+                        setIsChartJsReady(true);
+                        clearInterval(chartJsPoll);
+                    }
+                }, 100);
+
+                return () => clearInterval(chartJsPoll);
+            }, []);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1309,31 +1320,21 @@
                     // --- STRATEGY CALCULATIONS (REFACTORED) ---
                     const withStrategies = {};
                     let insights = [];
+                    // FIX: Declare strategyImpacts at the top of the try block
                     let strategyImpacts = [];
                     
                     // Initialize income/deduction trackers
-                    let currentFedOrdinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
-                    let currentStateOrdinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    let qbiBaseIncome = clientData.businessIncome || 0;
                     let currentFedCapitalGains = clientData.capitalGains || 0;
                     let currentStateCapitalGains = clientData.capitalGains || 0;
                     let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
                     let stateDeductions = { total: 0 };
                     let njAddBack = 0;
-
-                    // Helper to run a calculation for a specific strategy
-                    const runStrategyCalc = (strategyId, currentIncome) => {
-                         if (!enabledStrategies[strategyId]) return { fed: 0, state: 0 };
-                         // This is a simplified placeholder. In a real scenario, you'd rerun the specific strategy logic.
-                         // For this illustrative model, we use a fixed percentage.
-                         const deduction = clientData[STRATEGY_LIBRARY.find(s => s.id === strategyId).inputRequired] || 0;
-                         return { fed: deduction * 0.35, state: deduction * 0.10 };
-                    };
                     
                     // --- Process Above-the-Line Deductions to find AGI ---
                     STRATEGY_LIBRARY.filter(s => s.type === 'aboveAGI' && enabledStrategies[s.id]).forEach(strategy => {
                         let fedDed = 0;
                         let stateDed = 0;
-                        let qbiIncomeReduction = 0;
                         
                         switch (strategy.id) {
                             case 'EQUIP_S179_01':
@@ -1347,6 +1348,7 @@
                                     njAddBack += addBack;
                                     if (addBack > 0) insights.push({ type: 'warning', text: `NJ requires a ${formatCurrency(addBack)} depreciation add-back.` });
                                 }
+                                qbiBaseIncome -= fedDed;
                                 insights.push({ type: 'insight', text: `Section 179 provides a ${formatCurrency(fedDed)} federal deduction.` });
                                 break;
                             case 'SOLO401K_EMPLOYEE_01':
@@ -1361,19 +1363,18 @@
                             case 'SOLO401K_EMPLOYER_01':
                                 fedDed = clientData.solo401kEmployer || 0;
                                 stateDed = fedDed;
-                                qbiIncomeReduction = fedDed;
+                                qbiBaseIncome -= fedDed;
                                 insights.push({ type: 'insight', text: `Solo 401(k) employer contribution of ${formatCurrency(fedDed)} reduces business income.` });
                                 break;
                             case 'DB_PLAN_01':
                                 fedDed = clientData.dbContribution || 0;
                                 stateDed = fedDed;
-                                qbiIncomeReduction = fedDed;
+                                qbiBaseIncome -= fedDed;
                                 insights.push({ type: 'insight', text: `Defined Benefit plan contribution of ${formatCurrency(fedDed)} reduces business income.` });
                                 break;
                         }
                         fedDeductions.aboveAGI += fedDed;
                         stateDeductions.total += stateDed;
-                        currentFedOrdinaryIncome -= qbiIncomeReduction; // Reduce business income for QBI
                     });
 
                     // --- Calculate AGI ---
@@ -1419,11 +1420,11 @@
                     });
                     
                     // --- Process QBI Deduction ---
-                    if (enabledStrategies['QBI_FINAL_01'] && currentFedOrdinaryIncome > 0) {
+                    if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
                         const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
                         const threshold = 383900;
                         if (fedTaxableIncomePreQBI <= threshold) {
-                            const qbiDeduction = Math.min(currentFedOrdinaryIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
                             fedDeductions.qbi = qbiDeduction;
                             insights.push({ type: 'insight', text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked.` });
                         } else {
@@ -1442,15 +1443,35 @@
                     withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
                     withStrategies.insights = insights;
                     
-                    // For waterfall chart: calculate approximate savings per strategy
-                    let taxAfterPrevStrategies = baseline.totalTax;
-                    strategyImpacts = STRATEGY_LIBRARY.filter(s => enabledStrategies[s.id]).map(strategy => {
-                        // This is a simplified approximation for the waterfall chart.
-                        // A truly accurate value would require recalculating total tax with/without each strategy.
-                        const approxSaving = runStrategyCalc(strategy.id, taxAfterPrevStrategies).fed + runStrategyCalc(strategy.id, taxAfterPrevStrategies).state;
-                        taxAfterPrevStrategies -= approxSaving;
-                        return { name: strategy.name, savings: approxSaving };
-                    });
+                    // --- Waterfall Chart Impact Calculation ---
+                    const totalSavings = baseline.totalTax - withStrategies.totalTax;
+                    const getMarginalRate = (income, brackets) => {
+                        for (const bracket of brackets) {
+                            if (income >= (bracket.min || 0) && income <= bracket.max) return bracket.rate;
+                        }
+                        return brackets[brackets.length - 1].rate;
+                    };
+                    const fedMarginalRate = getMarginalRate(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    const stateMarginalRate = getMarginalRate(withStrategies.stateTaxableIncome, stateBrackets);
+
+                    const approxImpacts = STRATEGY_LIBRARY
+                        .filter(s => enabledStrategies[s.id])
+                        .map(s => {
+                            const value = clientData[s.inputRequired] || 0;
+                            const saving = value * (fedMarginalRate + (clientData.state === 'NY' ? stateMarginalRate : 0));
+                            return { name: s.name, savings: saving };
+                        });
+
+                    const totalApproxSavings = approxImpacts.reduce((sum, impact) => sum + impact.savings, 0);
+                    
+                    if (totalApproxSavings > 0) {
+                        strategyImpacts = approxImpacts.map(impact => ({
+                            ...impact,
+                            savings: (impact.savings / totalApproxSavings) * totalSavings
+                        }));
+                    } else {
+                        strategyImpacts = [];
+                    }
 
                     return { baseline, withStrategies, enabledStrategies, strategyImpacts };
                 } catch (error) {
@@ -1471,7 +1492,7 @@
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
                         <ResultsDashboard results={calculationResults} />
-                        <ChartsSection results={calculationResults} />
+                        {isChartJsReady && <ChartsSection results={calculationResults} />}
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                 </div>
