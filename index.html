@@ -211,7 +211,7 @@
 
         .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 
         .form-field {
             display: flex;
@@ -1271,7 +1271,7 @@
                         <div className="dashboard-title">Executive Tax Optimization Analysis</div>
                         <div className="dashboard-subtitle">Comprehensive strategic tax planning results and optimization metrics</div>
                     </div>
-                    <div className="metrics-grid">
+                    <div className="metrics-grid grid-4">
                         <div className="metric-card">
                             <div className="metric-label">Baseline Tax Liability</div>
                             <div className="metric-value">{formatCurrency(results.baseline.totalTax)}</div>
@@ -1286,6 +1286,11 @@
                             <div className="metric-label">Total Tax Optimization</div>
                             <div className="metric-value professional-accent">{formatCurrency(totalSavings)}</div>
                             <div className="metric-change">{formatPercentage(savingsPercentage)} effective reduction</div>
+                        </div>
+                        <div className="metric-card">
+                            <div className="metric-label">Total Capital Allocated</div>
+                            <div className="metric-value">{formatCurrency(results.totalCapitalAllocated)}</div>
+                            <div className="metric-change">Total investment in strategies</div>
                         </div>
                     </div>
                 </div>
@@ -1367,7 +1372,7 @@
         const PrintableReport = ({ clientData, results, chartImages }) => {
             if (!results || !results.baseline) return null;
             
-            const { baseline, withStrategies, enabledStrategies } = results;
+            const { baseline, withStrategies, enabledStrategies, totalCapitalAllocated } = results;
             const totalSavings = baseline.totalTax - withStrategies.totalTax;
             const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -1394,6 +1399,10 @@
                                 <tr>
                                     <th>Total Potential Savings</th>
                                     <th>{formatCurrency(totalSavings)}</th>
+                                </tr>
+                                <tr>
+                                    <td>Total Capital Allocated</td>
+                                    <td>{formatCurrency(totalCapitalAllocated)}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1659,15 +1668,27 @@
                     if (qbiSavings > 0) {
                         strategyImpacts.push({ name: 'QBI Optimization', savings: qbiSavings });
                     }
+                    
+                    const totalCapitalAllocated = STRATEGY_LIBRARY.reduce((acc, strategy) => {
+                        if (enabledStrategies[strategy.id]) {
+                             const value = clientData[strategy.inputRequired] || 0;
+                             // QBI is a deduction, not an allocation, so we exclude it.
+                             if(strategy.id !== 'QBI_FINAL_01') {
+                                return acc + value;
+                             }
+                        }
+                        return acc;
+                    }, 0);
 
-                    return { baseline, withStrategies, enabledStrategies, strategyImpacts };
+                    return { baseline, withStrategies, enabledStrategies, strategyImpacts, totalCapitalAllocated };
                 } catch (error) {
                     console.error('Calculation error:', error);
                     return {
                         baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
                         withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [{type: 'error', text: 'A calculation error occurred.'}] },
                         enabledStrategies: {},
-                        strategyImpacts: []
+                        strategyImpacts: [],
+                        totalCapitalAllocated: 0
                     };
                 }
             }, [clientData]);
