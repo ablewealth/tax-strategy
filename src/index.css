@@ -23,4 +23,9 @@ body {
   #print-mount {
     display: block;
   }
+  .printable-area {
+    max-width: 1152px; /* Corresponds to max-w-7xl */
+    margin: 0 auto;
+    padding: 2rem;
+  }
 }
