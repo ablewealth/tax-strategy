@@ -1,101 +1,39 @@
-# Professional Tax Strategy Calculator
+Advanced Tax Strategy Optimizer
+A sophisticated, interactive tax planning application designed for wealth management professionals. This tool, built with React, provides a platform for modeling and comparing complex tax optimization scenarios for high-net-worth clients.
+✨ Features
+Scenario Management: Create, manage, and compare multiple "what-if" tax scenarios.
+Interactive Dashboard: Clean, professional UI for inputting client financial data.
+Comprehensive Strategy Portfolio: Model the impact of various tax strategies, including:
+Section 179 Acceleration
+Consolidated Retirement Planning (Solo 401k, Defined Benefit Plans)
+Quantino DEALS™ (Systematic Loss Harvesting)
+QBI Optimization, Charitable Planning, and more.
+Visual Analysis: Interactive charts from Chart.js display a clear breakdown of tax liabilities and the marginal savings from each strategy.
+Component-Based Architecture: Built with modern React, ensuring scalability and maintainability.
+Responsive Design: Optimized for both desktop and tablet use.
+🚀 Getting Started
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+Prerequisites
+You will need Node.js and npm (or yarn) installed on your machine.
+Node.js (which includes npm)
+Installation
+Clone the repository:
+git clone https://github.com/your-username/tax-optimizer.git
+cd tax-optimizer
 
-A sophisticated tax optimization platform designed for wealth management firms and high-net-worth clients.
 
-## Features
+Install NPM packages:
+npm install
 
-- 🧮 Real-time tax calculations and optimizations
-- 🤖 AI-powered strategic insights using Anthropic Claude
-- 📊 Interactive charts and analysis
-- 💼 Professional wealth management interface
-- ⚡ Multiple tax strategy implementations
+This will install all the required dependencies, including React, Chart.js, and Tailwind CSS.
+Run the development server:
+npm start
 
-## Quick Deploy to Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/tax-strategy-calculator)
-
-## Manual Deployment Steps
-
-### 1. Fork/Clone this repository
-
-### 2. Deploy to Vercel
-
-1. Go to [vercel.com](https://vercel.com)
-2. Connect your GitHub account
-3. Import your repository
-4. Add environment variable: `ANTHROPIC_API_KEY`
-5. Deploy!
-
-### 3. Set up Environment Variables
-
-In Vercel dashboard:
-- Go to your project settings
-- Navigate to "Environment Variables"
-- Add: `ANTHROPIC_API_KEY` = `your_actual_api_key`
-
-### 4. Get Anthropic API Key
-
-1. Visit [console.anthropic.com](https://console.anthropic.com)
-2. Sign up/login
-3. Go to API Keys section
-4. Create new key
-5. Copy the key to Vercel environment variables
-
-## Local Development
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/tax-strategy-calculator.git
-cd tax-strategy-calculator
-```
-
-2. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
-
-3. Create `.env.local` file:
-```bash
-ANTHROPIC_API_KEY=your_api_key_here
-```
-
-4. Run development server:
-```bash
-vercel dev
-```
-
-5. Open http://localhost:3000
-
-## Alternative Deployment Options
-
-### Netlify
-- Connect GitHub repository
-- Add environment variable: `ANTHROPIC_API_KEY`
-- Use `netlify/functions/anthropic.js` instead of `api/anthropic.js`
-
-### Railway
-```bash
-railway login
-railway init
-railway up
-```
-
-### Render
-- Connect GitHub repository
-- Set environment variable
-- Deploy as static site with API routes
-
-## Security Notes
-
-- ✅ API keys are stored securely in environment variables
-- ✅ No sensitive data exposed in frontend
-- ✅ CORS properly configured
-- ✅ Request validation implemented
-
-## Support
-
-For issues or questions, please open a GitHub issue or contact support.
-
-## License
-
-MIT License - see LICENSE file for details.
+This runs the app in development mode. Open http://localhost:3000 to view it in your browser. The page will reload when you make changes.
+🛠️ Built With
+React: The web framework used.
+Chart.js: For creating interactive charts.
+Tailwind CSS: For styling the user interface.
+Create React App: For project setup and scripts.
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
