@@ -2,10 +2,8 @@
   "name": "tax-strategy-calculator",
   "version": "1.0.0",
   "description": "Professional Tax Strategy Calculator with AI-powered insights",
-  "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build step needed for static site'",
     "deploy": "vercel --prod"
   },
   "keywords": [
@@ -16,9 +14,5 @@
     "ai"
   ],
   "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "vercel": "^32.0.0"
-  }
+  "license": "MIT"
 }
