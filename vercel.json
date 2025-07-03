@@ -1,4 +1,7 @@
 {
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": "./",
+  "installCommand": "echo 'No install needed'",
   "functions": {
     "api/anthropic.js": {
       "maxDuration": 30
@@ -21,6 +24,12 @@
           "value": "Content-Type, Authorization"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
     }
   ]
 }
