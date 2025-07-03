@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic Tax Advisory Platform | Able Wealth Management</title>
+    <title>Strategic Tax Analysis Platform | Able Wealth Management</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -515,109 +515,18 @@
             line-height: 1.5;
         }
 
-        .ai-section {
-            background: linear-gradient(135deg, var(--accent-gold) 0%, #b8860b 100%);
-            border-radius: var(--radius-xl);
-            padding: 3rem;
-            color: var(--text-primary);
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ai-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
             border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .ai-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .ai-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .ai-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .ai-input-group {
-            margin-bottom: 2rem;
-        }
-
-        .ai-input {
-            width: 100%;
-            height: 48px;
-            padding: 0 1rem;
-            border: 2px solid rgba(15, 23, 42, 0.2);
-            border-radius: var(--radius-md);
-            font-size: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-        }
-
-        .ai-input:focus {
-            outline: none;
-            border-color: var(--primary-navy);
-            background: white;
-        }
-
-        .ai-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: var(--primary-navy);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: var(--radius-md);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .ai-button:hover:not(:disabled) {
-            background: var(--primary-blue);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .ai-button:disabled {
-            background: var(--text-muted);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .ai-disclaimer {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 1rem;
-        }
-
-        .ai-response {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            margin-top: 2rem;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            line-height: 1.7;
-            font-size: 14px;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .data-table {
@@ -657,20 +566,6 @@
 
         .text-right { text-align: right; }
         .text-center { text-align: center; }
-
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
 
         .footer {
             text-align: center;
@@ -721,29 +616,6 @@
         .elevation-2 { box-shadow: var(--shadow-md); }
         .elevation-3 { box-shadow: var(--shadow-lg); }
         .elevation-4 { box-shadow: var(--shadow-xl); }
-
-        .api-notice {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 1px solid #f59e0b;
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .api-notice-title {
-            font-weight: 600;
-            color: #92400e;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .api-notice-text {
-            font-size: 14px;
-            color: #92400e;
-            line-height: 1.5;
-        }
     </style>
 </head>
 <body>
@@ -839,8 +711,6 @@
         const STANDARD_DEDUCTION = 29200;
 
         function WealthManagementApp() {
-            const [aiInsights, setAiInsights] = useState(null);
-            const [loadingAI, setLoadingAI] = useState(false);
             const [clientData, setClientData] = useState({
                 w2_income: 500000,
                 business_income: 2000000,
@@ -1166,108 +1036,6 @@
             const baseline = useMemo(() => calculateBaseline(), [clientData]);
             const withStrategies = useMemo(() => calculateWithStrategies(), [clientData, enabledStrategies]);
 
-            const generateAIInsights = async () => {
-                setLoadingAI(true);
-                
-                const totalIncome = clientData.w2_income + clientData.business_income + clientData.capital_gains;
-                const totalSavings = baseline.total_tax - withStrategies.total_tax;
-                const savingsRate = baseline.total_tax > 0 ? (totalSavings / baseline.total_tax) * 100 : 0;
-
-                const prompt = `You are a senior tax strategist at a premier wealth management firm. Analyze this high-net-worth client's tax situation and provide sophisticated, actionable insights:
-
-CLIENT PROFILE:
-- W-2 Income: ${formatCurrency(clientData.w2_income)}
-- Business Income: ${formatCurrency(clientData.business_income)}
-- Capital Gains: ${formatCurrency(clientData.capital_gains)}
-- State: ${clientData.state}
-- Total Income: ${formatCurrency(totalIncome)}
-
-CURRENT OPTIMIZATION:
-- Baseline Tax Liability: ${formatCurrency(baseline.total_tax)}
-- Optimized Tax Liability: ${formatCurrency(withStrategies.total_tax)}
-- Total Tax Savings: ${formatCurrency(totalSavings)}
-- Effective Savings Rate: ${formatPercentage(savingsRate)}
-
-ACTIVE STRATEGIES:
-${Object.entries(enabledStrategies).filter(([_, enabled]) => enabled).map(([id, _]) => {
-    const strategy = STRATEGIES.find(s => s.id === id);
-    return `- ${strategy.name}: ${strategy.description}`;
-}).join('\n')}
-
-STRATEGY PERFORMANCE:
-${withStrategies.strategy_impacts.map(impact => 
-    `- ${impact.strategy}: ${formatCurrency(impact.total_savings)} total savings`
-).join('\n')}
-
-Provide a comprehensive wealth management analysis including strategy effectiveness, advanced optimization opportunities, risk management, implementation roadmap, and long-term wealth preservation strategies. Format as a professional report with specific recommendations.`;
-
-                try {
-                    // Using Vercel Serverless Function
-                    const response = await fetch('/api/anthropic', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            clientData: clientData,
-                            baseline: baseline,
-                            withStrategies: withStrategies
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        setAiInsights(data.content);
-                    } else {
-                        throw new Error(data.error);
-                    }
-
-                } catch (error) {
-                    console.error('Error generating AI insights:', error);
-                    
-                    // Fallback: Show demo insights if backend is not available
-                    setAiInsights(`⚠️ Backend service not available. Showing demonstration analysis:
-
-EXECUTIVE SUMMARY:
-Your current optimization strategy achieves a ${formatPercentage(savingsRate)} tax reduction, representing ${formatCurrency(totalSavings)} in annual savings.
-
-KEY STRATEGIC RECOMMENDATIONS:
-
-1. **ESTATE PLANNING OPTIMIZATION**
-   Given your ${formatCurrency(totalIncome)} total income, consider advanced estate planning structures:
-   - Grantor Retained Annuity Trusts (GRATs) for wealth transfer
-   - Private Placement Life Insurance (PPLI) for tax-efficient accumulation
-   - Family Limited Partnerships for asset protection
-
-2. **INTERNATIONAL TAX PLANNING**
-   - Evaluate offshore investment structures for additional optimization
-   - Consider Puerto Rico Act 60 benefits for qualifying businesses
-   - Review international treaty opportunities
-
-3. **BUSINESS STRUCTURE ENHANCEMENT**
-   - Assess C-Corporation conversion for potential additional savings
-   - Implement advanced deferred compensation arrangements
-   - Optimize entity structure for maximum QBI benefits
-
-4. **IMPLEMENTATION PRIORITIES**
-   - Q1: Finalize retirement plan contributions
-   - Q2: Execute charitable giving strategies
-   - Q3: Review and adjust quarterly estimated payments
-   - Q4: Year-end planning and strategy refinement
-
-To access full AI-powered analysis, deploy with a backend proxy server.`);
-                    
-                } finally {
-                    setLoadingAI(false);
-                }
-            };
-
             const handleInputChange = (field, value) => {
                 if (field === 'state' || field === 'pension_plan_type') {
                     setClientData(prev => ({ ...prev, [field]: value }));
@@ -1365,15 +1133,16 @@ To access full AI-powered analysis, deploy with a backend proxy server.`);
                 <div className="app-container">
                     <div className="header-bar">
                         <div className="logo-section">
-                            <div className="logo-icon">AW</div>
+                            <div className="logo-icon">WM</div>
                             <div className="brand-info">
-                                <h1>Able Wealth Management</h1>
+                                <h1>Strategic Tax Analysis</h1>
+                                <p>Able Wealth Management</p>
                             </div>
                         </div>
                         <div className="header-actions">
                             <div className="status-badge">
                                 <div className="status-dot"></div>
-                                Enterprise Platform
+                                Able Wealth Platform
                             </div>
                         </div>
                     </div>
@@ -1393,57 +1162,12 @@ To access full AI-powered analysis, deploy with a backend proxy server.`);
                                         <span>✓</span> Multi-strategy optimization
                                     </div>
                                     <div className="hero-feature">
-                                        <span>✓</span> AI-powered insights
+                                        <span>✓</span> Professional analysis
                                     </div>
                                     <div className="hero-feature">
-                                        <span>✓</span> Institutional-grade analysis
+                                        <span>✓</span> Institutional-grade reporting
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="ai-section">
-                            <div className="ai-content">
-                                <div className="ai-header">
-                                    <span style={{fontSize: '28px'}}>🧠</span>
-                                    <h2 className="ai-title">AI-Powered Advisory Intelligence</h2>
-                                </div>
-                                
-                                <div className="api-notice">
-                                    <div className="api-notice-title">
-                                        ✅ AI Integration Status
-                                    </div>
-                                    <div className="api-notice-text">
-                                        This application uses a secure backend proxy to access AI services. No API keys required from users. For demonstration purposes, fallback analysis will be shown if backend is unavailable.
-                                    </div>
-                                </div>
-
-                                <div className="ai-input-group">
-                                    <button 
-                                        className="ai-button"
-                                        onClick={generateAIInsights}
-                                        disabled={loadingAI}
-                                    >
-                                        {loadingAI ? (
-                                            <>
-                                                <div className="loading-spinner"></div>
-                                                Generating Strategic Analysis...
-                                            </>
-                                        ) : (
-                                            <>
-                                                🚀 Generate Comprehensive Wealth Management Report
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                                
-                                <div className="ai-disclaimer">
-                                    AI analysis is processed through secure backend services with enterprise-grade security and privacy protection for all client data.
-                                </div>
-
-                                {aiInsights && (
-                                    <div className="ai-response">{aiInsights}</div>
-                                )}
                             </div>
                         </div>
 
@@ -1766,7 +1490,8 @@ To access full AI-powered analysis, deploy with a backend proxy server.`);
                     </div>
 
                     <div className="footer">
-                        <p>© 2024 Able Wealth Management LLC. All rights reserved.</p>
+                        <p>Strategic Tax Analysis Platform | Able Wealth Management</p>
+                        <p>© 2025 Able Wealth Management LLC. All rights reserved.</p>
                     </div>
                 </div>
             );
