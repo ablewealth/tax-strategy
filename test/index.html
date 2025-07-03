@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic Tax Analysis Platform</title>
+    <title>Strategic Tax Analysis and Optimization Platform</title>
 
     <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -88,8 +88,8 @@
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
             border-radius: var(--radius-md);
             display: flex;
@@ -120,6 +120,26 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+        
+        .print-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .print-button:hover {
+            background: var(--primary-navy);
+            box-shadow: var(--shadow-md);
         }
 
         .status-badge {
@@ -531,6 +551,106 @@
             height: 400px;
             width: 100%;
         }
+        
+        /* Print-specific styles */
+        .printable-area {
+            display: none; /* Hidden by default */
+        }
+
+        @media print {
+            /* Hide everything on the page */
+            body * {
+                visibility: hidden;
+            }
+            
+            /* Make only the printable area and its children visible */
+            .printable-area, .printable-area * {
+                visibility: visible;
+            }
+
+            /* Position the printable area at the top of the page */
+            .printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                font-family: 'Times New Roman', Times, serif;
+                color: #000;
+            }
+            
+            .print-header {
+                text-align: center;
+                margin-bottom: 40px;
+                border-bottom: 2px solid #333;
+                padding-bottom: 20px;
+            }
+            .print-header h1 {
+                font-size: 28px;
+                font-weight: bold;
+                margin: 0;
+            }
+            .print-header p {
+                font-size: 14px;
+                margin: 5px 0 0;
+            }
+            
+            .print-section {
+                margin-bottom: 30px;
+            }
+            
+            .print-section-title {
+                font-size: 20px;
+                font-weight: bold;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 8px;
+                margin-bottom: 15px;
+            }
+            
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: left;
+            }
+            .print-table th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+            .print-table td:nth-child(2) {
+                text-align: right;
+            }
+            
+            .print-insights-list {
+                list-style-position: inside;
+                padding-left: 0;
+            }
+            
+            .print-insight-item {
+                font-size: 14px;
+                margin-bottom: 10px;
+                padding: 10px;
+                border: 1px solid #eee;
+                border-radius: 4px;
+            }
+            
+            .print-insight-item.success {
+                border-left: 3px solid #059669;
+            }
+            
+            .print-insight-item.warning {
+                border-left: 3px solid #d97706;
+            }
+            
+             /* Ensure no page breaks inside tables or sections where possible */
+            .print-section, .print-table {
+                page-break-inside: avoid;
+            }
+        }
+
 
         @media (max-width: 768px) {
             .main-content {
@@ -570,8 +690,10 @@
 </head>
 <body>
     <div id="root"></div>
+    <div id="print-mount"></div>
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+        const { createRoot } = ReactDOM;
 
         // Icon mappings
         const strategyIcons = {
@@ -767,17 +889,16 @@
             for (const bracket of brackets) {
                 if (remainingIncome <= 0) break;
                 const bracketMin = bracket.min || 0;
-                const bracketMax = bracket.max === Infinity ? remainingIncome + bracketMin : bracket.max;
-                const taxableInBracket = Math.min(remainingIncome, bracketMax - bracketMin);
-
+                const taxableInBracket = Math.max(0, Math.min(income, bracket.max) - bracketMin);
+                
                 if (taxableInBracket > 0) {
-                    tax += taxableInBracket * bracket.rate;
-                    remainingIncome -= taxableInBracket;
+                     tax += (Math.min(remainingIncome, taxableInBracket)) * bracket.rate;
+                     remainingIncome -= taxableInBracket;
                 }
             }
             return Math.max(0, tax);
         };
-
+        
         // Chart Components
         const TaxComparisonChart = ({ baseline, withStrategies }) => {
             const chartRef = useRef(null);
@@ -983,13 +1104,13 @@
         };
 
         // Components
-        const Header = () => (
+        const Header = ({ onPrint }) => (
             <div className="header-bar">
                 <div className="logo-section">
-                    <div className="logo-icon">💼</div>
+                    <div className="logo-icon">AWM</div>
                     <div className="brand-info">
-                        <h1>Able Wealth Management</h1>
-                        <p>Strategic Tax Optimization</p>
+                        <h1>Advanced Tax Strategy Optimizer</h1>
+                        <p>Able Wealth Management</p>
                     </div>
                 </div>
                 <div className="header-actions">
@@ -997,6 +1118,13 @@
                         <div className="status-dot"></div>
                         Analysis Active
                     </div>
+                    <button onClick={onPrint} className="print-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Print Report
+                    </button>
                 </div>
             </div>
         );
@@ -1022,7 +1150,7 @@
                     <input
                         type="text"
                         name={name}
-                        value={data[name] || ''}
+                        value={data[name] ? new Intl.NumberFormat('en-US').format(data[name]) : ''}
                         onChange={handleInputChange}
                         className="form-input"
                         placeholder="$ 0"
@@ -1239,10 +1367,146 @@
                 </div>
             </div>
         );
+        
+        // Printable Report Component
+        const PrintableReport = ({ clientData, results }) => {
+            if (!results || !results.baseline) return null;
+            
+            const { baseline, withStrategies, enabledStrategies, strategyImpacts } = results;
+            const totalSavings = baseline.totalTax - withStrategies.totalTax;
+            const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            const inputDataMap = [
+                { label: 'W-2 Income', value: formatCurrency(clientData.w2Income) },
+                { label: 'Business Income', value: formatCurrency(clientData.businessIncome) },
+                { label: 'Long-Term Capital Gains', value: formatCurrency(clientData.capitalGains) },
+                { label: 'State of Residence', value: clientData.state },
+            ];
+            
+            const appliedStrategiesData = STRATEGY_LIBRARY
+                .filter(s => enabledStrategies[s.id])
+                .map(s => ({
+                    label: s.name,
+                    value: formatCurrency(clientData[s.inputRequired])
+                }));
+
+            return (
+                <div className="printable-area">
+                    <div className="print-header">
+                        <h1>Tax Optimization Analysis Report</h1>
+                        <p>Prepared by Able Wealth Management</p>
+                        <p>Date: {today}</p>
+                    </div>
+                    
+                    <div className="print-section">
+                        <h2 className="print-section-title">Executive Summary</h2>
+                        <table className="print-table">
+                            <tbody>
+                                <tr>
+                                    <td>Baseline Tax Liability</td>
+                                    <td>{formatCurrency(baseline.totalTax)}</td>
+                                </tr>
+                                <tr>
+                                    <td>Optimized Tax Liability</td>
+                                    <td>{formatCurrency(withStrategies.totalTax)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Potential Savings</th>
+                                    <th>{formatCurrency(totalSavings)}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="print-section">
+                        <h2 className="print-section-title">Client Financial Profile</h2>
+                        <table className="print-table">
+                           <thead>
+                               <tr>
+                                   <th>Parameter</th>
+                                   <th>Value</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                                {inputDataMap.map(item => (
+                                    <tr key={item.label}>
+                                        <td>{item.label}</td>
+                                        <td>{item.value}</td>
+                                    </tr>
+                                ))}
+                           </tbody>
+                        </table>
+                    </div>
+                    
+                    <div className="print-section">
+                        <h2 className="print-section-title">Applied Strategies & Investments</h2>
+                        <table className="print-table">
+                           <thead>
+                               <tr>
+                                   <th>Strategy / Investment</th>
+                                   <th>Amount</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                                {appliedStrategiesData.map(item => (
+                                    <tr key={item.label}>
+                                        <td>{item.label}</td>
+                                        <td>{item.value}</td>
+                                    </tr>
+                                ))}
+                           </tbody>
+                        </table>
+                    </div>
+
+                    <div className="print-section">
+                        <h2 className="print-section-title">Tax Liability Breakdown</h2>
+                        <table className="print-table">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Baseline Scenario</th>
+                                    <th>Optimized Scenario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Federal Tax</td>
+                                    <td>{formatCurrency(baseline.fedTax)}</td>
+                                    <td>{formatCurrency(withStrategies.fedTax)}</td>
+                                </tr>
+                                <tr>
+                                    <td>State Tax</td>
+                                    <td>{formatCurrency(baseline.stateTax)}</td>
+                                    <td>{formatCurrency(withStrategies.stateTax)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Tax Liability</th>
+                                    <th>{formatCurrency(baseline.totalTax)}</th>
+                                    <th>{formatCurrency(withStrategies.totalTax)}</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="print-section">
+                        <h2 className="print-section-title">Implementation Insights</h2>
+                        <ul className="print-insights-list">
+                            {withStrategies.insights.map((insight, index) => (
+                                <li key={index} className={`print-insight-item ${insight.type}`}>
+                                    <strong>{insight.type === 'warning' ? 'Consideration: ' : 'Benefit: '}</strong>
+                                    {insight.text}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        };
 
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            const printRootRef = useRef(null);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1265,12 +1529,11 @@
                     baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
                     baseline.totalTax = baseline.fedTax + baseline.stateTax;
 
-                    // --- STRATEGY CALCULATIONS (REFACTORED) ---
+                    // --- STRATEGY CALCULATIONS ---
                     const withStrategies = {};
                     let insights = [];
                     let strategyImpacts = [];
                     
-                    // Initialize income/deduction trackers
                     let qbiBaseIncome = clientData.businessIncome || 0;
                     let currentFedCapitalGains = clientData.capitalGains || 0;
                     let currentStateCapitalGains = clientData.capitalGains || 0;
@@ -1296,7 +1559,7 @@
                                     if (addBack > 0) insights.push({ type: 'warning', text: `NJ requires a ${formatCurrency(addBack)} depreciation add-back.` });
                                 }
                                 qbiBaseIncome -= fedDed;
-                                insights.push({ type: 'insight', text: `Section 179 provides a ${formatCurrency(fedDed)} federal deduction.` });
+                                insights.push({ type: 'success', text: `Section 179 provides a ${formatCurrency(fedDed)} federal deduction.` });
                                 break;
                             case 'SOLO401K_EMPLOYEE_01':
                                 fedDed = Math.min(clientData.solo401kEmployee || 0, 23000);
@@ -1305,26 +1568,25 @@
                                     njAddBack += fedDed;
                                     insights.push({ type: 'warning', text: `NJ taxes Solo 401(k) employee deferrals. ${formatCurrency(fedDed)} add-back required.` });
                                 }
-                                insights.push({ type: 'insight', text: `Solo 401(k) employee contribution of ${formatCurrency(fedDed)} reduces federal AGI.` });
+                                insights.push({ type: 'success', text: `Solo 401(k) employee contribution of ${formatCurrency(fedDed)} reduces federal AGI.` });
                                 break;
                             case 'SOLO401K_EMPLOYER_01':
                                 fedDed = clientData.solo401kEmployer || 0;
                                 stateDed = fedDed;
                                 qbiBaseIncome -= fedDed;
-                                insights.push({ type: 'insight', text: `Solo 401(k) employer contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                insights.push({ type: 'success', text: `Solo 401(k) employer contribution of ${formatCurrency(fedDed)} reduces business income.` });
                                 break;
                             case 'DB_PLAN_01':
                                 fedDed = clientData.dbContribution || 0;
                                 stateDed = fedDed;
                                 qbiBaseIncome -= fedDed;
-                                insights.push({ type: 'insight', text: `Defined Benefit plan contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                insights.push({ type: 'success', text: `Defined Benefit plan contribution of ${formatCurrency(fedDed)} reduces business income.` });
                                 break;
                         }
                         fedDeductions.aboveAGI += fedDed;
                         stateDeductions.total += stateDed;
                     });
 
-                    // --- Calculate AGI ---
                     const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
 
                     // --- Process Below-the-Line & Capital Deductions ---
@@ -1343,23 +1605,23 @@
                                 currentStateCapitalGains = currentStateCapitalGains - gainOffset + longTermGains;
                                 fedDeductions.belowAGI += ordinaryOffset;
                                 stateDeductions.total += ordinaryOffset;
-                                insights.push({ type: 'insight', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` });
+                                insights.push({ type: 'success', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` });
                                 break;
                             case 'CHAR_CLAT_01':
                                 fedDed = Math.min(clientData.charitableIntent || 0, fedAGI * 0.30);
                                 if (fedDed < (clientData.charitableIntent || 0)) insights.push({ type: 'warning', text: `Charitable deduction limited by AGI to ${formatCurrency(fedDed)}.` });
                                 if (clientData.state === 'NY') stateDed = fedDed * 0.5;
-                                insights.push({ type: 'insight', text: `CLAT provides a ${formatCurrency(fedDed)} federal itemized deduction.` });
+                                insights.push({ type: 'success', text: `CLAT provides a ${formatCurrency(fedDed)} federal itemized deduction.` });
                                 break;
                             case 'OG_USENERGY_01':
                                 fedDed = (clientData.ogInvestment || 0) * 0.70;
                                 if (clientData.state === 'NY') stateDed = fedDed;
-                                insights.push({ type: 'insight', text: `Oil & Gas investment generates a ${formatCurrency(fedDed)} deduction.` });
+                                insights.push({ type: 'success', text: `Oil & Gas investment generates a ${formatCurrency(fedDed)} deduction.` });
                                 break;
                             case 'FILM_SEC181_01':
                                 fedDed = clientData.filmInvestment || 0;
                                 if (clientData.state === 'NY') stateDed = fedDed;
-                                insights.push({ type: 'insight', text: `Film financing provides a ${formatCurrency(fedDed)} deduction.` });
+                                insights.push({ type: 'success', text: `Film financing provides a ${formatCurrency(fedDed)} deduction.` });
                                 break;
                         }
                         fedDeductions.belowAGI += fedDed;
@@ -1373,7 +1635,7 @@
                         if (fedTaxableIncomePreQBI <= threshold) {
                             const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
                             fedDeductions.qbi = qbiDeduction;
-                            insights.push({ type: 'insight', text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked.` });
+                            insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked.` });
                         } else {
                             insights.push({ type: 'warning', text: `Taxable income exceeds QBI threshold. No QBI deduction available.` });
                         }
@@ -1405,6 +1667,7 @@
                         .filter(s => enabledStrategies[s.id])
                         .map(s => {
                             const value = clientData[s.inputRequired] || 0;
+                            // This is a simplified approximation. A real calc would be more complex.
                             const saving = value * (fedMarginalRate + (clientData.state === 'NY' ? stateMarginalRate : 0));
                             return { name: s.name, savings: saving };
                         });
@@ -1431,10 +1694,23 @@
                     };
                 }
             }, [clientData]);
+            
+            // Effect to render the printable component into its dedicated DOM node
+            useEffect(() => {
+                const printContainer = document.getElementById('print-mount');
+                if (!printRootRef.current) {
+                    printRootRef.current = createRoot(printContainer);
+                }
+                printRootRef.current.render(<PrintableReport clientData={clientData} results={calculationResults} />);
+            }, [clientData, calculationResults]);
+
+            const handlePrint = () => {
+                window.print();
+            };
 
             return (
                 <div className="app-container">
-                    <Header />
+                    <Header onPrint={handlePrint} />
                     <div className="main-content">
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
@@ -1453,12 +1729,5 @@
             root.render(<App />);
         }
     </script>
-
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </body>
 </html>
