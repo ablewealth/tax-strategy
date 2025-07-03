@@ -1498,156 +1498,167 @@
                     baseline.totalTax = baseline.fedTax + baseline.stateTax;
 
                     // --- STRATEGY CALCULATIONS ---
-                    const withStrategies = {};
+                    let currentTax = baseline.totalTax;
+                    const withStrategies = { ...baseline }; // Start with baseline
                     let insights = [];
                     let strategyImpacts = [];
                     
-                    let qbiBaseIncome = clientData.businessIncome || 0;
-                    let currentFedCapitalGains = clientData.capitalGains || 0;
-                    let currentStateCapitalGains = clientData.capitalGains || 0;
-                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
-                    let stateDeductions = { total: 0 };
-                    let njAddBack = 0;
-                    
-                    // --- Process Above-the-Line Deductions to find AGI ---
-                    STRATEGY_LIBRARY.filter(s => s.type === 'aboveAGI' && enabledStrategies[s.id]).forEach(strategy => {
+                    let tempFedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let tempStateDeductions = { total: 0 };
+                    let tempNjAddBack = 0;
+                    let tempCurrentFedCapitalGains = clientData.capitalGains || 0;
+                    let tempCurrentStateCapitalGains = clientData.capitalGains || 0;
+                    let tempQbiBaseIncome = clientData.businessIncome || 0;
+
+                    const calculateCurrentTotalTax = (fedDeductions, stateDeductions, njAddBack, currentFedCG, currentStateCG, qbiBaseIncome) => {
+                        const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                        
+                        let qbiDeduction = 0;
+                        if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
+                            const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
+                            const threshold = 383900;
+                            if (fedTaxableIncomePreQBI <= threshold) {
+                                qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                            }
+                        }
+
+                        const fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - qbiDeduction);
+                        const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
+                        const fedCapitalGainsTax = Math.max(0, currentFedCG) * 0.20;
+                        const fedTax = fedOrdinaryTax + fedCapitalGainsTax;
+
+                        const stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - stateDeductions.total + njAddBack + currentStateCG);
+                        const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
+                        
+                        return fedTax + stateTax;
+                    };
+
+
+                    STRATEGY_LIBRARY.filter(s => enabledStrategies[s.id] && s.type !== 'qbi').forEach(strategy => {
+                        const taxBefore = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
+
                         let fedDed = 0;
                         let stateDed = 0;
-                        
+
                         switch (strategy.id) {
-                            case 'EQUIP_S179_01':
-                                fedDed = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                             case 'EQUIP_S179_01':
+                                fedDed = Math.min(clientData.equipmentCost || 0, tempQbiBaseIncome, 1220000);
                                 if (clientData.state === 'NY') {
                                     stateDed = fedDed;
                                 } else { // NJ
                                     const njDed = Math.min(clientData.equipmentCost || 0, 25000);
                                     const addBack = Math.max(0, (clientData.equipmentCost || 0) - njDed);
                                     stateDed = njDed;
-                                    njAddBack += addBack;
+                                    tempNjAddBack += addBack;
                                     if (addBack > 0) insights.push({ type: 'warning', text: `NJ requires a ${formatCurrency(addBack)} depreciation add-back.` });
                                 }
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Section 179 provides a ${formatCurrency(fedDed)} federal deduction.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'SOLO401K_EMPLOYEE_01':
                                 fedDed = Math.min(clientData.solo401kEmployee || 0, 23000);
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 else { // NJ
-                                    njAddBack += fedDed;
+                                    tempNjAddBack += fedDed;
                                     insights.push({ type: 'warning', text: `NJ taxes Solo 401(k) employee deferrals. ${formatCurrency(fedDed)} add-back required.` });
                                 }
                                 insights.push({ type: 'success', text: `Solo 401(k) employee contribution of ${formatCurrency(fedDed)} reduces federal AGI.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'SOLO401K_EMPLOYER_01':
                                 fedDed = clientData.solo401kEmployer || 0;
                                 stateDed = fedDed;
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Solo 401(k) employer contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'DB_PLAN_01':
                                 fedDed = clientData.dbContribution || 0;
                                 stateDed = fedDed;
-                                qbiBaseIncome -= fedDed;
+                                tempQbiBaseIncome -= fedDed;
                                 insights.push({ type: 'success', text: `Defined Benefit plan contribution of ${formatCurrency(fedDed)} reduces business income.` });
+                                tempFedDeductions.aboveAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
-                        }
-                        fedDeductions.aboveAGI += fedDed;
-                        stateDeductions.total += stateDed;
-                    });
-
-                    const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
-
-                    // --- Process Below-the-Line & Capital Deductions ---
-                    STRATEGY_LIBRARY.filter(s => (s.type === 'belowAGI' || s.type === 'capital') && enabledStrategies[s.id]).forEach(strategy => {
-                        let fedDed = 0;
-                        let stateDed = 0;
-                        switch (strategy.id) {
                             case 'QUANT_DEALS_01':
                                 const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
                                 const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
                                 const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
-                                const gainOffset = Math.min(currentFedCapitalGains, shortTermLosses);
+                                const gainOffset = Math.min(tempCurrentFedCapitalGains, shortTermLosses);
                                 const ordinaryOffset = Math.min(3000, shortTermLosses - gainOffset);
                                 
-                                currentFedCapitalGains = currentFedCapitalGains - gainOffset + longTermGains;
-                                currentStateCapitalGains = currentStateCapitalGains - gainOffset + longTermGains;
-                                fedDeductions.belowAGI += ordinaryOffset;
-                                stateDeductions.total += ordinaryOffset;
+                                tempCurrentFedCapitalGains = tempCurrentFedCapitalGains - gainOffset + longTermGains;
+                                tempCurrentStateCapitalGains = tempCurrentStateCapitalGains - gainOffset + longTermGains;
+                                tempFedDeductions.belowAGI += ordinaryOffset;
+                                tempStateDeductions.total += ordinaryOffset;
                                 insights.push({ type: 'success', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` });
                                 break;
                             case 'CHAR_CLAT_01':
-                                fedDed = Math.min(clientData.charitableIntent || 0, fedAGI * 0.30);
+                                const fedAGIForClat = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - tempFedDeductions.aboveAGI;
+                                fedDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                                 if (fedDed < (clientData.charitableIntent || 0)) insights.push({ type: 'warning', text: `Charitable deduction limited by AGI to ${formatCurrency(fedDed)}.` });
                                 if (clientData.state === 'NY') stateDed = fedDed * 0.5;
                                 insights.push({ type: 'success', text: `CLAT provides a ${formatCurrency(fedDed)} federal itemized deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'OG_USENERGY_01':
                                 fedDed = (clientData.ogInvestment || 0) * 0.70;
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 insights.push({ type: 'success', text: `Oil & Gas investment generates a ${formatCurrency(fedDed)} deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                             case 'FILM_SEC181_01':
                                 fedDed = clientData.filmInvestment || 0;
                                 if (clientData.state === 'NY') stateDed = fedDed;
                                 insights.push({ type: 'success', text: `Film financing provides a ${formatCurrency(fedDed)} deduction.` });
+                                tempFedDeductions.belowAGI += fedDed;
+                                tempStateDeductions.total += stateDed;
                                 break;
                         }
-                        fedDeductions.belowAGI += fedDed;
-                        stateDeductions.total += stateDed;
+
+                        const taxAfter = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
+                        const savings = taxBefore - taxAfter;
+                        if (savings > 0) {
+                            strategyImpacts.push({ name: strategy.name, savings: savings });
+                        }
                     });
+
+                    // QBI Calculation (final step)
+                    const taxBeforeQBI = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
                     
-                    // --- Process QBI Deduction ---
-                    if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
-                        const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
+                    const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - tempFedDeductions.aboveAGI;
+                    let qbiDeduction = 0;
+                    if (enabledStrategies['QBI_FINAL_01'] && tempQbiBaseIncome > 0) {
+                        const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - tempFedDeductions.belowAGI);
                         const threshold = 383900;
                         if (fedTaxableIncomePreQBI <= threshold) {
-                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
-                            fedDeductions.qbi = qbiDeduction;
+                            qbiDeduction = Math.min(tempQbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
                             insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked.` });
                         } else {
                             insights.push({ type: 'warning', text: `Taxable income exceeds QBI threshold. No QBI deduction available.` });
                         }
                     }
+                    tempFedDeductions.qbi = qbiDeduction;
 
-                    // --- FINAL CALCULATIONS ---
-                    withStrategies.fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi);
+                    withStrategies.fedTaxableIncome = Math.max(0, fedAGI - STANDARD_DEDUCTION - tempFedDeductions.belowAGI - tempFedDeductions.qbi);
                     withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
-                    withStrategies.fedCapitalGainsTax = Math.max(0, currentFedCapitalGains) * 0.20;
+                    withStrategies.fedCapitalGainsTax = Math.max(0, tempCurrentFedCapitalGains) * 0.20;
                     withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
 
-                    withStrategies.stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - stateDeductions.total + njAddBack + currentStateCapitalGains);
+                    withStrategies.stateTaxableIncome = Math.max(0, baseline.ordinaryIncome - tempStateDeductions.total + tempNjAddBack + tempCurrentStateCapitalGains);
                     withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
                     withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
                     withStrategies.insights = insights;
-                    
-                    // --- Strategy Impact Calculation for new chart ---
-                    const totalSavings = baseline.totalTax - withStrategies.totalTax;
-                    const getMarginalRate = (income, brackets) => {
-                        for (const bracket of brackets) {
-                            if (income >= (bracket.min || 0) && income <= bracket.max) return bracket.rate;
-                        }
-                        return brackets[brackets.length - 1].rate;
-                    };
-                    const fedMarginalRate = getMarginalRate(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
-                    const stateMarginalRate = getMarginalRate(withStrategies.stateTaxableIncome, stateBrackets);
 
-                    const approxImpacts = STRATEGY_LIBRARY
-                        .filter(s => enabledStrategies[s.id])
-                        .map(s => {
-                            const value = clientData[s.inputRequired] || 0;
-                            const saving = value * (fedMarginalRate + (clientData.state === 'NY' ? stateMarginalRate : 0));
-                            return { name: s.name, savings: saving };
-                        });
-
-                    const totalApproxSavings = approxImpacts.reduce((sum, impact) => sum + impact.savings, 0);
-                    
-                    if (totalApproxSavings > 0) {
-                        strategyImpacts = approxImpacts.map(impact => ({
-                            ...impact,
-                            savings: (impact.savings / totalApproxSavings) * totalSavings
-                        }));
-                    } else {
-                        strategyImpacts = [];
+                    const qbiSavings = taxBeforeQBI - withStrategies.totalTax;
+                    if (qbiSavings > 0) {
+                        strategyImpacts.push({ name: 'QBI Optimization', savings: qbiSavings });
                     }
 
                     return { baseline, withStrategies, enabledStrategies, strategyImpacts };
