@@ -614,6 +614,12 @@
             .print-insight-item.warning {
                 border-left: 3px solid #d97706;
             }
+
+            .print-chart-image {
+                max-width: 100%;
+                height: auto;
+                margin-bottom: 20px;
+            }
             
             .print-footer {
                 margin-top: 30px;
@@ -882,7 +888,7 @@
         };
         
         // Chart Components
-        const TaxComparisonChart = ({ baseline, withStrategies }) => {
+        const TaxComparisonChart = ({ baseline, withStrategies, onChartRender }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
@@ -917,6 +923,13 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            onComplete: () => {
+                                if(chartInstance.current) {
+                                    onChartRender(chartInstance.current.toBase64Image());
+                                }
+                            }
+                        },
                         scales: {
                             x: {
                                 stacked: true,
@@ -966,7 +979,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, withStrategies]);
+            }, [baseline, withStrategies, onChartRender]);
 
             return (
                 <div className="chart-container">
@@ -979,7 +992,7 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax }) => {
+        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, onChartRender }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
@@ -1012,6 +1025,9 @@
                 labels.push('Optimized');
                 waterfallData.push([0, finalTax / 1000]);
                 colors.push('rgba(212, 175, 55, 0.9)');
+                
+                // Dynamically set the y-axis min to "zoom in"
+                const yMin = finalTax > 0 ? (finalTax / 1000) * 0.95 : 0;
 
                 const ctx = chartRef.current.getContext('2d');
                 chartInstance.current = new Chart(ctx, {
@@ -1028,13 +1044,20 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         indexAxis: 'x',
+                        animation: {
+                            onComplete: () => {
+                                if(chartInstance.current) {
+                                    onChartRender(chartInstance.current.toBase64Image());
+                                }
+                            }
+                        },
                         scales: {
                             x: {
                                 grid: { display: false },
                                 ticks: { font: { family: 'Inter', size: 10 } }
                             },
                             y: {
-                                beginAtZero: true,
+                                min: yMin,
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
@@ -1072,7 +1095,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax]);
+            }, [baseline, strategyImpacts, finalTax, onChartRender]);
 
             return (
                 <div className="chart-container">
@@ -1311,7 +1334,7 @@
             );
         };
 
-        const ChartsSection = ({ results }) => {
+        const ChartsSection = ({ results, onComparisonRender, onWaterfallRender }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1321,11 +1344,13 @@
                     <TaxComparisonChart 
                         baseline={results.baseline} 
                         withStrategies={results.withStrategies}
+                        onChartRender={onComparisonRender}
                     />
                     <WaterfallChart 
                         baseline={results.baseline}
                         strategyImpacts={results.strategyImpacts || []}
                         finalTax={results.withStrategies.totalTax}
+                        onChartRender={onWaterfallRender}
                     />
                 </div>
             );
@@ -1383,26 +1408,12 @@
         );
 
         // Printable Report Component
-        const PrintableReport = ({ clientData, results }) => {
+        const PrintableReport = ({ clientData, results, chartImages }) => {
             if (!results || !results.baseline) return null;
             
             const { baseline, withStrategies, enabledStrategies } = results;
             const totalSavings = baseline.totalTax - withStrategies.totalTax;
             const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-            const inputDataMap = [
-                { label: 'W-2 Income', value: formatCurrency(clientData.w2Income) },
-                { label: 'Business Income', value: formatCurrency(clientData.businessIncome) },
-                { label: 'Long-Term Capital Gains', value: formatCurrency(clientData.capitalGains) },
-                { label: 'State of Residence', value: clientData.state },
-            ];
-            
-            const appliedStrategiesData = STRATEGY_LIBRARY
-                .filter(s => enabledStrategies[s.id])
-                .map(s => ({
-                    label: s.name,
-                    value: formatCurrency(clientData[s.inputRequired])
-                }));
 
             return (
                 <div className="printable-area">
@@ -1431,6 +1442,12 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <div className="print-section">
+                        <h2 className="print-section-title">Visual Analysis</h2>
+                        {chartImages.comparison && <img src={chartImages.comparison} className="print-chart-image" alt="Tax Comparison Chart" />}
+                        {chartImages.waterfall && <img src={chartImages.waterfall} className="print-chart-image" alt="Waterfall Analysis Chart" />}
+                    </div>
 
                     <div className="print-section">
                         <h2 className="print-section-title">Client Financial Profile</h2>
@@ -1442,12 +1459,10 @@
                                </tr>
                            </thead>
                            <tbody>
-                                {inputDataMap.map(item => (
-                                    <tr key={item.label}>
-                                        <td>{item.label}</td>
-                                        <td>{item.value}</td>
-                                    </tr>
-                                ))}
+                                <tr><td>W-2 Income</td><td>{formatCurrency(clientData.w2Income)}</td></tr>
+                                <tr><td>Business Income</td><td>{formatCurrency(clientData.businessIncome)}</td></tr>
+                                <tr><td>Long-Term Capital Gains</td><td>{formatCurrency(clientData.capitalGains)}</td></tr>
+                                <tr><td>State of Residence</td><td>{clientData.state}</td></tr>
                            </tbody>
                         </table>
                     </div>
@@ -1462,43 +1477,16 @@
                                </tr>
                            </thead>
                            <tbody>
-                                {appliedStrategiesData.map(item => (
-                                    <tr key={item.label}>
-                                        <td>{item.label}</td>
-                                        <td>{item.value}</td>
-                                    </tr>
-                                ))}
+                                {STRATEGY_LIBRARY
+                                    .filter(s => enabledStrategies[s.id])
+                                    .map(s => (
+                                        <tr key={s.id}>
+                                            <td>{s.name}</td>
+                                            <td>{formatCurrency(clientData[s.inputRequired])}</td>
+                                        </tr>
+                                    ))
+                                }
                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="print-section">
-                        <h2 className="print-section-title">Tax Liability Breakdown</h2>
-                        <table className="print-table">
-                            <thead>
-                                <tr>
-                                    <th>Component</th>
-                                    <th>Baseline Scenario</th>
-                                    <th>Optimized Scenario</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Federal Tax</td>
-                                    <td>{formatCurrency(baseline.fedTax)}</td>
-                                    <td>{formatCurrency(withStrategies.fedTax)}</td>
-                                </tr>
-                                <tr>
-                                    <td>State Tax</td>
-                                    <td>{formatCurrency(baseline.stateTax)}</td>
-                                    <td>{formatCurrency(withStrategies.stateTax)}</td>
-                                </tr>
-                                <tr>
-                                    <th>Total Tax Liability</th>
-                                    <th>{formatCurrency(baseline.totalTax)}</th>
-                                    <th>{formatCurrency(withStrategies.totalTax)}</th>
-                                </tr>
-                            </tbody>
                         </table>
                     </div>
 
@@ -1527,6 +1515,7 @@
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            const [chartImages, setChartImages] = useState({ comparison: null, waterfall: null });
             const printRootRef = useRef(null);
 
             const calculationResults = useMemo(() => {
@@ -1688,7 +1677,6 @@
                         .filter(s => enabledStrategies[s.id])
                         .map(s => {
                             const value = clientData[s.inputRequired] || 0;
-                            // This is a simplified approximation. A real calc would be more complex.
                             const saving = value * (fedMarginalRate + (clientData.state === 'NY' ? stateMarginalRate : 0));
                             return { name: s.name, savings: saving };
                         });
@@ -1722,8 +1710,8 @@
                 if (!printRootRef.current) {
                     printRootRef.current = createRoot(printContainer);
                 }
-                printRootRef.current.render(<PrintableReport clientData={clientData} results={calculationResults} />);
-            }, [clientData, calculationResults]);
+                printRootRef.current.render(<PrintableReport clientData={clientData} results={calculationResults} chartImages={chartImages} />);
+            }, [clientData, calculationResults, chartImages]);
 
             const handlePrint = () => {
                 window.print();
@@ -1736,7 +1724,11 @@
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
                         <ResultsDashboard results={calculationResults} />
-                        <ChartsSection results={calculationResults} />
+                        <ChartsSection 
+                            results={calculationResults}
+                            onComparisonRender={(img) => setChartImages(prev => ({...prev, comparison: img}))}
+                            onWaterfallRender={(img) => setChartImages(prev => ({...prev, waterfall: img}))}
+                        />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                     <AppFooter />
