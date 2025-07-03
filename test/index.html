@@ -790,12 +790,12 @@
         };
 
         // Chart Components
-        const TaxComparisonChart = ({ baseline, withStrategies }) => {
+        const TaxComparisonChart = ({ baseline, withStrategies, isReady }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!chartRef.current || !baseline || !withStrategies) return;
+                if (!isReady || !chartRef.current || !baseline || !withStrategies) return;
 
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
@@ -897,7 +897,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, withStrategies]);
+            }, [baseline, withStrategies, isReady]);
 
             return (
                 <div className="chart-container">
@@ -910,12 +910,12 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax }) => {
+        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, isReady }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!chartRef.current || !baseline || !strategyImpacts) return;
+                if (!isReady || !chartRef.current || !baseline || !strategyImpacts) return;
 
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
@@ -1008,7 +1008,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax]);
+            }, [baseline, strategyImpacts, finalTax, isReady]);
 
             return (
                 <div className="chart-container">
@@ -1217,7 +1217,7 @@
             );
         };
 
-        const ChartsSection = ({ results }) => {
+        const ChartsSection = ({ results, isReady }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1226,12 +1226,14 @@
                 <div className="charts-grid">
                     <TaxComparisonChart 
                         baseline={results.baseline} 
-                        withStrategies={results.withStrategies} 
+                        withStrategies={results.withStrategies}
+                        isReady={isReady}
                     />
                     <WaterfallChart 
                         baseline={results.baseline}
                         strategyImpacts={results.strategyImpacts || []}
                         finalTax={results.withStrategies.totalTax}
+                        isReady={isReady}
                     />
                 </div>
             );
@@ -1320,7 +1322,6 @@
                     // --- STRATEGY CALCULATIONS (REFACTORED) ---
                     const withStrategies = {};
                     let insights = [];
-                    // FIX: Declare strategyImpacts at the top of the try block
                     let strategyImpacts = [];
                     
                     // Initialize income/deduction trackers
@@ -1492,7 +1493,7 @@
                         <ClientInputSection data={clientData} setData={setClientData} />
                         <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
                         <ResultsDashboard results={calculationResults} />
-                        {isChartJsReady && <ChartsSection results={calculationResults} />}
+                        <ChartsSection results={calculationResults} isReady={isChartJsReady} />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
                 </div>
@@ -1500,7 +1501,6 @@
         }
 
         // Initialize app
-        // FIX: Use modern createRoot API for React 18
         if (window.React && window.ReactDOM) {
             const container = document.getElementById('root');
             const root = ReactDOM.createRoot(container);
