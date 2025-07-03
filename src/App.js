@@ -318,6 +318,35 @@ const ChartsSection = ({ results }) => (
     </div>
 );
 
+const InsightsSection = ({ insights }) => (
+    <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">💡 Strategic Implementation Insights</h3>
+        <div className="space-y-3">
+            {insights && insights.length > 0 ? (
+                insights.map((insight, index) => (
+                    <div key={index} className={`p-3 rounded-md flex items-start text-sm ${
+                        insight.type === 'success' ? 'bg-green-50 text-green-800' :
+                        insight.type === 'warning' ? 'bg-yellow-50 text-yellow-800' :
+                        'bg-blue-50 text-blue-800'
+                    }`}>
+                        <span className="mr-3 text-lg">{
+                            insight.type === 'success' ? '✅' :
+                            insight.type === 'warning' ? '⚠️' : 'ℹ️'
+                        }</span>
+                        <span>{insight.text}</span>
+                    </div>
+                ))
+            ) : (
+                <div className="p-3 rounded-md flex items-start text-sm bg-gray-50 text-gray-600">
+                    <span className="mr-3 text-lg">ℹ️</span>
+                    <span>Enable strategies and enter investment amounts to generate personalized insights.</span>
+                </div>
+            )}
+        </div>
+    </div>
+);
+
+
 // --- Calculation Logic Hook ---
 
 const useTaxCalculations = (scenario) => {
@@ -346,6 +375,7 @@ const useTaxCalculations = (scenario) => {
             let stateDeductions = 0;
             let qbiBaseIncome = clientData.businessIncome || 0;
             let currentCapitalGains = clientData.capitalGains || 0;
+            let insights = [];
 
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
             allStrategies.forEach(strategy => {
@@ -356,14 +386,21 @@ const useTaxCalculations = (scenario) => {
                             const stLoss = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
                             const ltGain = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
                             const gainOffset = Math.min(currentCapitalGains, stLoss);
-                            fedDeductions.belowAGI += Math.min(3000, stLoss - gainOffset);
+                            const ordinaryOffset = Math.min(3000, stLoss - gainOffset);
+                            fedDeductions.belowAGI += ordinaryOffset;
                             currentCapitalGains = currentCapitalGains - gainOffset + ltGain;
+                            if (gainOffset > 0 || ordinaryOffset > 0) {
+                                insights.push({type: 'success', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.`});
+                            }
                             break;
                         case 'EQUIP_S179_01':
                             const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
                             qbiBaseIncome -= s179Ded;
                             fedDeductions.aboveAGI += s179Ded;
                             stateDeductions += Math.min(clientData.equipmentCost, 25000);
+                             if (s179Ded > 0) {
+                                insights.push({type: 'success', text: `Section 179 provides a federal deduction of ${formatCurrency(s179Ded)}.`});
+                            }
                             break;
                         case 'SOLO401K_EMPLOYEE_01':
                             fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
@@ -385,16 +422,28 @@ const useTaxCalculations = (scenario) => {
                             const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                             fedDeductions.belowAGI += clatDed;
                             stateDeductions += clatDed;
+                            if (clatDed > 0) {
+                                insights.push({type: 'success', text: `Charitable CLAT provides a federal deduction of ${formatCurrency(clatDed)}.`});
+                                if (clatDed < clientData.charitableIntent) {
+                                    insights.push({type: 'warning', text: `Charitable deduction was limited by AGI to 30%.`});
+                                }
+                            }
                             break;
                         case 'OG_USENERGY_01':
                             const ogDed = (clientData.ogInvestment || 0) * 0.70;
                             fedDeductions.belowAGI += ogDed;
                             stateDeductions += ogDed;
+                             if (ogDed > 0) {
+                                insights.push({type: 'success', text: `Energy Investment generates a deduction of ${formatCurrency(ogDed)}.`});
+                            }
                             break;
                         case 'FILM_SEC181_01':
                             const filmDed = clientData.filmInvestment || 0;
                             fedDeductions.belowAGI += filmDed;
                             stateDeductions += filmDed;
+                            if (filmDed > 0) {
+                                insights.push({type: 'success', text: `Film Financing (Sec 181) provides a 100% upfront deduction of ${formatCurrency(filmDed)}.`});
+                            }
                             break;
                     }
                 }
@@ -405,6 +454,11 @@ const useTaxCalculations = (scenario) => {
             let qbiDeduction = 0;
             if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0 && fedTaxableForQBI <= 383900) {
                 qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
+                 if (qbiDeduction > 0) {
+                    insights.push({type: 'success', text: `Successfully unlocked a Qualified Business Income (QBI) deduction of ${formatCurrency(qbiDeduction)}.`});
+                }
+            } else if (enabledStrategies['QBI_FINAL_01'] && fedTaxableForQBI > 383900) {
+                insights.push({type: 'warning', text: `Taxable income exceeds the QBI threshold, preventing the QBI deduction.`});
             }
             
             const fedTaxableIncome = Math.max(0, fedTaxableForQBI - qbiDeduction);
@@ -415,12 +469,13 @@ const useTaxCalculations = (scenario) => {
             const stateTaxableIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0) + currentCapitalGains - stateDeductions;
             const stateTax = calculateTax(stateTaxableIncome, NJ_TAX_BRACKETS);
 
-            return { totalTax: fedTax + stateTax, fedTax, stateTax };
+            return { totalTax: fedTax + stateTax, fedTax, stateTax, insights };
         };
 
         const baselineTaxes = getTaxesForScenario({});
         const baseline = { ...baselineTaxes, ordinaryIncome: (clientData.w2Income || 0) + (clientData.businessIncome || 0) };
-        const withStrategies = getTaxesForScenario(scenario.enabledStrategies);
+        const { totalTax, fedTax, stateTax, insights } = getTaxesForScenario(scenario.enabledStrategies);
+        const withStrategies = { totalTax, fedTax, stateTax, insights };
         
         const strategyImpacts = [];
         
@@ -448,7 +503,7 @@ const useTaxCalculations = (scenario) => {
             }
         });
 
-        return { baseline, withStrategies, strategyImpacts };
+        return { baseline, withStrategies, strategyImpacts, insights };
     }, [scenario]);
 };
 
@@ -457,7 +512,7 @@ const PrintableReport = ({ scenario, results }) => {
     if (!results || !scenario) return null;
     
     const { clientData } = scenario;
-    const { baseline, withStrategies } = results;
+    const { baseline, withStrategies, insights } = results;
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
@@ -491,6 +546,18 @@ const PrintableReport = ({ scenario, results }) => {
                     </tbody>
                 </table>
             </div>
+            
+            {insights && insights.length > 0 && (
+                 <div className="mb-6">
+                    <h2 className="text-lg font-semibold border-b pb-2 mb-3">Implementation Insights</h2>
+                    <ul className="list-disc list-inside space-y-2 text-sm">
+                        {insights.map((insight, index) => (
+                            <li key={index}>{insight.text}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
              <div className="text-xs text-gray-500 mt-8 space-y-2">
                 <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
                 <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
@@ -553,6 +620,7 @@ export default function App() {
                     <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
                     <ResultsDashboard results={calculationResults} />
                     <ChartsSection results={calculationResults} />
+                    <InsightsSection insights={calculationResults?.insights} />
                 </main>
             </div>
             <div id="print-mount" className="hidden">
