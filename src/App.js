@@ -481,7 +481,7 @@ export default function App() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
                 <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
-                <StrategiesSection scenario={active-scenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
+                <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
                 <ResultsDashboard results={calculationResults} />
                 <ChartsSection results={calculationResults} />
             </main>
