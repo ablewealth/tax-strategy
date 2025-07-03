@@ -1402,7 +1402,6 @@
                     <div className="print-section">
                         <h2 className="print-section-title">Visual Analysis</h2>
                         {chartImages.comparison && <img src={chartImages.comparison} className="print-chart-image" alt="Tax Comparison Chart" />}
-                        {chartImages.savings && <img src={chartImages.savings} className="print-chart-image" alt="Strategic Savings Chart" />}
                     </div>
 
                     <div className="print-section">
@@ -1510,11 +1509,11 @@
                     let tempCurrentStateCapitalGains = clientData.capitalGains || 0;
                     let tempQbiBaseIncome = clientData.businessIncome || 0;
 
-                    const calculateCurrentTotalTax = (fedDeductions, stateDeductions, njAddBack, currentFedCG, currentStateCG, qbiBaseIncome) => {
+                    const calculateCurrentTotalTax = (fedDeductions, stateDeductions, njAddBack, currentFedCG, currentStateCG, qbiBaseIncome, qbiEnabled) => {
                         const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
                         
                         let qbiDeduction = 0;
-                        if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
+                        if (qbiEnabled && qbiBaseIncome > 0) {
                             const fedTaxableIncomePreQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
                             const threshold = 383900;
                             if (fedTaxableIncomePreQBI <= threshold) {
@@ -1535,7 +1534,7 @@
 
 
                     STRATEGY_LIBRARY.filter(s => enabledStrategies[s.id] && s.type !== 'qbi').forEach(strategy => {
-                        const taxBefore = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
+                        const taxBefore = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
 
                         let fedDed = 0;
                         let stateDed = 0;
@@ -1622,7 +1621,7 @@
                                 break;
                         }
 
-                        const taxAfter = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
+                        const taxAfter = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
                         const savings = taxBefore - taxAfter;
                         if (savings > 0) {
                             strategyImpacts.push({ name: strategy.name, savings: savings });
@@ -1630,7 +1629,7 @@
                     });
 
                     // QBI Calculation (final step)
-                    const taxBeforeQBI = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome);
+                    const taxBeforeQBI = calculateCurrentTotalTax(tempFedDeductions, tempStateDeductions, tempNjAddBack, tempCurrentFedCapitalGains, tempCurrentStateCapitalGains, tempQbiBaseIncome, false);
                     
                     const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - tempFedDeductions.aboveAGI;
                     let qbiDeduction = 0;
