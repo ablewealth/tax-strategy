@@ -258,10 +258,17 @@
                 description: "Provides large upfront deductions via Intangible Drilling Costs (IDCs) in domestic energy projects."
             },
             {
+                id: "PENSION_RETIRE_01",
+                name: "Pension/Retirement Plans",
+                category: "Above AGI Deduction",
+                hierarchy: 5,
+                description: "Maximizes retirement contributions through Solo 401(k) and Defined Benefit Plans for substantial tax deferrals."
+            },
+            {
                 id: "QBI_FINAL_01",
                 name: "QBI Final Calculation",
                 category: "Final Tuning",
-                hierarchy: 5,
+                hierarchy: 6,
                 description: "20% deduction for Qualified Business Income if income is below phase-out thresholds."
             }
         ];
@@ -277,7 +284,10 @@
                 investment_amount: 5000000,
                 equipment_cost: 500000,
                 charitable_intent: 2000000,
-                og_investment: 1000000
+                og_investment: 1000000,
+                solo_401k_contrib: 69000,
+                db_plan_contrib: 350000,
+                pension_plan_type: 'both'
             });
 
             const [enabledStrategies, setEnabledStrategies] = useState({
@@ -285,6 +295,7 @@
                 EQUIP_S179_01: true,
                 CHAR_CLAT_01: true,
                 OG_USENERGY_01: true,
+                PENSION_RETIRE_01: true,
                 QBI_FINAL_01: true
             });
 
@@ -475,11 +486,94 @@
                     });
                 }
 
-                // Calculate taxable income pre-QBI
+                // HIERARCHY 5: Pension/Retirement Plans
+                if (enabledStrategies.PENSION_RETIRE_01) {
+                    let pensionDeduction = 0;
+                    let pensionDetails = [];
+
+                    // Solo 401(k) calculations
+                    if (clientData.pension_plan_type === 'solo401k' || clientData.pension_plan_type === 'both') {
+                        // Employee contribution limit for 2024: $23,000 ($30,500 if 50+)
+                        // Total limit including employer: $69,000 ($76,500 if 50+)
+                        const maxSolo401k = 69000; // Assuming under 50
+                        const employeeContrib = Math.min(23000, clientData.business_income);
+                        const employerContrib = Math.min(clientData.business_income * 0.25, maxSolo401k - employeeContrib);
+                        const totalSolo401k = Math.min(clientData.solo_401k_contrib, employeeContrib + employerContrib, clientData.business_income);
+                        
+                        pensionDeduction += totalSolo401k;
+                        pensionDetails.push(`Solo 401(k): ${formatCurrency(totalSolo401k)}`);
+                    }
+
+                    // Defined Benefit Plan calculations
+                    if (clientData.pension_plan_type === 'db' || clientData.pension_plan_type === 'both') {
+                        // DB plans can have much higher limits based on actuarial calculations
+                        // Typical range: $100K - $350K+ depending on age, income, and years to retirement
+                        const maxDBContrib = Math.min(
+                            clientData.db_plan_contrib,
+                            clientData.business_income * 0.25, // Simplified - actual calculation is more complex
+                            350000 // Conservative upper limit
+                        );
+                        
+                        pensionDeduction += maxDBContrib;
+                        pensionDetails.push(`Defined Benefit: ${formatCurrency(maxDBContrib)}`);
+                    }
+
+                    if (pensionDeduction > 0) {
+                        fedDeductions.above_agi += pensionDeduction;
+                        agiForCharity -= pensionDeduction;
+
+                        const fedSavings = pensionDeduction * 0.37;
+                        let stateSavings;
+
+                        if (clientData.state === 'NY') {
+                            stateDeductions.above_agi += pensionDeduction;
+                            stateSavings = pensionDeduction * 0.109;
+                        } else { // NJ
+                            stateDeductions.above_agi += pensionDeduction;
+                            stateSavings = pensionDeduction * 0.1075;
+                        }
+
+                        strategyImpacts.push({
+                            strategy: 'Pension/Retirement Plans',
+                            fed_savings: fedSavings,
+                            state_savings: stateSavings,
+                            total_savings: fedSavings + stateSavings
+                        });
+
+                        insights.push({
+                            type: 'success',
+                            icon: '🏦',
+                            title: 'Retirement Plan Optimization',
+                            message: `Pension strategies generated ${formatCurrency(pensionDeduction)} in tax-deferred contributions. Details: ${pensionDetails.join(', ')}`
+                        });
+
+                        // Age-based recommendations
+                        if (pensionDeduction > 200000) {
+                            insights.push({
+                                type: 'info',
+                                icon: '📊',
+                                title: 'Advanced Pension Strategy',
+                                message: `High contribution levels suggest defined benefit plan optimization. Consider annual actuarial reviews to maximize allowable contributions.`
+                            });
+                        }
+
+                        // Business income limitation warning
+                        if (pensionDeduction >= clientData.business_income * 0.9) {
+                            insights.push({
+                                type: 'warning',
+                                icon: '⚠️',
+                                title: 'Contribution Limit Warning',
+                                message: `Pension contributions approaching business income limits. Ensure adequate cash flow for business operations.`
+                            });
+                        }
+                    }
+                }
+
+                // Calculate taxable income pre-QBI (updated for pension impact)
                 const fedTaxableIncome = clientData.w2_income + clientData.business_income - 
                     fedDeductions.above_agi - STANDARD_DEDUCTION - fedDeductions.below_agi;
 
-                // HIERARCHY 5: QBI
+                // HIERARCHY 6: QBI (updated hierarchy number)
                 if (enabledStrategies.QBI_FINAL_01) {
                     const threshold = 383900;
                     if (fedTaxableIncome <= threshold) {
@@ -735,6 +829,49 @@
                                     onChange={(e) => handleInputChange('og_investment', e.target.value)}
                                     placeholder="e.g., 1,000,000"
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="input-section">
+                        <h3 className="section-title" style={{color: '#7b1fa2', borderColor: '#7b1fa2'}}>🏦 Retirement Planning</h3>
+                        <div className="input-grid">
+                            <div className="input-group">
+                                <label>📊 Pension Plan Type</label>
+                                <select 
+                                    value={clientData.pension_plan_type}
+                                    onChange={(e) => handleInputChange('pension_plan_type', e.target.value)}
+                                >
+                                    <option value="solo401k">Solo 401(k) Only</option>
+                                    <option value="db">Defined Benefit Only</option>
+                                    <option value="both">Both Plans</option>
+                                    <option value="none">No Pension Plans</option>
+                                </select>
+                            </div>
+                            <div className="input-group">
+                                <label>🏦 Solo 401(k) Contribution</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.solo_401k_contrib.toLocaleString()}
+                                    onChange={(e) => handleInputChange('solo_401k_contrib', e.target.value)}
+                                    placeholder="e.g., 69,000"
+                                    disabled={clientData.pension_plan_type === 'db' || clientData.pension_plan_type === 'none'}
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>📈 Defined Benefit Contribution</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.db_plan_contrib.toLocaleString()}
+                                    onChange={(e) => handleInputChange('db_plan_contrib', e.target.value)}
+                                    placeholder="e.g., 350,000"
+                                    disabled={clientData.pension_plan_type === 'solo401k' || clientData.pension_plan_type === 'none'}
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label style={{fontSize: '14px', color: '#666'}}>
+                                    💡 Note: Solo 401(k) max $69K (2024), DB plans can go much higher based on actuarial calculations
+                                </label>
                             </div>
                         </div>
                     </div>
