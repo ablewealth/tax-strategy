@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/anthropic.js": {
-      "maxDuration": 30
-    }
-  }
-}
