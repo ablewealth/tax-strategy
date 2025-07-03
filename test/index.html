@@ -558,24 +558,38 @@
         }
 
         @media print {
-            /* Hide everything on the page */
-            body * {
-                visibility: hidden;
-            }
-            
-            /* Make only the printable area and its children visible */
-            .printable-area, .printable-area * {
-                visibility: visible;
+            /* Hide the main application, not just all elements */
+            body > #root {
+                display: none;
             }
 
-            /* Position the printable area at the top of the page */
+            /* Make the print mount point and its contents visible */
+            body > #print-mount {
+                display: block;
+            }
+            
+            /* Reset body and html for clean printing */
+            html, body {
+                width: 100%;
+                height: auto;
+                background: #fff; /* Ensure white background */
+                overflow: visible;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Make the printable area visible and flow normally */
             .printable-area {
-                position: absolute;
-                left: 0;
-                top: 0;
+                display: block;
+                visibility: visible;
                 width: 100%;
                 font-family: 'Times New Roman', Times, serif;
                 color: #000;
+            }
+            
+            /* Make all children of the printable area visible */
+            .printable-area * {
+                visibility: visible;
             }
             
             .print-header {
