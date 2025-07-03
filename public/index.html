@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategic Tax Analysis Platform</title>
+    <title>Able Wealth Management | Strategic Tax Analysis Platform</title>
     
     <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -536,7 +536,47 @@
             'SOLO401K_EMPLOYER_01': '🏦',
             'DB_PLAN_01': '💼',
             'QBI_FINAL_01': '🎯'
-        };
+        const InsightsSection = ({ insights }) => (
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
 
         // DEALS Strategy Exposure Levels
         const DEALS_EXPOSURE_LEVELS = {
@@ -676,16 +716,16 @@
             w2Income: 500000,
             businessIncome: 2000000,
             capitalGains: 1000000,
-            state: 'NJ',
-            investmentAmount: 0,
+            state: 'NY',
+            investmentAmount: 5000000,
             dealsExposure: '130/30',
-            equipmentCost: 0,
-            charitableIntent: 0,
-            ogInvestment: 0,
-            filmInvestment: 0,
-            solo401kEmployee: 0,
-            solo401kEmployer: 0,
-            dbContribution: 0,
+            equipmentCost: 500000,
+            charitableIntent: 2000000,
+            ogInvestment: 1000000,
+            filmInvestment: 250000,
+            solo401kEmployee: 23000,
+            solo401kEmployer: 100000,
+            dbContribution: 200000,
         };
 
         // Helper Functions
@@ -727,7 +767,7 @@
                 <div className="logo-section">
                     <div className="logo-icon">💼</div>
                     <div className="brand-info">
-                        <h1>Strategic Tax Analysis Platform | Able Wealth Management</h1>
+                        <h1>Strategic Tax Optimization Portfolio</h1>
                         <p>Select advanced tax strategies for implementation and optimization analysis</p>
                     </div>
                 </div>
@@ -918,7 +958,2235 @@
             );
         };
 
-        const InsightsSection = ({ insights }) => (
+        const TaxLiabilityChart = ({ results }) => {
+            if (!results?.baseline || !results?.withStrategies) {
+                return null;
+            }
+
+            const baseline = results.baseline;
+            const optimized = results.withStrategies;
+            
+            const maxTotal = Math.max(baseline.totalTax, optimized.totalTax);
+            
+            const baselineFedPercent = (baseline.fedTax / maxTotal) * 100;
+            const baselineStatePercent = (baseline.stateTax / maxTotal) * 100;
+            const optimizedFedPercent = (optimized.fedTax / maxTotal) * 100;
+            const optimizedStatePercent = (optimized.stateTax / maxTotal) * 100;
+
+            return (
+                <div className="section">
+                    <div className="section-header">
+                        <div className="section-title">
+                            📊 Tax Liability Comparative Analysis
+                        </div>
+                        <div className="section-description">
+                            Baseline vs. optimized tax scenarios with federal and state breakdown
+                        </div>
+                    </div>
+                    <div className="section-content">
+                        <div style={{ padding: '2rem 0' }}>
+                            <div style={{ marginBottom: '3rem' }}>
+                                <h3 style={{ textAlign: 'center', fontSize: '18px', fontWeight: '600', marginBottom: '2rem', color: 'var(--text-primary)' }}>
+                                    Tax Liability Comparison Analysis
+                                </h3>
+                                
+                                {/* Legend */}
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ width: '16px', height: '16px', backgroundColor: 'var(--primary-blue)', borderRadius: '2px' }}></div>
+                                        <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Federal Tax</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ width: '16px', height: '16px', backgroundColor: 'var(--accent-gold)', borderRadius: '2px' }}></div>
+                                        <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>State Tax</span>
+                                    </div>
+                                </div>
+
+                                {/* Chart Container */}
+                                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                                    {/* Y-axis labels */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                        <span>0</span>
+                                        <span>50k</span>
+                                        <span>100k</span>
+                                        <span>150k</span>
+                                    </div>
+
+                                    {/* Baseline Scenario */}
+                                    <div style={{ marginBottom: '3rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <span style={{ width: '120px', fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                                                Baseline Scenario
+                                            </span>
+                                            <div style={{ flex: 1, height: '40px', display: 'flex', backgroundColor: 'var(--background-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                <div 
+                                                    style={{ 
+                                                        width: `${baselineFedPercent}%`, 
+                                                        backgroundColor: 'var(--primary-blue)', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    {baselineFedPercent > 15 ? formatCurrency(baseline.fedTax) : ''}
+                                                </div>
+                                                <div 
+                                                    style={{ 
+                                                        width: `${baselineStatePercent}%`, 
+                                                        backgroundColor: 'var(--accent-gold)', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    {baselineStatePercent > 15 ? formatCurrency(baseline.stateTax) : ''}
+                                                </div>
+                                            </div>
+                                            <span style={{ width: '120px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                                {formatCurrency(baseline.totalTax)}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', paddingLeft: '120px' }}>
+                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginRight: '2rem' }}>
+                                                Federal: {formatCurrency(baseline.fedTax)}
+                                            </span>
+                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                State: {formatCurrency(baseline.stateTax)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Optimized Strategy */}
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <span style={{ width: '120px', fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
+                                                Optimized Strategy
+                                            </span>
+                                            <div style={{ flex: 1, height: '40px', display: 'flex', backgroundColor: 'var(--background-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                <div 
+                                                    style={{ 
+                                                        width: `${optimizedFedPercent}%`, 
+                                                        backgroundColor: 'var(--primary-blue)', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    {optimizedFedPercent > 15 ? formatCurrency(optimized.fedTax) : ''}
+                                                </div>
+                                                <div 
+                                                    style={{ 
+                                                        width: `${optimizedStatePercent}%`, 
+                                                        backgroundColor: 'var(--accent-gold)', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    {optimizedStatePercent > 15 ? formatCurrency(optimized.stateTax) : ''}
+                                                </div>
+                                            </div>
+                                            <span style={{ width: '120px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                                {formatCurrency(optimized.totalTax)}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', paddingLeft: '120px' }}>
+                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginRight: '2rem' }}>
+                                                Federal: {formatCurrency(optimized.fedTax)}
+                                            </span>
+                                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                State: {formatCurrency(optimized.stateTax)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const WaterfallChart = ({ results, clientData, enabledStrategies }) => {
+            if (!results?.baseline || !results?.withStrategies) {
+                return null;
+            }
+
+            // Calculate individual strategy impacts
+            const calculateStrategyImpacts = () => {
+                const impacts = [];
+                let runningTotal = results.baseline.totalTax;
+                
+                // DEALS Strategy
+                if (enabledStrategies['QUANT_DEALS_01']) {
+                    const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                    const benefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                    impacts.push({
+                        name: 'Quantino DEALS™',
+                        impact: -benefit,
+                        runningTotal: runningTotal - benefit
+                    });
+                    runningTotal -= benefit;
+                }
+                
+                // Section 179
+                if (enabledStrategies['EQUIP_S179_01']) {
+                    const deduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                    const benefit = deduction * 0.40; // Approximate tax savings at high rates
+                    impacts.push({
+                        name: 'Section 179 Acceleration',
+                        impact: -benefit,
+                        runningTotal: runningTotal - benefit
+                    });
+                    runningTotal -= benefit;
+                }
+                
+                // Charitable CLAT
+                if (enabledStrategies['CHAR_CLAT_01']) {
+                    const agi = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    const deduction = Math.min(clientData.charitableIntent || 0, agi * 0.30);
+                    const benefit = deduction * 0.40;
+                    impacts.push({
+                        name: 'Charitable CLAT',
+                        impact: -benefit,
+                        runningTotal: runningTotal - benefit
+                    });
+                    runningTotal -= benefit;
+                }
+                
+                // Energy Investment
+                if (enabledStrategies['OG_USENERGY_01']) {
+                    const deduction = (clientData.ogInvestment || 0) * 0.70;
+                    const benefit = deduction * 0.40;
+                    impacts.push({
+                        name: 'Energy Investment IDCs',
+                        impact: -benefit,
+                        runningTotal: runningTotal - benefit
+                    });
+                    runningTotal -= benefit;
+                }
+                
+                // Executive Retirement (combining all retirement strategies)
+                const retirementBenefit = ((clientData.solo401kEmployee || 0) + (clientData.solo401kEmployer || 0) + (clientData.dbContribution || 0)) * 0.40;
+                if (retirementBenefit > 0) {
+                    impacts.push({
+                        name: 'Executive Retirement',
+                        impact: -retirementBenefit,
+                        runningTotal: runningTotal - retirementBenefit
+                    });
+                    runningTotal -= retirementBenefit;
+                }
+                
+                // QBI Optimization
+                if (enabledStrategies['QBI_FINAL_01']) {
+                    const qbiBenefit = Math.min((clientData.businessIncome || 0) * 0.20, 50000) * 0.37; // Approximate benefit
+                    impacts.push({
+                        name: 'QBI Optimization',
+                        impact: -qbiBenefit,
+                        runningTotal: runningTotal - qbiBenefit
+                    });
+                }
+                
+                return impacts;
+            };
+
+            const strategyImpacts = calculateStrategyImpacts();
+            const maxValue = Math.max(results.baseline.totalTax, Math.abs(Math.min(...strategyImpacts.map(s => s.impact))));
+            const chartHeight = 300;
+
+            return (
+                <div className="section">
+                    <div className="section-header">
+                        <div className="section-title">
+                            📈 Strategic Impact Waterfall Analysis
+                        </div>
+                        <div className="section-description">
+                            Individual strategy contributions to overall tax optimization
+                        </div>
+                    </div>
+                    <div className="section-content">
+                        <div style={{ padding: '2rem 0' }}>
+                            <h3 style={{ textAlign: 'center', fontSize: '18px', fontWeight: '600', marginBottom: '2rem', color: 'var(--text-primary)' }}>
+                                Strategic Impact Waterfall Analysis
+                            </h3>
+                            
+                            <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
+                                {/* Y-axis labels */}
+                                <div style={{ position: 'absolute', left: '-40px', height: `${chartHeight}px`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                    <span>150k</span>
+                                    <span>100k</span>
+                                    <span>50k</span>
+                                    <span>0</span>
+                                </div>
+
+                                {/* Chart container */}
+                                <div style={{ display: 'flex', alignItems: 'end', height: `${chartHeight}px`, gap: '8px', paddingLeft: '40px' }}>
+                                    {/* Baseline bar */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '80px' }}>
+                                        <div 
+                                            style={{ 
+                                                width: '60px', 
+                                                height: `${(results.baseline.totalTax / maxValue) * (chartHeight - 40)}px`,
+                                                backgroundColor: 'var(--primary-blue)', 
+                                                borderRadius: '4px 4px 0 0',
+                                                position: 'relative',
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                paddingTop: '8px'
+                                            }}
+                                        >
+                                            <span style={{ color: 'white', fontSize: '10px', fontWeight: '600' }}>
+                                                {formatCurrency(results.baseline.totalTax).replace('
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <TaxLiabilityChart results={calculationResults} />
+                        <WaterfallChart results={calculationResults} clientData={clientData} enabledStrategies={calculationResults.enabledStrategies} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>, '
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>).replace(',000', 'k')}
+                                            </span>
+                                        </div>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center' }}>
+                                            Baseline
+                                        </span>
+                                    </div>
+
+                                    {/* Strategy impact bars */}
+                                    {strategyImpacts.map((strategy, index) => (
+                                        <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '80px' }}>
+                                            <div 
+                                                style={{ 
+                                                    width: '60px', 
+                                                    height: `${(Math.abs(strategy.impact) / maxValue) * (chartHeight - 40)}px`,
+                                                    backgroundColor: '#dc2626', 
+                                                    borderRadius: '4px 4px 0 0',
+                                                    position: 'relative',
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    justifyContent: 'center',
+                                                    paddingTop: '8px'
+                                                }}
+                                            >
+                                                <span style={{ color: 'white', fontSize: '10px', fontWeight: '600' }}>
+                                                    {formatCurrency(Math.abs(strategy.impact)).replace('
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>, '-
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>).replace(',000', 'k')}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center', lineHeight: '1.2' }}>
+                                                {strategy.name}
+                                            </span>
+                                        </div>
+                                    ))}
+
+                                    {/* Optimized result bar */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '80px' }}>
+                                        <div 
+                                            style={{ 
+                                                width: '60px', 
+                                                height: `${(results.withStrategies.totalTax / maxValue) * (chartHeight - 40)}px`,
+                                                backgroundColor: 'var(--success)', 
+                                                borderRadius: '4px 4px 0 0',
+                                                position: 'relative',
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                justifyContent: 'center',
+                                                paddingTop: '8px'
+                                            }}
+                                        >
+                                            <span style={{ color: 'white', fontSize: '10px', fontWeight: '600' }}>
+                                                {formatCurrency(results.withStrategies.totalTax).replace('
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>, '
+            <div className="section">
+                <div className="section-header">
+                    <div className="section-title">
+                        💡 Strategic Implementation Insights
+                    </div>
+                    <div className="section-description">
+                        Tax strategy analysis and optimization recommendations
+                    </div>
+                </div>
+                <div className="section-content">
+                    <div className="insights-section">
+                        {!insights || insights.length === 0 ? (
+                            <div className="insight-card">
+                                <div className="insight-header">
+                                    <div className="insight-icon">📊</div>
+                                    <div className="insight-title">Ready for Analysis</div>
+                                </div>
+                                <div className="insight-message">
+                                    Configure investment amounts in the Client Profile section to generate personalized tax optimization insights and strategic recommendations.
+                                </div>
+                            </div>
+                        ) : (
+                            insights.map((insight, index) => (
+                                <div key={index} className={`insight-card ${insight.type === 'warning' ? 'warning' : 'success'}`}>
+                                    <div className="insight-header">
+                                        <div className="insight-icon">
+                                            {insight.type === 'warning' ? '⚠️' : '✅'}
+                                        </div>
+                                        <div className="insight-title">
+                                            {insight.type === 'warning' ? 'Implementation Consideration' : 'Strategic Benefit'}
+                                        </div>
+                                    </div>
+                                    <div className="insight-message">{insight.text}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Main App Component with calculations
+        function App() {
+            const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+            
+            const calculationResults = useMemo(() => {
+                try {
+                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                        const inputValue = clientData[s.inputRequired] || 0;
+                        acc[s.id] = inputValue > 1;
+                        return acc;
+                    }, {});
+
+                    // Baseline calculations
+                    const baseline = {};
+                    baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                    baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                    baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                    
+                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                    baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+
+                    // Strategy calculations
+                    const withStrategies = {};
+                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                    let fedCapitalGains = clientData.capitalGains || 0;
+                    let stateCapitalGains = clientData.capitalGains || 0;
+                    let njAddBack = 0;
+                    let insights = [];
+                    let qbiBaseIncome = clientData.businessIncome || 0;
+
+                    // Apply strategies in hierarchy order
+                    STRATEGY_LIBRARY.forEach(strategy => {
+                        if (enabledStrategies[strategy.id]) {
+                            try {
+                                switch (strategy.id) {
+                                    case 'QUANT_DEALS_01': {
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        const shortTermLosses = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                                        const longTermGains = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                                        const netTaxBenefit = (clientData.investmentAmount || 0) * exposure.annualTaxBenefit;
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains = fedCapitalGains - gainOffsetAmount + longTermGains;
+                                        stateCapitalGains = stateCapitalGains - gainOffsetAmount + longTermGains;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `DEALS ${clientData.dealsExposure} strategy generates ${formatCurrency(netTaxBenefit)} annual tax benefit (${formatPercentage(exposure.annualTaxBenefit)} of investment) through systematic loss harvesting while maintaining market exposure.`
+                                        });
+                                        break;
+                                    }
+                                    case 'EQUIP_S179_01': {
+                                        const fedDeduction = Math.min(clientData.equipmentCost || 0, clientData.businessIncome || 0, 1220000);
+                                        fedDeductions.aboveAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += fedDeduction;
+                                        } else {
+                                            // NJ limits Section 179 to $25,000
+                                            const njDeduction = Math.min(clientData.equipmentCost || 0, 25000);
+                                            const njAddBackAmount = Math.max(0, (clientData.equipmentCost || 0) - 25000);
+                                            stateDeductions.aboveAGI += njDeduction;
+                                            njAddBack += njAddBackAmount;
+                                            if (njAddBackAmount > 0) {
+                                                insights.push({
+                                                    type: 'warning',
+                                                    text: `NJ requires a ${formatCurrency(njAddBackAmount)} depreciation add-back, limiting the state deduction to ${formatCurrency(njDeduction)}.`
+                                                });
+                                            }
+                                        }
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Section 179 equipment acceleration provides ${formatCurrency(fedDeduction)} federal deduction, reducing current year tax liability while building operational capacity.`
+                                        });
+                                        break;
+                                    }
+                                    case 'CHAR_CLAT_01': {
+                                        const agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                        const fedDeduction = Math.min(clientData.charitableIntent || 0, agiForCharity * 0.30);
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            const nyDeduction = fedDeduction * 0.5; // NY limits itemized for high income
+                                            stateDeductions.belowAGI += nyDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction and ${formatCurrency(nyDeduction)} NY deduction while preserving wealth transfer opportunities.`
+                                            });
+                                        } else {
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `CLAT provides ${formatCurrency(fedDeduction)} federal deduction. Note: Not deductible for NJ state tax purposes.`
+                                            });
+                                        }
+                                        
+                                        if (fedDeduction < (clientData.charitableIntent || 0)) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedDeduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'OG_USENERGY_01': {
+                                        const fedDeduction = (clientData.ogInvestment || 0) * 0.70;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Oil & Gas investment generates ${formatCurrency(fedDeduction)} federal deduction via Intangible Drilling Costs.`
+                                        });
+                                        break;
+                                    }
+                                    case 'FILM_SEC181_01': {
+                                        const fedDeduction = clientData.filmInvestment || 0;
+                                        fedDeductions.belowAGI += fedDeduction;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.belowAGI += fedDeduction;
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Film financing generates ${formatCurrency(fedDeduction)} active loss deduction under Section 181, providing 100% upfront deduction.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const contribution = Math.min(clientData.solo401kEmployee || 0, 23000);
+                                        fedDeductions.aboveAGI += contribution;
+                                        
+                                        if (clientData.state === 'NY') {
+                                            stateDeductions.aboveAGI += contribution; // NY conforms to federal AGI
+                                        } else {
+                                            // NJ disallows employee deferrals
+                                            njAddBack += contribution;
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(contribution)} add-back required for state tax.`
+                                            });
+                                        }
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(contribution)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.`
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const contribution = clientData.solo401kEmployer || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible as business expense in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(contribution)} provides federal and state deduction as business expense.`
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const contribution = clientData.dbContribution || 0;
+                                        fedDeductions.aboveAGI += contribution;
+                                        stateDeductions.aboveAGI += contribution; // Deductible in both NY and NJ
+                                        qbiBaseIncome -= contribution;
+                                        
+                                        insights.push({
+                                            type: 'insight',
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(contribution)} provides full federal and state deduction as employer contribution.`
+                                        });
+                                        break;
+                                    }
+                                    case 'QBI_FINAL_01': {
+                                        const fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                        const threshold = 383900; // MFJ 2024
+                                        
+                                        if (qbiBaseIncome > 1 && fedTaxableIncomePreQBI <= threshold) {
+                                            const qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableIncomePreQBI * 0.20);
+                                            fedDeductions.qbi = qbiDeduction;
+                                            insights.push({
+                                                type: 'insight',
+                                                text: `QBI deduction of ${formatCurrency(qbiDeduction)} unlocked (20% of qualifying business income below threshold).`
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({
+                                                type: 'warning',
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available at this income level.`
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch (strategyError) {
+                                console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                insights.push({
+                                    type: 'warning',
+                                    text: `Error calculating ${strategy.name}. Please verify input values.`
+                                });
+                            }
+                        }
+                    });
+
+                    // Final calculations
+                    withStrategies.fedTaxableIncome = Math.max(0, 
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                    );
+                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                    
+                    withStrategies.stateTaxableIncome = Math.max(0,
+                        (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                        stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                    );
+                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                    withStrategies.insights = insights;
+
+                    return { baseline, withStrategies, enabledStrategies };
+                } catch (error) {
+                    console.error('Calculation error:', error);
+                    return {
+                        baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                        withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [] },
+                        enabledStrategies: {}
+                    };
+                }
+            }, [clientData]);
+
+            return (
+                <div className="app-container">
+                    <Header />
+                    <div className="main-content">
+                        <ClientInputSection data={clientData} setData={setClientData} />
+                        <StrategiesSection enabledStrategies={calculationResults.enabledStrategies} clientData={clientData} />
+                        <ResultsDashboard results={calculationResults} />
+                        <InsightsSection insights={calculationResults.withStrategies.insights} />
+                    </div>
+                </div>
+            );
+        }
+
+        // Initialize app
+        if (window.React && window.ReactDOM) {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        }
+    </script>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>).replace(',000', 'k')}
+                                            </span>
+                                        </div>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center' }}>
+                                            Optimized
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
             <div className="section">
                 <div className="section-header">
                     <div className="section-title">
