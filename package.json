@@ -2,7 +2,7 @@
   "name": "tax-optimizer-app",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://your-username.github.io/your-repo-name",
+  "homepage": "https://ablewealth.github.io/tax-strategy",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
