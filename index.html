@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Tax Strategy Calculator</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 40px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+        .header p {
+            color: #b3d9ff;
+            font-size: 18px;
+            margin: 10px 0 0 0;
+        }
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #1976d2;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+        .strategy-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .strategy-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #f57c00;
+        }
+        .strategy-checkbox {
+            margin-right: 10px;
+        }
+        .strategy-description {
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .results-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .metrics-grid {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .insight-item {
+            background: #e8f5e8;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .insight-warning {
+            background: #fff3cd;
+        }
+        .insight-info {
+            background: #e3f2fd;
+        }
+        .recommendation-item {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border: 2px solid #ff4444;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .priority-badge {
+            background: #ff4444;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .chart-container {
+            margin: 20px 0;
+            height: 500px;
+        }
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .breakdown-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        .breakdown-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        .breakdown-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .breakdown-table tr:last-child {
+            font-weight: bold;
+            border-top: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // Tax bracket definitions
+        const FED_TAX_BRACKETS = [
+            { rate: 0.10, min_income: 0, max_income: 23200 },
+            { rate: 0.12, min_income: 23201, max_income: 94300 },
+            { rate: 0.22, min_income: 94301, max_income: 201050 },
+            { rate: 0.24, min_income: 201051, max_income: 383900 },
+            { rate: 0.32, min_income: 383901, max_income: 487450 },
+            { rate: 0.35, min_income: 487451, max_income: 731200 },
+            { rate: 0.37, min_income: 731201, max_income: Infinity }
+        ];
+
+        const NY_TAX_BRACKETS = [
+            { rate: 0.04, min_income: 0, max_income: 17150 },
+            { rate: 0.045, min_income: 17151, max_income: 23900 },
+            { rate: 0.0525, min_income: 23901, max_income: 27900 },
+            { rate: 0.0585, min_income: 27901, max_income: 161550 },
+            { rate: 0.0625, min_income: 161551, max_income: 323200 },
+            { rate: 0.0685, min_income: 323201, max_income: 2155350 },
+            { rate: 0.0965, min_income: 2155351, max_income: 5000000 },
+            { rate: 0.103, min_income: 5000001, max_income: 25000000 },
+            { rate: 0.109, min_income: 25000001, max_income: Infinity }
+        ];
+
+        const NJ_TAX_BRACKETS = [
+            { rate: 0.014, min_income: 0, max_income: 20000 },
+            { rate: 0.0175, min_income: 20001, max_income: 35000 },
+            { rate: 0.035, min_income: 35001, max_income: 40000 },
+            { rate: 0.05525, min_income: 40001, max_income: 75000 },
+            { rate: 0.0637, min_income: 75001, max_income: 500000 },
+            { rate: 0.0897, min_income: 500001, max_income: 1000000 },
+            { rate: 0.1075, min_income: 1000001, max_income: Infinity }
+        ];
+
+        const STRATEGIES = [
+            {
+                id: "QUANT_DEALS_01",
+                name: "Quantino DEALS",
+                category: "Investment",
+                hierarchy: 1,
+                description: "Generates short-term capital losses to offset capital gains through systematic trading strategies."
+            },
+            {
+                id: "EQUIP_S179_01",
+                name: "Equipment Financing (Sec 179)",
+                category: "Above AGI Deduction",
+                hierarchy: 2,
+                description: "Deducts the full cost of qualifying business equipment in Year 1 through accelerated depreciation."
+            },
+            {
+                id: "CHAR_CLAT_01",
+                name: "Charitable Lead Annuity Trust (CLAT)",
+                category: "Below AGI Deduction",
+                hierarchy: 3,
+                description: "Donates appreciated assets to charity for significant itemized deduction while maintaining family wealth transfer."
+            },
+            {
+                id: "OG_USENERGY_01",
+                name: "Oil & Gas (US Energy)",
+                category: "Below AGI Deduction",
+                hierarchy: 4,
+                description: "Provides large upfront deductions via Intangible Drilling Costs (IDCs) in domestic energy projects."
+            },
+            {
+                id: "QBI_FINAL_01",
+                name: "QBI Final Calculation",
+                category: "Final Tuning",
+                hierarchy: 5,
+                description: "20% deduction for Qualified Business Income if income is below phase-out thresholds."
+            }
+        ];
+
+        const STANDARD_DEDUCTION = 29200;
+
+        function TaxCalculatorApp() {
+            const [clientData, setClientData] = useState({
+                w2_income: 500000,
+                business_income: 2000000,
+                capital_gains: 1000000,
+                state: 'NY',
+                investment_amount: 5000000,
+                equipment_cost: 500000,
+                charitable_intent: 2000000,
+                og_investment: 1000000
+            });
+
+            const [enabledStrategies, setEnabledStrategies] = useState({
+                QUANT_DEALS_01: true,
+                EQUIP_S179_01: true,
+                CHAR_CLAT_01: true,
+                OG_USENERGY_01: true,
+                QBI_FINAL_01: true
+            });
+
+            const formatCurrency = (value) => {
+                if (!value || value === 0) return "$0";
+                return `$${value.toLocaleString()}`;
+            };
+
+            const formatPercentage = (value) => {
+                return `${value.toFixed(1)}%`;
+            };
+
+            const calculateTax = (income, brackets) => {
+                if (income <= 0) return 0;
+
+                let tax = 0;
+                let remainingIncome = income;
+
+                for (const bracket of brackets) {
+                    if (remainingIncome <= 0) break;
+
+                    const taxableInBracket = Math.min(remainingIncome, bracket.max_income - bracket.min_income);
+                    if (taxableInBracket > 0) {
+                        tax += taxableInBracket * bracket.rate;
+                        remainingIncome -= taxableInBracket;
+                    }
+                }
+
+                return Math.max(0, tax);
+            };
+
+            const calculateBaseline = () => {
+                const ordinaryIncome = clientData.w2_income + clientData.business_income;
+                const fedTaxableIncome = ordinaryIncome - STANDARD_DEDUCTION;
+                const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
+                const fedCapitalGainsTax = clientData.capital_gains * 0.20;
+                const fedTax = fedOrdinaryTax + fedCapitalGainsTax;
+
+                const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                const stateTaxableIncome = ordinaryIncome + clientData.capital_gains;
+                const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
+
+                return {
+                    ordinary_income: ordinaryIncome,
+                    fed_taxable_income: fedTaxableIncome,
+                    fed_ordinary_tax: fedOrdinaryTax,
+                    fed_capital_gains_tax: fedCapitalGainsTax,
+                    fed_tax: fedTax,
+                    state_taxable_income: stateTaxableIncome,
+                    state_tax: stateTax,
+                    total_tax: fedTax + stateTax
+                };
+            };
+
+            const calculateWithStrategies = () => {
+                const fedDeductions = { above_agi: 0, below_agi: 0, qbi: 0 };
+                const stateDeductions = { above_agi: 0, below_agi: 0 };
+                let fedCapitalGains = clientData.capital_gains;
+                let stateCapitalGains = clientData.capital_gains;
+                let njAddBack = 0;
+                const insights = [];
+                const strategyImpacts = [];
+
+                // HIERARCHY 1: Quantino DEALS
+                if (enabledStrategies.QUANT_DEALS_01) {
+                    const capitalLoss = clientData.investment_amount * 0.30;
+                    const lossToApply = Math.min(fedCapitalGains, capitalLoss);
+                    fedCapitalGains -= lossToApply;
+                    stateCapitalGains -= lossToApply;
+                    const unusedLoss = capitalLoss - lossToApply;
+
+                    const fedSavings = lossToApply * 0.20;
+                    const stateSavings = lossToApply * (clientData.state === 'NY' ? 0.0685 : 0.0637);
+
+                    strategyImpacts.push({
+                        strategy: 'Quantino DEALS',
+                        fed_savings: fedSavings,
+                        state_savings: stateSavings,
+                        total_savings: fedSavings + stateSavings
+                    });
+
+                    if (unusedLoss > 0) {
+                        const ordinaryOffset = Math.min(unusedLoss, 3000);
+                        fedDeductions.below_agi += ordinaryOffset;
+                        stateDeductions.below_agi += ordinaryOffset;
+                        insights.push({
+                            type: 'success',
+                            icon: '💰',
+                            title: 'Quantino Capital Loss Strategy',
+                            message: `Generated ${formatCurrency(capitalLoss)} in tax losses. Offset ${formatCurrency(lossToApply)} in capital gains and ${formatCurrency(ordinaryOffset)} in ordinary income.`
+                        });
+                    }
+                }
+
+                // HIERARCHY 2: Equipment Section 179
+                let agiForCharity = clientData.w2_income + clientData.business_income;
+                if (enabledStrategies.EQUIP_S179_01) {
+                    const fedDeduction = Math.min(clientData.equipment_cost, clientData.business_income, 1220000);
+                    fedDeductions.above_agi += fedDeduction;
+                    agiForCharity -= fedDeduction;
+
+                    const fedSavings = fedDeduction * 0.37;
+
+                    let stateSavings;
+                    if (clientData.state === 'NY') {
+                        stateDeductions.above_agi += fedDeduction;
+                        stateSavings = fedDeduction * 0.109;
+                    } else {
+                        const njDeduction = Math.min(clientData.equipment_cost, 25000);
+                        stateDeductions.above_agi += njDeduction;
+                        njAddBack = Math.max(0, clientData.equipment_cost - 25000);
+                        stateSavings = njDeduction * 0.1075;
+                    }
+
+                    strategyImpacts.push({
+                        strategy: 'Section 179 Equipment',
+                        fed_savings: fedSavings,
+                        state_savings: stateSavings,
+                        total_savings: fedSavings + stateSavings
+                    });
+
+                    insights.push({
+                        type: 'success',
+                        icon: '🏭',
+                        title: 'Equipment Expensing Success',
+                        message: `Section 179 generated ${formatCurrency(fedDeduction)} federal deduction, reducing AGI for downstream strategy calculations.`
+                    });
+                }
+
+                // HIERARCHY 3: Charitable CLAT
+                if (enabledStrategies.CHAR_CLAT_01) {
+                    const fedDeduction = Math.min(clientData.charitable_intent, agiForCharity * 0.30);
+                    fedDeductions.below_agi += fedDeduction;
+
+                    const fedSavings = fedDeduction * 0.37;
+                    let stateSavings;
+
+                    if (clientData.state === 'NY') {
+                        const nyDeduction = fedDeduction * 0.5;
+                        stateDeductions.below_agi += nyDeduction;
+                        stateSavings = nyDeduction * 0.109;
+                    } else {
+                        stateSavings = 0;
+                    }
+
+                    strategyImpacts.push({
+                        strategy: 'Charitable CLAT',
+                        fed_savings: fedSavings,
+                        state_savings: stateSavings,
+                        total_savings: fedSavings + stateSavings
+                    });
+
+                    insights.push({
+                        type: 'success',
+                        icon: '❤️',
+                        title: 'Charitable Strategy Impact',
+                        message: `CLAT created ${formatCurrency(fedDeduction)} federal deduction.`
+                    });
+                }
+
+                // HIERARCHY 4: Oil & Gas
+                if (enabledStrategies.OG_USENERGY_01) {
+                    const ogDeduction = clientData.og_investment * 0.70;
+                    fedDeductions.below_agi += ogDeduction;
+
+                    const fedSavings = ogDeduction * 0.37;
+                    let stateSavings;
+
+                    if (clientData.state === 'NY') {
+                        stateDeductions.below_agi += ogDeduction;
+                        stateSavings = ogDeduction * 0.109;
+                    } else {
+                        stateSavings = 0;
+                    }
+
+                    strategyImpacts.push({
+                        strategy: 'Oil & Gas IDCs',
+                        fed_savings: fedSavings,
+                        state_savings: stateSavings,
+                        total_savings: fedSavings + stateSavings
+                    });
+
+                    insights.push({
+                        type: 'success',
+                        icon: '⛽',
+                        title: 'Energy Investment Deduction',
+                        message: `Oil & Gas IDCs generated ${formatCurrency(ogDeduction)} in immediate tax deductions.`
+                    });
+                }
+
+                // Calculate taxable income pre-QBI
+                const fedTaxableIncome = clientData.w2_income + clientData.business_income - 
+                    fedDeductions.above_agi - STANDARD_DEDUCTION - fedDeductions.below_agi;
+
+                // HIERARCHY 5: QBI
+                if (enabledStrategies.QBI_FINAL_01) {
+                    const threshold = 383900;
+                    if (fedTaxableIncome <= threshold) {
+                        const qbiDeduction = Math.min(clientData.business_income * 0.20, fedTaxableIncome * 0.20);
+                        fedDeductions.qbi = qbiDeduction;
+
+                        if (qbiDeduction > 0) {
+                            const fedSavings = qbiDeduction * 0.37;
+                            strategyImpacts.push({
+                                strategy: 'QBI Deduction',
+                                fed_savings: fedSavings,
+                                state_savings: 0,
+                                total_savings: fedSavings
+                            });
+
+                            insights.push({
+                                type: 'success',
+                                icon: '🎯',
+                                title: 'QBI Threshold Achieved',
+                                message: `Strategy combination lowered taxable income to unlock ${formatCurrency(qbiDeduction)} QBI deduction!`
+                            });
+                        }
+                    }
+                }
+
+                // Final tax calculation
+                const finalFedTaxableIncome = fedTaxableIncome - fedDeductions.qbi;
+                const fedOrdinaryTax = calculateTax(finalFedTaxableIncome, FED_TAX_BRACKETS);
+                const fedCapitalGainsTax = fedCapitalGains * 0.20;
+                const fedTax = fedOrdinaryTax + fedCapitalGainsTax;
+
+                const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                const stateTaxableIncome = clientData.w2_income + clientData.business_income - 
+                    stateDeductions.above_agi - stateDeductions.below_agi + njAddBack + stateCapitalGains;
+                const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
+
+                return {
+                    fed_taxable_income: finalFedTaxableIncome,
+                    fed_ordinary_tax: fedOrdinaryTax,
+                    fed_capital_gains_tax: fedCapitalGainsTax,
+                    fed_tax: fedTax,
+                    state_taxable_income: stateTaxableIncome,
+                    state_tax: stateTax,
+                    total_tax: fedTax + stateTax,
+                    insights: insights,
+                    strategy_impacts: strategyImpacts,
+                    deductions: fedDeductions
+                };
+            };
+
+            const baseline = useMemo(() => calculateBaseline(), [clientData]);
+            const withStrategies = useMemo(() => calculateWithStrategies(), [clientData, enabledStrategies]);
+
+            const generateRecommendations = () => {
+                const totalIncome = clientData.w2_income + clientData.business_income + clientData.capital_gains;
+                const savings = baseline.total_tax - withStrategies.total_tax;
+                const savingsRate = baseline.total_tax > 0 ? (savings / baseline.total_tax) * 100 : 0;
+
+                const recommendations = [];
+
+                if (totalIncome > 10000000) {
+                    recommendations.push({
+                        priority: 'HIGH',
+                        category: 'Estate Planning',
+                        icon: '👑',
+                        title: 'Ultra-High Net Worth Strategies',
+                        recommendation: 'Consider advanced estate planning techniques like Grantor Retained Annuity Trusts (GRATs) or Private Placement Life Insurance (PPLI) for wealth transfer and tax efficiency.',
+                        potential_benefit: 'Additional $500K - $2M annual tax savings'
+                    });
+                }
+
+                if (clientData.business_income > 1000000) {
+                    recommendations.push({
+                        priority: 'HIGH',
+                        category: 'Business Structure',
+                        icon: '🏢',
+                        title: 'Corporate Structure Optimization',
+                        recommendation: 'Evaluate conversion to C-Corporation with strategic salary/dividend split or implement defined benefit pension plan for additional $100K+ deductions.',
+                        potential_benefit: `Potential ${formatCurrency(clientData.business_income * 0.05)} additional savings`
+                    });
+                }
+
+                if (savingsRate < 20 && totalIncome > 3000000) {
+                    recommendations.push({
+                        priority: 'HIGH',
+                        category: 'Strategy Enhancement',
+                        icon: '🎯',
+                        title: 'Optimization Opportunity',
+                        recommendation: 'Current strategy mix achieving only moderate savings. Consider international structures, conservation easements, or opportunity zone investments.',
+                        potential_benefit: 'Target 30-50% total tax reduction'
+                    });
+                }
+
+                return recommendations;
+            };
+
+            const recommendations = useMemo(() => generateRecommendations(), [baseline, withStrategies]);
+
+            const handleInputChange = (field, value) => {
+                const numericValue = typeof value === 'string' ? 
+                    parseFloat(value.replace(/[^0-9.-]+/g, "")) || 0 : value;
+                setClientData(prev => ({ ...prev, [field]: numericValue }));
+            };
+
+            const handleStrategyToggle = (strategyId) => {
+                setEnabledStrategies(prev => ({ ...prev, [strategyId]: !prev[strategyId] }));
+            };
+
+            const totalSavings = baseline.total_tax - withStrategies.total_tax;
+            const savingsPercentage = baseline.total_tax > 0 ? (totalSavings / baseline.total_tax) * 100 : 0;
+
+            useEffect(() => {
+                // Create charts after component mounts
+                const createCharts = () => {
+                    // Tax comparison chart
+                    const comparisonData = [{
+                        x: ['Baseline', 'With Strategies'],
+                        y: [baseline.fed_tax, withStrategies.fed_tax],
+                        name: 'Federal Tax',
+                        type: 'bar',
+                        marker: { color: 'rgba(255, 99, 132, 0.8)' }
+                    }, {
+                        x: ['Baseline', 'With Strategies'],
+                        y: [baseline.state_tax, withStrategies.state_tax],
+                        name: 'State Tax',
+                        type: 'bar',
+                        marker: { color: 'rgba(54, 162, 235, 0.8)' }
+                    }];
+
+                    const comparisonLayout = {
+                        barmode: 'stack',
+                        title: 'Tax Liability Comparison',
+                        xaxis: { title: 'Scenario' },
+                        yaxis: { title: 'Tax Amount ($)' },
+                        height: 400
+                    };
+
+                    if (document.getElementById('comparison-chart')) {
+                        Plotly.newPlot('comparison-chart', comparisonData, comparisonLayout);
+                    }
+
+                    // Waterfall chart
+                    if (withStrategies.strategy_impacts && withStrategies.strategy_impacts.length > 0) {
+                        const waterfallData = [{
+                            x: ['Baseline', ...withStrategies.strategy_impacts.map(impact => impact.strategy), 'Final'],
+                            y: [baseline.total_tax, ...withStrategies.strategy_impacts.map(impact => -impact.total_savings), withStrategies.total_tax],
+                            type: 'waterfall',
+                            measure: ['absolute', ...Array(withStrategies.strategy_impacts.length).fill('relative'), 'total'],
+                            text: [formatCurrency(baseline.total_tax), ...withStrategies.strategy_impacts.map(impact => formatCurrency(-impact.total_savings)), formatCurrency(withStrategies.total_tax)],
+                            textposition: 'outside'
+                        }];
+
+                        const waterfallLayout = {
+                            title: 'Tax Savings Waterfall - Strategy Impact Analysis',
+                            height: 400
+                        };
+
+                        if (document.getElementById('waterfall-chart')) {
+                            Plotly.newPlot('waterfall-chart', waterfallData, waterfallLayout);
+                        }
+                    }
+                };
+
+                const timer = setTimeout(createCharts, 100);
+                return () => clearTimeout(timer);
+            }, [baseline, withStrategies]);
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🧮 AI-Powered Tax Strategy Calculator</h1>
+                        <p>Advanced tax planning with real-time optimization and AI insights</p>
+                    </div>
+
+                    <div className="input-section">
+                        <h3 className="section-title">💰 Income Sources</h3>
+                        <div className="input-grid">
+                            <div className="input-group">
+                                <label>💼 W-2 Income</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.w2_income.toLocaleString()}
+                                    onChange={(e) => handleInputChange('w2_income', e.target.value)}
+                                    placeholder="e.g., 500,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>🏢 Business Income</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.business_income.toLocaleString()}
+                                    onChange={(e) => handleInputChange('business_income', e.target.value)}
+                                    placeholder="e.g., 2,000,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>📈 Capital Gains</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.capital_gains.toLocaleString()}
+                                    onChange={(e) => handleInputChange('capital_gains', e.target.value)}
+                                    placeholder="e.g., 1,000,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>🗺️ State</label>
+                                <select 
+                                    value={clientData.state}
+                                    onChange={(e) => handleInputChange('state', e.target.value)}
+                                >
+                                    <option value="NY">New York</option>
+                                    <option value="NJ">New Jersey</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="input-section">
+                        <h3 className="section-title" style={{color: '#388e3c', borderColor: '#388e3c'}}>📈 Strategy Investments</h3>
+                        <div className="input-grid">
+                            <div className="input-group">
+                                <label>💰 Quantino Investment</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.investment_amount.toLocaleString()}
+                                    onChange={(e) => handleInputChange('investment_amount', e.target.value)}
+                                    placeholder="e.g., 5,000,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>🏭 Equipment Cost</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.equipment_cost.toLocaleString()}
+                                    onChange={(e) => handleInputChange('equipment_cost', e.target.value)}
+                                    placeholder="e.g., 500,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>❤️ Charitable Intent</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.charitable_intent.toLocaleString()}
+                                    onChange={(e) => handleInputChange('charitable_intent', e.target.value)}
+                                    placeholder="e.g., 2,000,000"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>⛽ Oil & Gas Investment</label>
+                                <input 
+                                    type="text" 
+                                    value={clientData.og_investment.toLocaleString()}
+                                    onChange={(e) => handleInputChange('og_investment', e.target.value)}
+                                    placeholder="e.g., 1,000,000"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="strategy-section">
+                        <h3 className="section-title" style={{color: '#f57c00', borderColor: '#f57c00'}}>⚙️ Tax Strategies</h3>
+                        {STRATEGIES.map(strategy => (
+                            <div key={strategy.id} className="strategy-item">
+                                <label>
+                                    <input 
+                                        type="checkbox" 
+                                        className="strategy-checkbox"
+                                        checked={enabledStrategies[strategy.id]}
+                                        onChange={() => handleStrategyToggle(strategy.id)}
+                                    />
+                                    {strategy.hierarchy}. {strategy.name}
+                                </label>
+                                <div className="strategy-description">{strategy.description}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="results-section">
+                        <div style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '30px', borderRadius: '15px', marginBottom: '20px'}}>
+                            <h1 style={{color: 'white', textAlign: 'center', marginBottom: '30px', fontSize: '28px'}}>
+                                🧮 Executive Tax Strategy Report
+                            </h1>
+                            <div className="metrics-grid">
+                                <div className="metric-card">
+                                    <h3 style={{color: '#d32f2f', margin: 0}}>Baseline Tax</h3>
+                                    <div className="metric-value" style={{color: '#333'}}>{formatCurrency(baseline.total_tax)}</div>
+                                    <small style={{color: '#666'}}>Without strategies</small>
+                                </div>
+                                <div className="metric-card">
+                                    <h3 style={{color: '#388e3c', margin: 0}}>Optimized Tax</h3>
+                                    <div className="metric-value" style={{color: '#333'}}>{formatCurrency(withStrategies.total_tax)}</div>
+                                    <small style={{color: '#666'}}>With strategies</small>
+                                </div>
+                                <div className="metric-card">
+                                    <h3 style={{color: '#1976d2', margin: 0}}>Total Savings</h3>
+                                    <div className="metric-value" style={{color: '#333'}}>{formatCurrency(totalSavings)}</div>
+                                    <small style={{color: '#666'}}>{formatPercentage(savingsPercentage)} reduction</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="chart-container">
+                            <div id="comparison-chart"></div>
+                        </div>
+
+                        {withStrategies.strategy_impacts && withStrategies.strategy_impacts.length > 0 && (
+                            <div className="chart-container">
+                                <div id="waterfall-chart"></div>
+                            </div>
+                        )}
+
+                        {withStrategies.insights && withStrategies.insights.length > 0 && (
+                            <div>
+                                <h2>🔍 Strategic Insights & Analysis</h2>
+                                {withStrategies.insights.map((insight, index) => (
+                                    <div key={index} className={`insight-item ${insight.type === 'warning' ? 'insight-warning' : insight.type === 'info' ? 'insight-info' : ''}`}>
+                                        <strong>{insight.icon} {insight.title}</strong><br/>
+                                        <span style={{color: '#666'}}>{insight.message}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {recommendations.length > 0 && (
+                            <div>
+                                <h2>🤖 AI-Powered Recommendations</h2>
+                                {recommendations.map((rec, index) => (
+                                    <div key={index} className="recommendation-item">
+                                        <div className="recommendation-header">
+                                            <h3 style={{margin: 0, color: '#333'}}>{rec.icon} {rec.title}</h3>
+                                            <span className="priority-badge">{rec.priority}</span>
+                                        </div>
+                                        <p style={{color: '#666', margin: '10px 0'}}>{rec.recommendation}</p>
+                                        <div style={{background: '#f8f9fa', padding: '10px', borderRadius: '5px', marginTop: '10px'}}>
+                                            <strong style={{color: '#28a745'}}>💰 Potential Benefit:</strong> {rec.potential_benefit}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <h2>📊 Detailed Tax Breakdown</h2>
+                        <table className="breakdown-table">
+                            <thead>
+                                <tr>
+                                    <th>Tax Component</th>
+                                    <th>Baseline</th>
+                                    <th>With Strategies</th>
+                                    <th>Savings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style={{textAlign: 'left'}}>Federal Ordinary Income Tax</td>
+                                    <td>{formatCurrency(baseline.fed_ordinary_tax)}</td>
+                                    <td>{formatCurrency(withStrategies.fed_ordinary_tax)}</td>
+                                    <td>{formatCurrency(baseline.fed_ordinary_tax - withStrategies.fed_ordinary_tax)}</td>
+                                </tr>
+                                <tr>
+                                    <td style={{textAlign: 'left'}}>Federal Capital Gains Tax</td>
+                                    <td>{formatCurrency(baseline.fed_capital_gains_tax)}</td>
+                                    <td>{formatCurrency(withStrategies.fed_capital_gains_tax)}</td>
+                                    <td>{formatCurrency(baseline.fed_capital_gains_tax - withStrategies.fed_capital_gains_tax)}</td>
+                                </tr>
+                                <tr>
+                                    <td style={{textAlign: 'left'}}>{clientData.state} State Tax</td>
+                                    <td>{formatCurrency(baseline.state_tax)}</td>
+                                    <td>{formatCurrency(withStrategies.state_tax)}</td>
+                                    <td>{formatCurrency(baseline.state_tax - withStrategies.state_tax)}</td>
+                                </tr>
+                                <tr>
+                                    <td style={{textAlign: 'left'}}>Total Tax Liability</td>
+                                    <td>{formatCurrency(baseline.total_tax)}</td>
+                                    <td>{formatCurrency(withStrategies.total_tax)}</td>
+                                    <td>{formatCurrency(totalSavings)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TaxCalculatorApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
