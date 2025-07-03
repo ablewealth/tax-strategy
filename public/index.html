@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
     
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,14 +49,43 @@
             }
             const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } = window.Recharts;
 
-            // Custom Icon components to use Lucide via window object
-            const Icon = ({ name, className, ...props }) => {
-                // Ensure lucide is available on the window object
-                if (window.lucide && window.lucide.icons[name]) {
-                    const iconHtml = window.lucide.createIcons({ icons: [[name, props]] });
-                    return <i className={className} dangerouslySetInnerHTML={{ __html: iconHtml }} />;
+            // Fixed Icon component using Lucide properly
+            const Icon = ({ name, className = "", size = 20, ...props }) => {
+                const [iconSvg, setIconSvg] = useState('');
+                
+                useEffect(() => {
+                    if (window.lucide && window.lucide.icons && window.lucide.icons[name]) {
+                        try {
+                            const iconData = window.lucide.icons[name];
+                            if (iconData && iconData.toSvg) {
+                                const svgString = iconData.toSvg({ width: size, height: size, ...props });
+                                setIconSvg(svgString);
+                            }
+                        } catch (error) {
+                            console.warn(`Icon ${name} could not be loaded:`, error);
+                        }
+                    }
+                }, [name, size]);
+
+                if (!iconSvg) {
+                    // Fallback to simple shapes if icon fails to load
+                    const fallbackIcons = {
+                        'info': '●',
+                        'trending-up': '↗',
+                        'check-circle': '✓',
+                        'alert-triangle': '⚠',
+                        'default': '•'
+                    };
+                    return <span className={`inline-block ${className}`}>{fallbackIcons[name] || fallbackIcons.default}</span>;
                 }
-                return <i className={className}></i>; // Return an empty element if icon not found
+
+                return (
+                    <span 
+                        className={`inline-block ${className}`}
+                        dangerouslySetInnerHTML={{ __html: iconSvg }}
+                        style={{ width: size, height: size }}
+                    />
+                );
             };
 
             // --- Constants: Strategy Library, Tax Brackets, and Initial Data ---
@@ -211,42 +240,58 @@
             };
 
             // --- Helper Functions ---
-            const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+            const formatCurrency = (value) => new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD', 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 0 
+            }).format(Math.max(0, value || 0));
+
             const calculateTax = (income, brackets) => {
+                if (income <= 0) return 0;
                 let tax = 0;
                 let remainingIncome = income;
+                
                 for (const bracket of brackets) {
                     if (remainingIncome <= 0) break;
-                    const taxableInBracket = Math.min(remainingIncome, bracket.max - bracket.min);
-                    tax += taxableInBracket * bracket.rate;
-                    remainingIncome -= taxableInBracket;
+                    const bracketMin = bracket.min || 0;
+                    const bracketMax = bracket.max === Infinity ? remainingIncome + bracketMin : bracket.max;
+                    const taxableInBracket = Math.min(remainingIncome, bracketMax - bracketMin);
+                    
+                    if (taxableInBracket > 0) {
+                        tax += taxableInBracket * bracket.rate;
+                        remainingIncome -= taxableInBracket;
+                    }
                 }
-                return tax > 0 ? tax : 0;
+                return Math.max(0, tax);
             };
 
             // --- React Components ---
             const ClientInputForm = ({ data, setData }) => {
                 const handleInputChange = (e) => {
                     const { name, value } = e.target;
-                    const numericValue = Number(value.replace(/,/g, '')) || 0;
-                    setData(prev => ({ ...prev, [name]: numericValue }));
+                    const numericValue = Number(value.replace(/[^0-9.-]+/g, '')) || 0;
+                    setData(prev => ({ ...prev, [name]: Math.max(0, numericValue) }));
                 };
+
                 const handleSelectChange = (e) => {
                     const { name, value } = e.target;
                     setData(prev => ({ ...prev, [name]: value }));
                 };
+
                 const renderInput = (name, label) => (
-                    <div>
+                    <div key={name}>
                         <label className="block text-sm font-medium text-gray-600">{label}</label>
                         <input
                             type="text"
                             name={name}
-                            value={data[name].toLocaleString('en-US')}
+                            value={data[name]?.toLocaleString('en-US') || '0'}
                             onChange={handleInputChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
                 );
+
                 return (
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
@@ -258,7 +303,12 @@
                             {renderInput('capitalGains', 'Long-Term Capital Gains')}
                             <div>
                                 <label className="block text-sm font-medium text-gray-600">State</label>
-                                <select name="state" value={data.state} onChange={handleSelectChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <select 
+                                    name="state" 
+                                    value={data.state} 
+                                    onChange={handleSelectChange} 
+                                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                >
                                     <option value="NY">New York (NY)</option>
                                     <option value="NJ">New Jersey (NJ)</option>
                                 </select>
@@ -284,14 +334,24 @@
                             {STRATEGY_LIBRARY.map(strategy => {
                                 const isEnabled = enabledStrategies[strategy.id];
                                 return (
-                                    <div key={strategy.id} className={`p-4 rounded-lg border transition-all duration-300 ${isEnabled ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'}`}>
+                                    <div key={strategy.id} className={`p-4 rounded-lg border transition-all duration-300 ${
+                                        isEnabled ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
+                                    }`}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <span className={`mr-3 font-bold text-lg ${isEnabled ? 'text-blue-600' : 'text-gray-500'}`}>{strategy.hierarchy}.</span>
-                                                <label htmlFor={strategy.id} className="font-bold text-lg text-gray-800">{strategy.name}</label>
+                                                <span className={`mr-3 font-bold text-lg ${
+                                                    isEnabled ? 'text-blue-600' : 'text-gray-500'
+                                                }`}>
+                                                    {strategy.hierarchy}.
+                                                </span>
+                                                <label htmlFor={strategy.id} className="font-bold text-lg text-gray-800">
+                                                    {strategy.name}
+                                                </label>
                                             </div>
                                             <div className="flex items-center">
-                                                <span className={`text-sm font-semibold mr-4 ${isEnabled ? 'text-blue-600' : 'text-gray-500'}`}>
+                                                <span className={`text-sm font-semibold mr-4 ${
+                                                    isEnabled ? 'text-blue-600' : 'text-gray-500'
+                                                }`}>
                                                     {isEnabled ? 'ENABLED' : 'DISABLED'}
                                                 </span>
                                                 <input
@@ -313,12 +373,33 @@
             };
 
             const ResultsSummary = ({ results }) => {
+                if (!results?.baseline || !results?.withStrategies) {
+                    return (
+                        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Results Summary</h2>
+                            <p className="text-gray-500">Loading calculation results...</p>
+                        </div>
+                    );
+                }
+
                 const data = [
-                    { name: 'Baseline', Federal: results.baseline.fedTax, State: results.baseline.stateTax, Total: results.baseline.totalTax },
-                    { name: 'With Strategies', Federal: results.withStrategies.fedTax, State: results.withStrategies.stateTax, Total: results.withStrategies.totalTax },
+                    { 
+                        name: 'Baseline', 
+                        Federal: results.baseline.fedTax || 0, 
+                        State: results.baseline.stateTax || 0, 
+                        Total: results.baseline.totalTax || 0 
+                    },
+                    { 
+                        name: 'With Strategies', 
+                        Federal: results.withStrategies.fedTax || 0, 
+                        State: results.withStrategies.stateTax || 0, 
+                        Total: results.withStrategies.totalTax || 0 
+                    },
                 ];
-                const totalSavings = results.baseline.totalTax - results.withStrategies.totalTax;
+                
+                const totalSavings = (results.baseline.totalTax || 0) - (results.withStrategies.totalTax || 0);
                 const savingsPercentage = results.baseline.totalTax > 0 ? (totalSavings / results.baseline.totalTax) * 100 : 0;
+                
                 return (
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Results Summary</h2>
@@ -342,14 +423,18 @@
                                 <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" />
-                                    <YAxis tickFormatter={formatCurrency} />
+                                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
                                     <Tooltip formatter={(value) => formatCurrency(value)} />
                                     <Legend />
                                     <Bar dataKey="Federal" stackId="a">
-                                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={index === 0 ? '#fca5a5' : '#86efac'} />)}
+                                        {data.map((entry, index) => (
+                                            <Cell key={`cell-fed-${index}`} fill={index === 0 ? '#fca5a5' : '#86efac'} />
+                                        ))}
                                     </Bar>
                                     <Bar dataKey="State" stackId="a">
-                                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={index === 0 ? '#ef4444' : '#22c55e'} />)}
+                                        {data.map((entry, index) => (
+                                            <Cell key={`cell-state-${index}`} fill={index === 0 ? '#ef4444' : '#22c55e'} />
+                                        ))}
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
@@ -359,7 +444,7 @@
             };
 
             const DynamicInsights = ({ insights }) => {
-                if (insights.length === 0) {
+                if (!insights || insights.length === 0) {
                     return (
                         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
@@ -369,6 +454,7 @@
                         </div>
                     );
                 }
+
                 const getIcon = (type) => {
                     switch (type) {
                         case 'warning': return <Icon name="alert-triangle" className="text-yellow-500 flex-shrink-0" />;
@@ -376,13 +462,15 @@
                         default: return <Icon name="info" className="text-blue-500 flex-shrink-0" />;
                     }
                 };
+
                 const getColor = (type) => {
                     switch (type) {
                         case 'warning': return 'bg-yellow-50 border-yellow-200';
                         case 'insight': return 'bg-green-50 border-green-200';
                         default: return 'bg-blue-50 border-blue-200';
                     }
-                }
+                };
+
                 return (
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
@@ -403,153 +491,218 @@
             // --- Main App Component ---
             function App() {
                 const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
+                
                 const calculationResults = useMemo(() => {
-                    const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
-                        const inputValue = clientData[s.inputRequired] || 0;
-                        acc[s.id] = inputValue > 1;
-                        return acc;
-                    }, {});
+                    try {
+                        const enabledStrategies = STRATEGY_LIBRARY.reduce((acc, s) => {
+                            const inputValue = clientData[s.inputRequired] || 0;
+                            acc[s.id] = inputValue > 1;
+                            return acc;
+                        }, {});
 
-                    const baseline = {};
-                    baseline.ordinaryIncome = clientData.w2Income + clientData.businessIncome;
-                    baseline.fedTaxableIncome = baseline.ordinaryIncome - STANDARD_DEDUCTION;
-                    baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
-                    baseline.fedCapitalGainsTax = clientData.capitalGains * 0.20;
-                    baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
-                    const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
-                    baseline.stateTaxableIncome = baseline.ordinaryIncome + clientData.capitalGains;
-                    baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
-                    baseline.totalTax = baseline.fedTax + baseline.stateTax;
+                        // Baseline calculations
+                        const baseline = {};
+                        baseline.ordinaryIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0);
+                        baseline.fedTaxableIncome = Math.max(0, baseline.ordinaryIncome - STANDARD_DEDUCTION);
+                        baseline.fedOrdinaryTax = calculateTax(baseline.fedTaxableIncome, FED_TAX_BRACKETS);
+                        baseline.fedCapitalGainsTax = (clientData.capitalGains || 0) * 0.20;
+                        baseline.fedTax = baseline.fedOrdinaryTax + baseline.fedCapitalGainsTax;
+                        
+                        const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+                        baseline.stateTaxableIncome = baseline.ordinaryIncome + (clientData.capitalGains || 0);
+                        baseline.stateTax = calculateTax(baseline.stateTaxableIncome, stateBrackets);
+                        baseline.totalTax = baseline.fedTax + baseline.stateTax;
 
-                    const withStrategies = {};
-                    let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
-                    let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
-                    let fedCapitalGains = clientData.capitalGains;
-                    let stateCapitalGains = clientData.capitalGains;
-                    let njAddBack = 0;
-                    let insights = [];
-                    let qbiBaseIncome = clientData.businessIncome;
+                        // Strategy calculations
+                        const withStrategies = {};
+                        let fedDeductions = { aboveAGI: 0, belowAGI: 0, qbi: 0 };
+                        let stateDeductions = { aboveAGI: 0, belowAGI: 0 };
+                        let fedCapitalGains = clientData.capitalGains || 0;
+                        let stateCapitalGains = clientData.capitalGains || 0;
+                        let njAddBack = 0;
+                        let insights = [];
+                        let qbiBaseIncome = clientData.businessIncome || 0;
 
-                    STRATEGY_LIBRARY.forEach(strategy => {
-                        if (enabledStrategies[strategy.id]) {
-                            switch (strategy.id) {
-                                case 'QUANT_DEALS_01': {
-                                    const result = strategy.fedCalcLogic(clientData.investmentAmount);
-                                    const lossToApply = Math.min(fedCapitalGains, result.capitalLoss);
-                                    fedCapitalGains -= lossToApply;
-                                    stateCapitalGains -= lossToApply;
-                                    const unusedLoss = result.capitalLoss - lossToApply;
-                                    if (unusedLoss > 0) {
-                                        const ordinaryOffset = Math.min(unusedLoss, 3000);
-                                        fedDeductions.belowAGI += ordinaryOffset;
-                                        stateDeductions.belowAGI += ordinaryOffset;
-                                        insights.push({ type: 'info', text: `Quantino generated ${formatCurrency(result.capitalLoss)} in losses. ${formatCurrency(lossToApply)} offset gains, and ${formatCurrency(ordinaryOffset)} offset ordinary income.` });
-                                        if (clientData.state === 'NJ' && (unusedLoss - ordinaryOffset > 0)) {
-                                            insights.push({ type: 'warning', text: `NJ has no capital loss carryover. ${formatCurrency(unusedLoss - ordinaryOffset)} in losses from Quantino will be lost for state tax purposes.` });
+                        // Apply strategies in hierarchy order
+                        STRATEGY_LIBRARY.forEach(strategy => {
+                            if (enabledStrategies[strategy.id]) {
+                                try {
+                                    switch (strategy.id) {
+                                        case 'QUANT_DEALS_01': {
+                                            const result = strategy.fedCalcLogic(clientData.investmentAmount || 0);
+                                            const lossToApply = Math.min(fedCapitalGains, result.capitalLoss);
+                                            fedCapitalGains -= lossToApply;
+                                            stateCapitalGains -= lossToApply;
+                                            const unusedLoss = result.capitalLoss - lossToApply;
+                                            if (unusedLoss > 0) {
+                                                const ordinaryOffset = Math.min(unusedLoss, 3000);
+                                                fedDeductions.belowAGI += ordinaryOffset;
+                                                stateDeductions.belowAGI += ordinaryOffset;
+                                                insights.push({ 
+                                                    type: 'info', 
+                                                    text: `Quantino generated ${formatCurrency(result.capitalLoss)} in losses. ${formatCurrency(lossToApply)} offset gains, and ${formatCurrency(ordinaryOffset)} offset ordinary income.` 
+                                                });
+                                                if (clientData.state === 'NJ' && (unusedLoss - ordinaryOffset > 0)) {
+                                                    insights.push({ 
+                                                        type: 'warning', 
+                                                        text: `NJ has no capital loss carryover. ${formatCurrency(unusedLoss - ordinaryOffset)} in losses from Quantino will be lost for state tax purposes.` 
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                        }
+                                        case 'EQUIP_S179_01': {
+                                            const fedResult = strategy.fedCalcLogic(clientData.equipmentCost || 0, clientData.businessIncome || 0);
+                                            fedDeductions.aboveAGI += fedResult.deduction;
+                                            if (clientData.state === 'NY') {
+                                                const nyResult = strategy.nyCalcLogic(clientData.equipmentCost || 0, clientData.businessIncome || 0);
+                                                stateDeductions.aboveAGI += nyResult.deduction;
+                                            } else {
+                                                const njResult = strategy.njCalcLogic(clientData.equipmentCost || 0);
+                                                stateDeductions.aboveAGI += njResult.deduction;
+                                                njAddBack = njResult.addBack;
+                                                if (njAddBack > 0) {
+                                                    insights.push({ 
+                                                        type: 'warning', 
+                                                        text: `A ${formatCurrency(njAddBack)} depreciation add-back is required for NJ, creating phantom state income.` 
+                                                    });
+                                                }
+                                            }
+                                            insights.push({ 
+                                                type: 'insight', 
+                                                text: `Equipment purchase generated a ${formatCurrency(fedResult.deduction)} federal deduction, reducing AGI for other calculations.` 
+                                            });
+                                            break;
+                                        }
+                                        case 'CHAR_CLAT_01': {
+                                            let agiForCharity = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                                            const fedResult = strategy.fedCalcLogic(clientData.charitableIntent || 0, agiForCharity);
+                                            fedDeductions.belowAGI += fedResult.deduction;
+                                            if (clientData.state === 'NY') {
+                                                const nyResult = strategy.nyCalcLogic(clientData.charitableIntent || 0, agiForCharity);
+                                                stateDeductions.belowAGI += nyResult.deduction;
+                                                insights.push({ 
+                                                    type: 'info', 
+                                                    text: `CLAT created a ${formatCurrency(fedResult.deduction)} federal deduction and a ${formatCurrency(nyResult.deduction)} NY deduction.` 
+                                                });
+                                            } else {
+                                                insights.push({ 
+                                                    type: 'info', 
+                                                    text: `CLAT created a ${formatCurrency(fedResult.deduction)} federal deduction. It is not deductible in NJ.` 
+                                                });
+                                            }
+                                            if (fedResult.deduction < (clientData.charitableIntent || 0)) {
+                                                insights.push({ 
+                                                    type: 'warning', 
+                                                    text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedResult.deduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.` 
+                                                });
+                                            }
+                                            break;
+                                        }
+                                        case 'OG_USENERGY_01': {
+                                            const fedResult = strategy.fedCalcLogic(clientData.ogInvestment || 0);
+                                            fedDeductions.belowAGI += fedResult.deduction;
+                                            if (clientData.state === 'NY') {
+                                                const nyResult = strategy.nyCalcLogic(clientData.ogInvestment || 0);
+                                                stateDeductions.belowAGI += nyResult.deduction;
+                                            }
+                                            insights.push({ 
+                                                type: 'info', 
+                                                text: `Oil & Gas investment generated a ${formatCurrency(fedResult.deduction)} federal deduction.` 
+                                            });
+                                            break;
+                                        }
+                                        case 'FILM_SEC181_01': {
+                                            const fedResult = strategy.fedCalcLogic(clientData.filmInvestment || 0);
+                                            fedDeductions.belowAGI += fedResult.deduction;
+                                            if (clientData.state === 'NY') {
+                                                const nyResult = strategy.nyCalcLogic(clientData.filmInvestment || 0);
+                                                stateDeductions.belowAGI += nyResult.deduction;
+                                            }
+                                            insights.push({ 
+                                                type: 'insight', 
+                                                text: `Film financing generated a ${formatCurrency(fedResult.deduction)} active loss deduction, reducing federal and NY tax. Not deductible in NJ.` 
+                                            });
+                                            break;
+                                        }
+                                        case 'QRP_DB_SOLO401K_01': {
+                                            const fedResult = strategy.fedCalcLogic(clientData.qrpContribution || 0);
+                                            fedDeductions.aboveAGI += fedResult.deduction;
+                                            stateDeductions.aboveAGI += fedResult.deduction;
+                                            qbiBaseIncome -= fedResult.deduction;
+                                            insights.push({ 
+                                                type: 'insight', 
+                                                text: `QRP contribution of ${formatCurrency(fedResult.deduction)} provides a federal and state deduction, but reduces the QBI base.` 
+                                            });
+                                            break;
+                                        }
+                                        case 'QBI_FINAL_01': {
+                                            let fedTaxableIncomePreQBI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
+                                            const fedResult = strategy.fedCalcLogic(fedTaxableIncomePreQBI, qbiBaseIncome);
+                                            fedDeductions.qbi = fedResult.deduction;
+                                            if (fedResult.deduction > 0) {
+                                                insights.push({ 
+                                                    type: 'insight', 
+                                                    text: `The combination of strategies successfully lowered taxable income to unlock a ${formatCurrency(fedResult.deduction)} QBI deduction.` 
+                                                });
+                                            } else {
+                                                insights.push({ 
+                                                    type: 'warning', 
+                                                    text: `Taxable income is still too high to qualify for the QBI deduction.` 
+                                                });
+                                            }
+                                            break;
                                         }
                                     }
-                                    break;
-                                }
-                                case 'EQUIP_S179_01': {
-                                    const fedResult = strategy.fedCalcLogic(clientData.equipmentCost, clientData.businessIncome);
-                                    fedDeductions.aboveAGI += fedResult.deduction;
-                                    if (clientData.state === 'NY') {
-                                        const nyResult = strategy.nyCalcLogic(clientData.equipmentCost, clientData.businessIncome);
-                                        stateDeductions.aboveAGI += nyResult.deduction;
-                                    } else {
-                                        const njResult = strategy.njCalcLogic(clientData.equipmentCost);
-                                        stateDeductions.aboveAGI += njResult.deduction;
-                                        njAddBack = njResult.addBack;
-                                        if (njAddBack > 0) {
-                                            insights.push({ type: 'warning', text: `A ${formatCurrency(njAddBack)} depreciation add-back is required for NJ, creating phantom state income.` });
-                                        }
-                                    }
-                                    insights.push({ type: 'insight', text: `Equipment purchase generated a ${formatCurrency(fedResult.deduction)} federal deduction, reducing AGI for other calculations.` });
-                                    break;
-                                }
-                                case 'CHAR_CLAT_01': {
-                                    let agiForCharity = clientData.w2Income + clientData.businessIncome - fedDeductions.aboveAGI;
-                                    const fedResult = strategy.fedCalcLogic(clientData.charitableIntent, agiForCharity);
-                                    fedDeductions.belowAGI += fedResult.deduction;
-                                    if (clientData.state === 'NY') {
-                                        const nyResult = strategy.nyCalcLogic(clientData.charitableIntent, agiForCharity);
-                                        stateDeductions.belowAGI += nyResult.deduction;
-                                        insights.push({ type: 'info', text: `CLAT created a ${formatCurrency(fedResult.deduction)} federal deduction and a ${formatCurrency(nyResult.deduction)} NY deduction.` });
-                                    } else {
-                                        insights.push({ type: 'info', text: `CLAT created a ${formatCurrency(fedResult.deduction)} federal deduction. It is not deductible in NJ.` });
-                                    }
-                                    if (fedResult.deduction < clientData.charitableIntent) {
-                                        insights.push({ type: 'warning', text: `Charitable deduction was limited by AGI. Only ${formatCurrency(fedResult.deduction)} of the ${formatCurrency(clientData.charitableIntent)} intent is deductible this year.` });
-                                    }
-                                    break;
-                                }
-                                case 'OG_USENERGY_01': {
-                                    const fedResult = strategy.fedCalcLogic(clientData.ogInvestment);
-                                    fedDeductions.belowAGI += fedResult.deduction;
-                                    if (clientData.state === 'NY') {
-                                        const nyResult = strategy.nyCalcLogic(clientData.ogInvestment);
-                                        stateDeductions.belowAGI += nyResult.deduction;
-                                    }
-                                    insights.push({ type: 'info', text: `Oil & Gas investment generated a ${formatCurrency(fedResult.deduction)} federal deduction.` });
-                                    break;
-                                }
-                                case 'FILM_SEC181_01': {
-                                    const fedResult = strategy.fedCalcLogic(clientData.filmInvestment);
-                                    fedDeductions.belowAGI += fedResult.deduction;
-                                    if (clientData.state === 'NY') {
-                                        const nyResult = strategy.nyCalcLogic(clientData.filmInvestment);
-                                        stateDeductions.belowAGI += nyResult.deduction;
-                                    }
-                                    insights.push({ type: 'insight', text: `Film financing generated a ${formatCurrency(fedResult.deduction)} active loss deduction, reducing federal and NY tax. Not deductible in NJ.` });
-                                    break;
-                                }
-                                case 'QRP_DB_SOLO401K_01': {
-                                    const fedResult = strategy.fedCalcLogic(clientData.qrpContribution);
-                                    fedDeductions.aboveAGI += fedResult.deduction;
-                                    stateDeductions.aboveAGI += fedResult.deduction;
-                                    qbiBaseIncome -= fedResult.deduction;
-                                    insights.push({ type: 'insight', text: `QRP contribution of ${formatCurrency(fedResult.deduction)} provides a federal and state deduction, but reduces the QBI base.` });
-                                    break;
-                                }
-                                case 'QBI_FINAL_01': {
-                                    let fedTaxableIncomePreQBI = clientData.w2Income + clientData.businessIncome - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI;
-                                    const fedResult = strategy.fedCalcLogic(fedTaxableIncomePreQBI, qbiBaseIncome);
-                                    fedDeductions.qbi = fedResult.deduction;
-                                    if (fedResult.deduction > 0) {
-                                        insights.push({ type: 'insight', text: `The combination of strategies successfully lowered taxable income to unlock a ${formatCurrency(fedResult.deduction)} QBI deduction.` });
-                                    } else {
-                                        insights.push({ type: 'warning', text: `Taxable income is still too high to qualify for the QBI deduction.` });
-                                    }
-                                    break;
+                                } catch (strategyError) {
+                                    console.error(`Error in strategy ${strategy.id}:`, strategyError);
+                                    insights.push({ 
+                                        type: 'warning', 
+                                        text: `Error calculating ${strategy.name}. Please check inputs.` 
+                                    });
                                 }
                             }
-                        }
-                    });
-                    
-                    withStrategies.fedTaxableIncome = clientData.w2Income + clientData.businessIncome - fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi;
-                    withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
-                    withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
-                    withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
-                    withStrategies.stateTaxableIncome = clientData.w2Income + clientData.businessIncome - stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains;
-                    withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
-                    withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
-                    withStrategies.insights = insights;
-                    return { baseline, withStrategies, enabledStrategies };
-                }, [clientData]);
+                        });
+                        
+                        // Final calculations with strategies
+                        withStrategies.fedTaxableIncome = Math.max(0, 
+                            (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                            fedDeductions.aboveAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI - fedDeductions.qbi
+                        );
+                        withStrategies.fedOrdinaryTax = calculateTax(withStrategies.fedTaxableIncome, FED_TAX_BRACKETS);
+                        withStrategies.fedCapitalGainsTax = fedCapitalGains * 0.20;
+                        withStrategies.fedTax = withStrategies.fedOrdinaryTax + withStrategies.fedCapitalGainsTax;
+                        
+                        withStrategies.stateTaxableIncome = Math.max(0,
+                            (clientData.w2Income || 0) + (clientData.businessIncome || 0) - 
+                            stateDeductions.aboveAGI - stateDeductions.belowAGI + njAddBack + stateCapitalGains
+                        );
+                        withStrategies.stateTax = calculateTax(withStrategies.stateTaxableIncome, stateBrackets);
+                        withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
+                        withStrategies.insights = insights;
 
-                useEffect(() => {
-                    // Ensure lucide icons are rendered after mount
-                    if (window.lucide) {
-                        window.lucide.createIcons();
+                        return { baseline, withStrategies, enabledStrategies };
+
+                    } catch (error) {
+                        console.error('Calculation error:', error);
+                        return {
+                            baseline: { fedTax: 0, stateTax: 0, totalTax: 0 },
+                            withStrategies: { fedTax: 0, stateTax: 0, totalTax: 0, insights: [{ type: 'warning', text: 'Calculation error occurred. Please check your inputs.' }] },
+                            enabledStrategies: {}
+                        };
                     }
-                }, [calculationResults]);
+                }, [clientData]);
 
                 return (
                     <div className="min-h-screen bg-gray-50 font-sans p-4 sm:p-6 lg:p-8">
                         <div className="max-w-7xl mx-auto">
                             <header className="mb-8">
-                                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Interactive Tax Strategy Calculator</h1>
-                                <p className="mt-2 text-lg text-gray-600">Model the impact of advanced tax strategies on a client's liability in real-time.</p>
+                                <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                                    Interactive Tax Strategy Calculator
+                                </h1>
+                                <p className="mt-2 text-lg text-gray-600">
+                                    Model the impact of advanced tax strategies on a client's liability in real-time.
+                                </p>
                             </header>
                             <main className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="space-y-8">
@@ -569,9 +722,16 @@
             ReactDOM.createRoot(document.getElementById('root')).render(<App />);
         }
 
-        // Use a small timeout to ensure all external scripts (Recharts, Lucide) are loaded
-        // before the React app tries to use them.
-        setTimeout(initializeApp, 100);
+        // Wait for all external libraries to load before initializing
+        function waitForLibraries() {
+            if (window.React && window.ReactDOM && window.Recharts && window.lucide) {
+                initializeApp();
+            } else {
+                setTimeout(waitForLibraries, 100);
+            }
+        }
+
+        waitForLibraries();
     </script>
 </body>
 </html>
