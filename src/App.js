@@ -96,12 +96,15 @@ const Header = ({ onPrint }) => (
 
 const DisclaimerModal = ({ onAccept }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-2xl mx-4">
+        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-3xl mx-4 text-sm">
             <h2 className="text-2xl font-bold mb-4">Disclaimer</h2>
-            <p className="text-sm text-gray-600 mb-6">
-                This tool is for illustrative purposes only and presents hypothetical tax optimization scenarios. It does not constitute legal, tax, or investment advice. Tax laws are subject to change. Consult a qualified professional before implementing any strategies.
-            </p>
-            <button onClick={onAccept} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+            <div className="space-y-4 text-gray-600 max-h-[60vh] overflow-y-auto pr-4">
+                 <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
+                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
+                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
+                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
+            </div>
+            <button onClick={onAccept} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mt-6">
                 I Understand and Accept
             </button>
         </div>
@@ -381,7 +384,6 @@ const useTaxCalculations = (scenario) => {
                             const fedAGIForClat = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
                             const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                             fedDeductions.belowAGI += clatDed;
-                            // Assuming state follows federal for this for simplicity
                             stateDeductions += clatDed;
                             break;
                         case 'OG_USENERGY_01':
@@ -455,7 +457,7 @@ const PrintableReport = ({ scenario, results }) => {
     if (!results || !scenario) return null;
     
     const { clientData } = scenario;
-    const { baseline, withStrategies, strategyImpacts } = results;
+    const { baseline, withStrategies } = results;
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
@@ -489,7 +491,12 @@ const PrintableReport = ({ scenario, results }) => {
                     </tbody>
                 </table>
             </div>
-             <p className="text-xs text-gray-500 mt-8">Disclaimer: This is a hypothetical analysis for illustrative purposes only and does not constitute tax advice.</p>
+             <div className="text-xs text-gray-500 mt-8 space-y-2">
+                <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
+                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
+                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
+                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
+            </div>
         </div>
     );
 };
@@ -548,7 +555,7 @@ export default function App() {
                     <ChartsSection results={calculationResults} />
                 </main>
             </div>
-            <div id="print-mount">
+            <div id="print-mount" className="hidden">
                 <PrintableReport scenario={activeScenario} results={calculationResults} />
             </div>
         </>
