@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strategic Tax Analysis Platform</title>
 
-    <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.0/chart.umd.js"></script>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -273,6 +269,17 @@
             transition: all 0.2s ease;
             color: var(--text-primary);
         }
+        
+        .form-input[type=text] {
+            -moz-appearance: textfield;
+        }
+
+        .form-input::-webkit-outer-spin-button,
+        .form-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
 
         .form-input:focus, .form-select:focus {
             outline: none;
@@ -685,7 +692,7 @@
             },
         ];
 
-        // Tax brackets (same as before)
+        // Tax brackets
         const FED_TAX_BRACKETS = [
             { rate: 0.10, min: 0, max: 23200 },
             { rate: 0.12, min: 23201, max: 94300 },
@@ -777,7 +784,6 @@
             useEffect(() => {
                 if (!chartRef.current || !baseline || !withStrategies) return;
 
-                // Destroy existing chart
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
                 }
@@ -854,17 +860,18 @@
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
                                 titleColor: 'white',
                                 bodyColor: 'white',
-                                titleFont: {
-                                    family: 'Inter',
-                                    size: 13
-                                },
-                                bodyFont: {
-                                    family: 'Inter',
-                                    size: 12
-                                },
+                                titleFont: { family: 'Inter', size: 13 },
+                                bodyFont: { family: 'Inter', size: 12 },
                                 callbacks: {
                                     label: function(context) {
-                                        return context.dataset.label + ': $' + (context.parsed.y * 1000).toLocaleString();
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += formatCurrency(context.parsed.y * 1000);
+                                        }
+                                        return label;
                                     }
                                 }
                             }
@@ -890,106 +897,91 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategieImpacts, finalTax }) => {
+        const WaterfallChart = ({ baseline, strategyImpacts, finalTax }) => {
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                if (!chartRef.current || !baseline || !strategieImpacts) return;
+                if (!chartRef.current || !baseline || !strategyImpacts) return;
 
-                // Destroy existing chart
                 if (chartInstance.current) {
                     chartInstance.current.destroy();
                 }
-
-                const ctx = chartRef.current.getContext('2d');
                 
                 // Prepare waterfall data
                 const labels = ['Baseline'];
-                const values = [baseline.totalTax / 1000];
-                const colors = ['#1e40af'];
+                const waterfallData = [];
+                const colors = [];
+
+                // Baseline bar
+                waterfallData.push([0, baseline.totalTax / 1000]);
+                colors.push('rgba(30, 64, 175, 0.9)'); // var(--primary-blue)
 
                 let runningTotal = baseline.totalTax;
 
-                strategieImpacts.forEach(impact => {
-                    if (impact.savings > 1000) { // Only show significant impacts
+                strategyImpacts.forEach(impact => {
+                    if (impact.savings > 100) { // Only show significant impacts
                         labels.push(impact.name);
-                        values.push(-impact.savings / 1000); // Negative for reductions
-                        colors.push('#dc2626');
+                        const start = (runningTotal - impact.savings) / 1000;
+                        const end = runningTotal / 1000;
+                        waterfallData.push([start, end]);
+                        colors.push('rgba(5, 150, 105, 0.9)'); // var(--success)
                         runningTotal -= impact.savings;
                     }
                 });
 
                 labels.push('Optimized');
-                values.push(finalTax / 1000);
-                colors.push('#1e40af');
+                waterfallData.push([0, finalTax / 1000]);
+                colors.push('rgba(212, 175, 55, 0.9)'); // var(--accent-gold)
 
+                const ctx = chartRef.current.getContext('2d');
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
-                            data: values,
+                            label: 'Tax Liability',
+                            data: waterfallData,
                             backgroundColor: colors,
-                            borderColor: colors,
-                            borderWidth: 1
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        indexAxis: 'x',
                         scales: {
                             x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Inter',
-                                        size: 10
-                                    },
-                                    maxRotation: 45
-                                }
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 10 } }
                             },
                             y: {
-                                beginAtZero: false,
-                                grid: {
-                                    color: '#e2e8f0'
-                                },
+                                beginAtZero: true,
+                                grid: { color: '#e2e8f0' },
                                 ticks: {
-                                    font: {
-                                        family: 'Inter',
-                                        size: 12
-                                    },
-                                    callback: function(value) {
-                                        return '$' + Math.abs(value) + 'k';
-                                    }
+                                    font: { family: 'Inter', size: 12 },
+                                    callback: (value) => '$' + value + 'k'
                                 }
                             }
                         },
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
                                 titleColor: 'white',
                                 bodyColor: 'white',
-                                titleFont: {
-                                    family: 'Inter',
-                                    size: 13
-                                },
-                                bodyFont: {
-                                    family: 'Inter',
-                                    size: 12
-                                },
+                                titleFont: { family: 'Inter', size: 13 },
+                                bodyFont: { family: 'Inter', size: 12 },
                                 callbacks: {
                                     label: function(context) {
-                                        const value = Math.abs(context.parsed.y * 1000);
-                                        if (context.dataIndex === 0 || context.dataIndex === labels.length - 1) {
-                                            return 'Tax Liability: $' + value.toLocaleString();
+                                        const label = context.dataset.label || '';
+                                        const raw = context.raw;
+                                        const isTotal = context.dataIndex === 0 || context.dataIndex === context.chart.data.labels.length - 1;
+
+                                        if (isTotal) {
+                                            return `${context.chart.data.labels[context.dataIndex]} Total: ${formatCurrency(raw[1] * 1000)}`;
                                         } else {
-                                            return 'Tax Savings: $' + value.toLocaleString();
+                                            const savings = (raw[1] - raw[0]) * 1000;
+                                            return `${context.chart.data.labels[context.dataIndex]} Savings: ${formatCurrency(savings)}`;
                                         }
                                     }
                                 }
@@ -1003,7 +995,7 @@
                         chartInstance.current.destroy();
                     }
                 };
-            }, [baseline, strategieImpacts, finalTax]);
+            }, [baseline, strategyImpacts, finalTax]);
 
             return (
                 <div className="chart-container">
@@ -1056,9 +1048,10 @@
                     <input
                         type="text"
                         name={name}
-                        value={data[name]?.toLocaleString('en-US') || '0'}
+                        value={data[name] || ''}
                         onChange={handleInputChange}
                         className="form-input"
+                        placeholder="$ 0"
                     />
                 </div>
             );
@@ -1226,7 +1219,7 @@
                     />
                     <WaterfallChart 
                         baseline={results.baseline}
-                        strategieImpacts={results.strategyImpacts || []}
+                        strategyImpacts={results.strategyImpacts || []}
                         finalTax={results.withStrategies.totalTax}
                     />
                 </div>
