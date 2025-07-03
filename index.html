@@ -839,7 +839,6 @@
         const STANDARD_DEDUCTION = 29200;
 
         function WealthManagementApp() {
-            const [apiKey, setApiKey] = useState('');
             const [aiInsights, setAiInsights] = useState(null);
             const [loadingAI, setLoadingAI] = useState(false);
             const [clientData, setClientData] = useState({
@@ -1168,39 +1167,103 @@
             const withStrategies = useMemo(() => calculateWithStrategies(), [clientData, enabledStrategies]);
 
             const generateAIInsights = async () => {
-                if (!apiKey) {
-                    alert('Please enter your Anthropic API key to access AI-powered insights.');
-                    return;
-                }
-
                 setLoadingAI(true);
                 
+                const totalIncome = clientData.w2_income + clientData.business_income + clientData.capital_gains;
+                const totalSavings = baseline.total_tax - withStrategies.total_tax;
+                const savingsRate = baseline.total_tax > 0 ? (totalSavings / baseline.total_tax) * 100 : 0;
+
+                const prompt = `You are a senior tax strategist at a premier wealth management firm. Analyze this high-net-worth client's tax situation and provide sophisticated, actionable insights:
+
+CLIENT PROFILE:
+- W-2 Income: ${formatCurrency(clientData.w2_income)}
+- Business Income: ${formatCurrency(clientData.business_income)}
+- Capital Gains: ${formatCurrency(clientData.capital_gains)}
+- State: ${clientData.state}
+- Total Income: ${formatCurrency(totalIncome)}
+
+CURRENT OPTIMIZATION:
+- Baseline Tax Liability: ${formatCurrency(baseline.total_tax)}
+- Optimized Tax Liability: ${formatCurrency(withStrategies.total_tax)}
+- Total Tax Savings: ${formatCurrency(totalSavings)}
+- Effective Savings Rate: ${formatPercentage(savingsRate)}
+
+ACTIVE STRATEGIES:
+${Object.entries(enabledStrategies).filter(([_, enabled]) => enabled).map(([id, _]) => {
+    const strategy = STRATEGIES.find(s => s.id === id);
+    return `- ${strategy.name}: ${strategy.description}`;
+}).join('\n')}
+
+STRATEGY PERFORMANCE:
+${withStrategies.strategy_impacts.map(impact => 
+    `- ${impact.strategy}: ${formatCurrency(impact.total_savings)} total savings`
+).join('\n')}
+
+Provide a comprehensive wealth management analysis including strategy effectiveness, advanced optimization opportunities, risk management, implementation roadmap, and long-term wealth preservation strategies. Format as a professional report with specific recommendations.`;
+
                 try {
-                    // Note: This is a simplified demonstration. In production, this should go through a backend service
-                    // to avoid CORS issues and protect API keys
+                    // Using Vercel Serverless Function
+                    const response = await fetch('/api/anthropic', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            clientData: clientData,
+                            baseline: baseline,
+                            withStrategies: withStrategies
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
                     
-                    setTimeout(() => {
-                        setAiInsights(`Due to browser security restrictions (CORS), direct API calls to Anthropic may not work from this environment. 
+                    if (data.success) {
+                        setAiInsights(data.content);
+                    } else {
+                        throw new Error(data.error);
+                    }
 
-For full AI functionality, this application should be deployed with a backend service that can securely handle API requests.
-
-However, based on your tax scenario:
+                } catch (error) {
+                    console.error('Error generating AI insights:', error);
+                    
+                    // Fallback: Show demo insights if backend is not available
+                    setAiInsights(`⚠️ Backend service not available. Showing demonstration analysis:
 
 EXECUTIVE SUMMARY:
-Your current optimization achieves ${formatPercentage((baseline.total_tax - withStrategies.total_tax) / baseline.total_tax * 100)} tax reduction.
+Your current optimization strategy achieves a ${formatPercentage(savingsRate)} tax reduction, representing ${formatCurrency(totalSavings)} in annual savings.
 
-KEY RECOMMENDATIONS:
-• Consider additional estate planning strategies given your income level
-• Evaluate international tax planning opportunities  
-• Review quarterly tax planning for ongoing optimization
-• Assess business structure optimization for additional savings
+KEY STRATEGIC RECOMMENDATIONS:
 
-This is a demonstration message. In production, this would contain comprehensive AI-generated insights based on your specific situation.`);
-                        setLoadingAI(false);
-                    }, 2000);
+1. **ESTATE PLANNING OPTIMIZATION**
+   Given your ${formatCurrency(totalIncome)} total income, consider advanced estate planning structures:
+   - Grantor Retained Annuity Trusts (GRATs) for wealth transfer
+   - Private Placement Life Insurance (PPLI) for tax-efficient accumulation
+   - Family Limited Partnerships for asset protection
+
+2. **INTERNATIONAL TAX PLANNING**
+   - Evaluate offshore investment structures for additional optimization
+   - Consider Puerto Rico Act 60 benefits for qualifying businesses
+   - Review international treaty opportunities
+
+3. **BUSINESS STRUCTURE ENHANCEMENT**
+   - Assess C-Corporation conversion for potential additional savings
+   - Implement advanced deferred compensation arrangements
+   - Optimize entity structure for maximum QBI benefits
+
+4. **IMPLEMENTATION PRIORITIES**
+   - Q1: Finalize retirement plan contributions
+   - Q2: Execute charitable giving strategies
+   - Q3: Review and adjust quarterly estimated payments
+   - Q4: Year-end planning and strategy refinement
+
+To access full AI-powered analysis, deploy with a backend proxy server.`);
                     
-                } catch (error) {
-                    setAiInsights(`Unable to generate AI insights: ${error.message}`);
+                } finally {
                     setLoadingAI(false);
                 }
             };
@@ -1302,9 +1365,9 @@ This is a demonstration message. In production, this would contain comprehensive
                 <div className="app-container">
                     <div className="header-bar">
                         <div className="logo-section">
-                            <div className="logo-icon">AWM</div>
+                            <div className="logo-icon">WM</div>
                             <div className="brand-info">
-                                <h1>Able Wealth Management</h1>
+                                <h1>Strategic Tax Advisory</h1>
                                 <p>Private Wealth Management</p>
                             </div>
                         </div>
@@ -1349,25 +1412,18 @@ This is a demonstration message. In production, this would contain comprehensive
                                 
                                 <div className="api-notice">
                                     <div className="api-notice-title">
-                                        ⚠️ Implementation Note
+                                        ✅ AI Integration Status
                                     </div>
                                     <div className="api-notice-text">
-                                        Direct browser API calls may be restricted by CORS policies. For production deployment, implement through a secure backend service to enable full AI functionality with Anthropic Claude.
+                                        This application uses a secure backend proxy to access AI services. No API keys required from users. For demonstration purposes, fallback analysis will be shown if backend is unavailable.
                                     </div>
                                 </div>
 
                                 <div className="ai-input-group">
-                                    <input
-                                        type="password"
-                                        className="ai-input"
-                                        placeholder="Enter your Anthropic API key for personalized wealth management insights..."
-                                        value={apiKey}
-                                        onChange={(e) => setApiKey(e.target.value)}
-                                    />
                                     <button 
                                         className="ai-button"
                                         onClick={generateAIInsights}
-                                        disabled={loadingAI || !apiKey}
+                                        disabled={loadingAI}
                                     >
                                         {loadingAI ? (
                                             <>
@@ -1383,7 +1439,7 @@ This is a demonstration message. In production, this would contain comprehensive
                                 </div>
                                 
                                 <div className="ai-disclaimer">
-                                    Your API credentials are processed securely and used exclusively for generating personalized strategic tax recommendations and wealth management insights.
+                                    AI analysis is processed through secure backend services with enterprise-grade security and privacy protection for all client data.
                                 </div>
 
                                 {aiInsights && (
@@ -1711,8 +1767,7 @@ This is a demonstration message. In production, this would contain comprehensive
                     </div>
 
                     <div className="footer">
-                        <p>Able Wealth Management</p>
-                        <p>© 2025 Able Wealth Management LLC. All rights reserved.</p>
+                        <p>© 2024 Able Wealth Management LLC. All rights reserved.</p>
                     </div>
                 </div>
             );
