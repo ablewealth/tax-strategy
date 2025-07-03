@@ -48,6 +48,7 @@ const createNewScenario = (name) => ({
     id: Date.now(),
     name: name,
     clientData: {
+        clientName: 'John & Jane Doe',
         w2Income: 500000, businessIncome: 2000000, capitalGains: 1000000, state: 'NJ',
         investmentAmount: 500000, dealsExposure: '175/75',
         equipmentCost: 0, charitableIntent: 0, ogInvestment: 0, filmInvestment: 0,
@@ -77,7 +78,7 @@ const TooltipWrapper = ({ text, children }) => {
 
 // --- Core Components ---
 
-const Header = ({ onPrint }) => (
+const Header = ({ onPrint, clientName }) => (
     <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
@@ -85,7 +86,9 @@ const Header = ({ onPrint }) => (
                     <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-white font-bold text-lg">AWM</div>
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
-                        <p className="text-sm text-gray-500">For Able Wealth Management</p>
+                        <p className="text-sm text-gray-500">
+                            For Able Wealth Management {clientName && `| Client: ${clientName}`}
+                        </p>
                     </div>
                 </div>
                 <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
@@ -140,8 +143,13 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
         const { name, value } = e.target;
         updateClientData(name, Number(value.replace(/[^0-9.-]+/g, '')) || 0);
     };
+    
+    const handleTextChange = (e) => {
+        const { name, value } = e.target;
+        updateClientData(name, value);
+    };
 
-    const InputField = ({ name, label, tooltip }) => (
+    const InputField = ({ name, label, tooltip, isNumeric = true }) => (
         <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                 {label}
@@ -152,8 +160,8 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
             <input
                 type="text"
                 name={name}
-                value={new Intl.NumberFormat('en-US').format(scenario.clientData[name] || 0)}
-                onChange={handleNumericChange}
+                value={isNumeric ? new Intl.NumberFormat('en-US').format(scenario.clientData[name] || 0) : scenario.clientData[name]}
+                onChange={isNumeric ? handleNumericChange : handleTextChange}
                 className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
         </div>
@@ -163,16 +171,10 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
         <div className="bg-white p-6 rounded-b-lg shadow-lg">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Client Financial Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <InputField name="clientName" label="Client Name" tooltip="The name of the client for this report." isNumeric={false} />
                 <InputField name="w2Income" label="W-2 Income" tooltip="Salary and wages from employment." />
                 <InputField name="businessIncome" label="Business Income" tooltip="Net income from self-employment or pass-through entities." />
                 <InputField name="capitalGains" label="Long-Term Capital Gains" tooltip="Gains from assets held over one year." />
-                <div className="flex flex-col">
-                     <label className="text-sm font-medium text-gray-700 mb-1">State of Residence</label>
-                     <select name="state" value={scenario.clientData.state} onChange={(e) => updateClientData('state', e.target.value)} className="p-2 border border-gray-300 rounded-md shadow-sm h-[42px]">
-                         <option value="NJ">New Jersey</option>
-                         <option value="NY">New York</option>
-                     </select>
-                </div>
             </div>
         </div>
     );
@@ -526,6 +528,7 @@ const PrintableReport = ({ scenario, results }) => {
     return (
         <div className="printable-area">
             <h1 className="text-2xl font-bold text-center mb-2">Tax Optimization Analysis Report</h1>
+            <p className="text-center text-sm text-gray-600 mb-1">For: {clientData.clientName}</p>
             <p className="text-center text-sm text-gray-600 mb-6">Generated on {today}</p>
             
             <div className="mb-6">
@@ -622,7 +625,7 @@ export default function App() {
         <>
             <div id="app-root">
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
-                <Header onPrint={handlePrint} />
+                <Header onPrint={handlePrint} clientName={activeScenario.clientData.clientName} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
                     <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
