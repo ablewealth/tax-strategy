@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
@@ -20,7 +21,6 @@ const STRATEGY_LIBRARY = [
     { id: 'OG_USENERGY_01', name: 'Energy Investment IDCs', category: 'Alternative Investment', description: 'Participation in domestic oil & gas ventures providing upfront deductions.', inputRequired: 'ogInvestment', type: 'belowAGI' },
     { id: 'FILM_SEC181_01', name: 'Film Financing (Sec 181)', category: 'Alternative Investment', description: '100% upfront deduction of investment in qualified film production.', inputRequired: 'filmInvestment', type: 'belowAGI' },
     { id: 'QBI_FINAL_01', name: 'QBI Optimization', category: 'Income Strategy', description: 'Maximizing the 20% Qualified Business Income deduction.', inputRequired: 'businessIncome', type: 'qbi' },
-    // Retirement strategies are handled in a separate component
 ];
 
 const RETIREMENT_STRATEGIES = [
@@ -77,7 +77,7 @@ const TooltipWrapper = ({ text, children }) => {
 
 // --- Core Components ---
 
-const Header = () => (
+const Header = ({ onPrint }) => (
     <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
@@ -88,7 +88,7 @@ const Header = () => (
                         <p className="text-sm text-gray-500">For Able Wealth Management</p>
                     </div>
                 </div>
-                <button className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
+                <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
             </div>
         </div>
     </header>
@@ -377,6 +377,23 @@ const useTaxCalculations = (scenario) => {
                             fedDeductions.aboveAGI += dbDed;
                             stateDeductions += dbDed;
                             break;
+                        case 'CHAR_CLAT_01':
+                            const fedAGIForClat = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+                            const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
+                            fedDeductions.belowAGI += clatDed;
+                            // Assuming state follows federal for this for simplicity
+                            stateDeductions += clatDed;
+                            break;
+                        case 'OG_USENERGY_01':
+                            const ogDed = (clientData.ogInvestment || 0) * 0.70;
+                            fedDeductions.belowAGI += ogDed;
+                            stateDeductions += ogDed;
+                            break;
+                        case 'FILM_SEC181_01':
+                            const filmDed = clientData.filmInvestment || 0;
+                            fedDeductions.belowAGI += filmDed;
+                            stateDeductions += filmDed;
+                            break;
                     }
                 }
             });
@@ -405,29 +422,24 @@ const useTaxCalculations = (scenario) => {
         
         const strategyImpacts = [];
         
-        // 1. Calculate combined retirement savings
         const retirementStrategyIds = RETIREMENT_STRATEGIES.map(s => s.id);
         const areAnyRetirementStrategiesEnabled = retirementStrategyIds.some(id => scenario.enabledStrategies[id]);
 
         if (areAnyRetirementStrategiesEnabled) {
             const enabledWithoutRetirement = { ...scenario.enabledStrategies };
             retirementStrategyIds.forEach(id => { enabledWithoutRetirement[id] = false; });
-            
             const taxWithoutRetirement = getTaxesForScenario(enabledWithoutRetirement).totalTax;
             const retirementSavings = taxWithoutRetirement - withStrategies.totalTax;
-            
             if (retirementSavings > 0) {
                 strategyImpacts.push({ name: 'Retirement Planning', savings: retirementSavings });
             }
         }
 
-        // 2. Calculate savings for all other (non-retirement) strategies
         STRATEGY_LIBRARY.forEach(strategy => {
             if (scenario.enabledStrategies[strategy.id]) {
                 const enabledWithoutThisStrategy = { ...scenario.enabledStrategies, [strategy.id]: false };
                 const taxWithoutThisStrategy = getTaxesForScenario(enabledWithoutThisStrategy).totalTax;
                 const savings = taxWithoutThisStrategy - withStrategies.totalTax;
-                
                 if (savings > 0) {
                     strategyImpacts.push({ name: strategy.name, savings });
                 }
@@ -437,6 +449,51 @@ const useTaxCalculations = (scenario) => {
         return { baseline, withStrategies, strategyImpacts };
     }, [scenario]);
 };
+
+// --- Printable Report Component ---
+const PrintableReport = ({ scenario, results }) => {
+    if (!results || !scenario) return null;
+    
+    const { clientData } = scenario;
+    const { baseline, withStrategies, strategyImpacts } = results;
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    return (
+        <div className="printable-area">
+            <h1 className="text-2xl font-bold text-center mb-2">Tax Optimization Analysis Report</h1>
+            <p className="text-center text-sm text-gray-600 mb-6">Generated on {today}</p>
+            
+            <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-2 mb-3">Executive Summary</h2>
+                <table className="w-full text-sm">
+                    <tbody>
+                        <tr><td className="py-1">Baseline Tax Liability</td><td className="text-right font-medium">{formatCurrency(baseline.totalTax)}</td></tr>
+                        <tr><td className="py-1">Optimized Tax Liability</td><td className="text-right font-medium">{formatCurrency(withStrategies.totalTax)}</td></tr>
+                        <tr className="border-t"><td className="py-1 font-bold">Total Potential Savings</td><td className="text-right font-bold">{formatCurrency(baseline.totalTax - withStrategies.totalTax)}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-2 mb-3">Applied Strategies & Investments</h2>
+                <table className="w-full text-sm">
+                     <tbody>
+                        {[...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].map(s => {
+                            if (scenario.enabledStrategies[s.id] && clientData[s.inputRequired] > 0) {
+                                return (
+                                    <tr key={s.id}><td className="py-1">{s.name}</td><td className="text-right font-medium">{formatCurrency(clientData[s.inputRequired])}</td></tr>
+                                )
+                            }
+                            return null;
+                        })}
+                    </tbody>
+                </table>
+            </div>
+             <p className="text-xs text-gray-500 mt-8">Disclaimer: This is a hypothetical analysis for illustrative purposes only and does not constitute tax advice.</p>
+        </div>
+    );
+};
+
 
 // --- Main App Component ---
 
@@ -448,6 +505,10 @@ export default function App() {
     const activeScenario = scenarios.find(s => s.id === activeScenarioId);
     const calculationResults = useTaxCalculations(activeScenario);
 
+    const handlePrint = () => {
+        window.print();
+    };
+    
     const handleUpdateClientData = useCallback((field, value) => {
         setScenarios(prev => prev.map(s => s.id === activeScenarioId ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
     }, [activeScenarioId]);
@@ -475,16 +536,21 @@ export default function App() {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen">
-            {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
-            <Header />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
-                <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
-                <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
-                <ResultsDashboard results={calculationResults} />
-                <ChartsSection results={calculationResults} />
-            </main>
-        </div>
+        <>
+            <div id="app-root">
+                {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
+                <Header onPrint={handlePrint} />
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
+                    <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
+                    <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
+                    <ResultsDashboard results={calculationResults} />
+                    <ChartsSection results={calculationResults} />
+                </main>
+            </div>
+            <div id="print-mount">
+                <PrintableReport scenario={activeScenario} results={calculationResults} />
+            </div>
+        </>
     );
 }
