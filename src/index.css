@@ -9,5 +9,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb; /* A light gray from Tailwind */
+  background-color: #f9fafb;
+}
+
+/* Print-specific styles */
+@media print {
+  body {
+    background-color: #fff;
+  }
+  #app-root {
+    display: none;
+  }
+  #print-mount {
+    display: block;
+  }
 }
