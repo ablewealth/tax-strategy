@@ -987,76 +987,47 @@
             );
         };
 
-        const WaterfallChart = ({ baseline, strategyImpacts, finalTax, chartInstanceRef }) => {
+        const StrategicSavingsChart = ({ strategyImpacts, chartInstanceRef }) => {
             const chartRef = useRef(null);
 
             useEffect(() => {
-                if (!baseline || !strategyImpacts || !chartRef.current || !window.Chart) return;
+                if (!strategyImpacts || !chartRef.current || !window.Chart) return;
                 
                 if (chartInstanceRef.current) {
                     chartInstanceRef.current.destroy();
                 }
                 
-                const labels = ['Baseline'];
-                const waterfallData = [];
-                const colors = [];
+                const filteredImpacts = strategyImpacts.filter(impact => impact.savings > 0);
+                const labels = filteredImpacts.map(impact => impact.name);
+                const data = filteredImpacts.map(impact => impact.savings);
 
-                waterfallData.push([0, baseline.totalTax / 1000]);
-                colors.push('rgba(30, 64, 175, 0.9)');
-
-                let runningTotal = baseline.totalTax;
-                strategyImpacts.forEach(impact => {
-                    if (impact.savings > 100) {
-                        labels.push(impact.name);
-                        const start = (runningTotal - impact.savings) / 1000;
-                        const end = runningTotal / 1000;
-                        waterfallData.push([start, end]);
-                        colors.push('rgba(5, 150, 105, 0.9)');
-                        runningTotal -= impact.savings;
-                    }
-                });
-
-                labels.push('Optimized');
-                waterfallData.push([0, finalTax / 1000]);
-                colors.push('rgba(212, 175, 55, 0.9)');
-                
                 const ctx = chartRef.current.getContext('2d');
                 chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Tax Liability',
-                            data: waterfallData,
-                            backgroundColor: colors,
+                            label: 'Tax Savings',
+                            data: data,
+                            backgroundColor: 'rgba(5, 150, 105, 0.9)',
                         }]
                     },
                     options: {
+                        indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        indexAxis: 'x',
                         scales: {
                             x: {
-                                grid: { display: false },
-                                ticks: { font: { family: 'Inter', size: 10 } }
-                            },
-                            y: {
-                                type: 'logarithmic',
+                                beginAtZero: true,
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value, index, ticks) => {
-                                        // Show labels for major ticks (powers of 10) and the first/last ticks
-                                        if (value === 10 || value === 100 || value === 1000 || value === 10000 || value === 100000 || value === 1000000) {
-                                            return '$' + Math.round(value) + 'k';
-                                        }
-                                        const tick = ticks[index];
-                                        if (tick && (tick.major || index === 0 || index === ticks.length - 1)) {
-                                            return '$' + Math.round(value) + 'k';
-                                        }
-                                        return '';
-                                    }
+                                    callback: (value) => formatCurrency(value)
                                 }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', size: 10 } }
                             }
                         },
                         plugins: {
@@ -1069,14 +1040,7 @@
                                 bodyFont: { family: 'Inter', size: 12 },
                                 callbacks: {
                                     label: function(context) {
-                                        const raw = context.raw;
-                                        const isTotal = context.dataIndex === 0 || context.dataIndex === context.chart.data.labels.length - 1;
-                                        if (isTotal) {
-                                            return `${context.chart.data.labels[context.dataIndex]} Total: ${formatCurrency(raw[1] * 1000)}`;
-                                        } else {
-                                            const savings = (raw[1] - raw[0]) * 1000;
-                                            return `${context.chart.data.labels[context.dataIndex]} Savings: ${formatCurrency(savings)}`;
-                                        }
+                                        return `Savings: ${formatCurrency(context.parsed.x)}`;
                                     }
                                 }
                             }
@@ -1089,12 +1053,12 @@
                         chartInstanceRef.current.destroy();
                     }
                 };
-            }, [baseline, strategyImpacts, finalTax, chartInstanceRef]);
+            }, [strategyImpacts, chartInstanceRef]);
 
             return (
                 <div className="chart-container">
-                    <div className="chart-title">Strategic Impact Waterfall Analysis</div>
-                    <div className="chart-subtitle">Individual strategy contributions to overall tax optimization</div>
+                    <div className="chart-title">Strategic Savings Analysis</div>
+                    <div className="chart-subtitle">Individual contribution of each implemented strategy</div>
                     <div className="chart-canvas-container">
                         <canvas ref={chartRef}></canvas>
                     </div>
@@ -1328,7 +1292,7 @@
             );
         };
 
-        const ChartsSection = ({ results, comparisonChartInstance, waterfallChartInstance }) => {
+        const ChartsSection = ({ results, comparisonChartInstance, savingsChartInstance }) => {
             if (!results?.baseline || !results?.withStrategies) {
                 return null;
             }
@@ -1340,11 +1304,9 @@
                         withStrategies={results.withStrategies}
                         chartInstanceRef={comparisonChartInstance}
                     />
-                    <WaterfallChart 
-                        baseline={results.baseline}
+                    <StrategicSavingsChart
                         strategyImpacts={results.strategyImpacts || []}
-                        finalTax={results.withStrategies.totalTax}
-                        chartInstanceRef={waterfallChartInstance}
+                        chartInstanceRef={savingsChartInstance}
                     />
                 </div>
             );
@@ -1440,7 +1402,7 @@
                     <div className="print-section">
                         <h2 className="print-section-title">Visual Analysis</h2>
                         {chartImages.comparison && <img src={chartImages.comparison} className="print-chart-image" alt="Tax Comparison Chart" />}
-                        {chartImages.waterfall && <img src={chartImages.waterfall} className="print-chart-image" alt="Waterfall Analysis Chart" />}
+                        {chartImages.savings && <img src={chartImages.savings} className="print-chart-image" alt="Strategic Savings Chart" />}
                     </div>
 
                     <div className="print-section">
@@ -1509,10 +1471,10 @@
         // Main App Component with calculations
         function App() {
             const [clientData, setClientData] = useState(INITIAL_CLIENT_DATA);
-            const [chartImages, setChartImages] = useState({ comparison: null, waterfall: null });
+            const [chartImages, setChartImages] = useState({ comparison: null, savings: null });
             const printRootRef = useRef(null);
             const comparisonChartInstance = useRef(null);
-            const waterfallChartInstance = useRef(null);
+            const savingsChartInstance = useRef(null);
 
             const calculationResults = useMemo(() => {
                 try {
@@ -1658,7 +1620,7 @@
                     withStrategies.totalTax = withStrategies.fedTax + withStrategies.stateTax;
                     withStrategies.insights = insights;
                     
-                    // --- Waterfall Chart Impact Calculation ---
+                    // --- Strategy Impact Calculation for new chart ---
                     const totalSavings = baseline.totalTax - withStrategies.totalTax;
                     const getMarginalRate = (income, brackets) => {
                         for (const bracket of brackets) {
@@ -1711,9 +1673,9 @@
 
             const handlePrint = () => {
                 const comparisonImg = comparisonChartInstance.current?.toBase64Image();
-                const waterfallImg = waterfallChartInstance.current?.toBase64Image();
+                const savingsImg = savingsChartInstance.current?.toBase64Image();
                 
-                setChartImages({ comparison: comparisonImg, waterfall: waterfallImg });
+                setChartImages({ comparison: comparisonImg, savings: savingsImg });
                 
                 setTimeout(() => {
                     window.print();
@@ -1730,7 +1692,7 @@
                         <ChartsSection 
                             results={calculationResults}
                             comparisonChartInstance={comparisonChartInstance}
-                            waterfallChartInstance={waterfallChartInstance}
+                            savingsChartInstance={savingsChartInstance}
                         />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
