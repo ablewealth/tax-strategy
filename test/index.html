@@ -1017,8 +1017,6 @@
                 waterfallData.push([0, finalTax / 1000]);
                 colors.push('rgba(212, 175, 55, 0.9)');
                 
-                const yMin = finalTax > 0 ? (finalTax / 1000) * 0.95 : 0;
-
                 const ctx = chartRef.current.getContext('2d');
                 chartInstanceRef.current = new Chart(ctx, {
                     type: 'bar',
@@ -1040,11 +1038,21 @@
                                 ticks: { font: { family: 'Inter', size: 10 } }
                             },
                             y: {
-                                min: yMin,
+                                type: 'logarithmic',
                                 grid: { color: '#e2e8f0' },
                                 ticks: {
                                     font: { family: 'Inter', size: 12 },
-                                    callback: (value) => '$' + Math.round(value) + 'k'
+                                    callback: (value, index, ticks) => {
+                                        // Show labels for major ticks (powers of 10) and the first/last ticks
+                                        if (value === 10 || value === 100 || value === 1000 || value === 10000 || value === 100000 || value === 1000000) {
+                                            return '$' + Math.round(value) + 'k';
+                                        }
+                                        const tick = ticks[index];
+                                        if (tick && (tick.major || index === 0 || index === ticks.length - 1)) {
+                                            return '$' + Math.round(value) + 'k';
+                                        }
+                                        return '';
+                                    }
                                 }
                             }
                         },
