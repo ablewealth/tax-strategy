@@ -14,10 +14,6 @@
     
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Recharts -->
-    <script src="https://unpkg.com/recharts@2.8.0/esm/index.js" type="module"></script>
-    <script src="https://unpkg.com/recharts@2.8.0/umd/Recharts.js"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,16 +65,53 @@
             );
         };
 
+        // DEALS Strategy Exposure Levels
+        const DEALS_EXPOSURE_LEVELS = {
+            '130/30': {
+                shortTermLossRate: 0.10,
+                longTermGainRate: 0.024,
+                annualTaxBenefit: 0.035,
+                description: '130/30 Strategy - 3.5% annual tax benefits'
+            },
+            '145/45': {
+                shortTermLossRate: 0.138,
+                longTermGainRate: 0.033,
+                annualTaxBenefit: 0.046,
+                description: '145/45 Strategy - 4.6% annual tax benefits'
+            },
+            '175/75': {
+                shortTermLossRate: 0.206,
+                longTermGainRate: 0.049,
+                annualTaxBenefit: 0.069,
+                description: '175/75 Strategy - 6.9% annual tax benefits'
+            },
+            '225/125': {
+                shortTermLossRate: 0.318,
+                longTermGainRate: 0.076,
+                annualTaxBenefit: 0.106,
+                description: '225/125 Strategy - 10.6% annual tax benefits'
+            }
+        };
+
         // Strategy Library and Constants
         const STRATEGY_LIBRARY = [
             {
                 id: 'QUANT_DEALS_01',
-                name: 'Quantino DEALS',
+                name: 'Quantinno DEALS',
                 category: 'Investment',
                 hierarchy: 1,
-                description: 'Generates short-term capital losses to offset capital gains.',
+                description: 'Long/short strategy generating short-term losses and long-term gains for tax optimization.',
                 inputRequired: 'investmentAmount',
-                fedCalcLogic: (inv) => ({ capitalLoss: inv * 0.30 }),
+                fedCalcLogic: (inv, exposureLevel) => {
+                    const exposure = DEALS_EXPOSURE_LEVELS[exposureLevel];
+                    const shortTermLosses = inv * exposure.shortTermLossRate;
+                    const longTermGains = inv * exposure.longTermGainRate;
+                    return { 
+                        shortTermLosses, 
+                        longTermGains,
+                        netTaxBenefit: inv * exposure.annualTaxBenefit 
+                    };
+                },
             },
             {
                 id: 'EQUIP_S179_01',
@@ -122,19 +155,43 @@
                 njCalcLogic: () => ({ deduction: 0 }),
             },
             {
-                id: 'QRP_DB_SOLO401K_01',
-                name: 'Qualified Retirement Plan (DB/Solo 401k)',
+                id: 'SOLO401K_EMPLOYEE_01',
+                name: 'Solo 401(k) - Employee Contribution',
                 category: 'Above AGI Deduction',
                 hierarchy: 6,
-                description: 'Maximizes tax-deferred contributions for business owners.',
-                inputRequired: 'qrpContribution',
+                description: 'Employee elective deferral portion of Solo 401(k) contribution.',
+                inputRequired: 'solo401kEmployee',
+                fedCalcLogic: (contrib) => ({ deduction: Math.min(contrib, 23000) }), // 2024 limit
+                nyCalcLogic: (contrib) => ({ deduction: Math.min(contrib, 23000) }), // NY conforms to federal AGI
+                njCalcLogic: (contrib) => ({ deduction: 0, addBack: Math.min(contrib, 23000) }), // NJ disallows deferral
+            },
+            {
+                id: 'SOLO401K_EMPLOYER_01',
+                name: 'Solo 401(k) - Employer Contribution',
+                category: 'Above AGI Deduction',
+                hierarchy: 7,
+                description: 'Employer profit-sharing portion of Solo 401(k) contribution.',
+                inputRequired: 'solo401kEmployer',
                 fedCalcLogic: (contrib) => ({ deduction: contrib }),
+                nyCalcLogic: (contrib) => ({ deduction: contrib }), // Deductible as business expense
+                njCalcLogic: (contrib) => ({ deduction: contrib }), // Deductible as business expense
+            },
+            {
+                id: 'DB_PLAN_01',
+                name: 'Defined Benefit Plan',
+                category: 'Above AGI Deduction',
+                hierarchy: 8,
+                description: 'Employer contribution to a defined benefit pension plan.',
+                inputRequired: 'dbContribution',
+                fedCalcLogic: (contrib) => ({ deduction: contrib }),
+                nyCalcLogic: (contrib) => ({ deduction: contrib }), // Deductible
+                njCalcLogic: (contrib) => ({ deduction: contrib }), // Deductible as business expense
             },
             {
                 id: 'QBI_FINAL_01',
                 name: 'QBI Final Calculation',
                 category: 'Final Tuning',
-                hierarchy: 7,
+                hierarchy: 9,
                 description: '20% deduction for Qualified Business Income if income is below thresholds.',
                 inputRequired: 'businessIncome',
                 fedCalcLogic: (taxableIncome, businessIncome) => {
@@ -182,6 +239,8 @@
         ];
 
         const STANDARD_DEDUCTION = 29200;
+        const SHORT_TERM_TAX_RATE = 0.408; // 37% federal + 3.8% NIIT
+        const LONG_TERM_TAX_RATE = 0.238; // 20% federal + 3.8% NIIT
 
         const INITIAL_CLIENT_DATA = {
             w2Income: 500000,
@@ -189,11 +248,14 @@
             capitalGains: 1000000,
             state: 'NY',
             investmentAmount: 5000000,
+            dealsExposure: '130/30',
             equipmentCost: 500000,
             charitableIntent: 2000000,
             ogInvestment: 1000000,
             filmInvestment: 250000,
-            qrpContribution: 200000,
+            solo401kEmployee: 23000,
+            solo401kEmployer: 100000,
+            dbContribution: 200000,
         };
 
         // Helper Functions
@@ -272,12 +334,27 @@
                                 <option value="NJ">New Jersey (NJ)</option>
                             </select>
                         </div>
-                        {renderInput('investmentAmount', 'Quantino Investment')}
+                        {renderInput('investmentAmount', 'Quantinno DEALS Investment')}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600">DEALS Exposure Level</label>
+                            <select 
+                                name="dealsExposure" 
+                                value={data.dealsExposure} 
+                                onChange={handleSelectChange} 
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                            >
+                                {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, level]) => (
+                                    <option key={key} value={key}>{level.description}</option>
+                                ))}
+                            </select>
+                        </div>
                         {renderInput('equipmentCost', 'Equipment Cost')}
                         {renderInput('charitableIntent', 'Charitable Intent (Assets)')}
                         {renderInput('ogInvestment', 'Oil & Gas Investment')}
                         {renderInput('filmInvestment', 'Film Financing Investment')}
-                        {renderInput('qrpContribution', 'QRP Contribution (DB/Solo 401k)')}
+                        {renderInput('solo401kEmployee', 'Solo 401(k) Employee Contribution')}
+                        {renderInput('solo401kEmployer', 'Solo 401(k) Employer Contribution')}
+                        {renderInput('dbContribution', 'Defined Benefit Plan Contribution')}
                     </div>
                 </div>
             );
@@ -493,20 +570,27 @@
                             try {
                                 switch (strategy.id) {
                                     case 'QUANT_DEALS_01': {
-                                        const result = strategy.fedCalcLogic(clientData.investmentAmount || 0);
-                                        const lossToApply = Math.min(fedCapitalGains, result.capitalLoss);
-                                        fedCapitalGains -= lossToApply;
-                                        stateCapitalGains -= lossToApply;
-                                        const unusedLoss = result.capitalLoss - lossToApply;
-                                        if (unusedLoss > 0) {
-                                            const ordinaryOffset = Math.min(unusedLoss, 3000);
-                                            fedDeductions.belowAGI += ordinaryOffset;
-                                            stateDeductions.belowAGI += ordinaryOffset;
-                                            insights.push({ 
-                                                type: 'info', 
-                                                text: `Quantino generated ${formatCurrency(result.capitalLoss)} in losses. ${formatCurrency(lossToApply)} offset gains, and ${formatCurrency(ordinaryOffset)} offset ordinary income.` 
-                                            });
-                                        }
+                                        const result = strategy.fedCalcLogic(clientData.investmentAmount || 0, clientData.dealsExposure);
+                                        const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                                        
+                                        // Short-term losses offset capital gains first, then ordinary income (max $3k)
+                                        const shortTermLossesToApply = Math.min(fedCapitalGains + 3000, result.shortTermLosses);
+                                        const gainOffsetAmount = Math.min(fedCapitalGains, result.shortTermLosses);
+                                        const ordinaryOffsetAmount = Math.min(3000, result.shortTermLosses - gainOffsetAmount);
+                                        
+                                        fedCapitalGains -= gainOffsetAmount;
+                                        stateCapitalGains -= gainOffsetAmount;
+                                        fedDeductions.belowAGI += ordinaryOffsetAmount;
+                                        stateDeductions.belowAGI += ordinaryOffsetAmount;
+                                        
+                                        // Long-term gains are added back
+                                        fedCapitalGains += result.longTermGains;
+                                        stateCapitalGains += result.longTermGains;
+                                        
+                                        insights.push({ 
+                                            type: 'insight', 
+                                            text: `DEALS ${clientData.dealsExposure} strategy generated ${formatCurrency(result.shortTermLosses)} in short-term losses and ${formatCurrency(result.longTermGains)} in long-term gains. Net tax benefit: ${formatCurrency(result.netTaxBenefit)} (${(exposure.annualTaxBenefit * 100).toFixed(1)}% of investment).` 
+                                        });
                                         break;
                                     }
                                     case 'EQUIP_S179_01': {
@@ -517,17 +601,17 @@
                                         } else {
                                             const njResult = strategy.njCalcLogic(clientData.equipmentCost || 0);
                                             stateDeductions.aboveAGI += njResult.deduction;
-                                            njAddBack = njResult.addBack;
-                                            if (njAddBack > 0) {
+                                            njAddBack += njResult.addBack;
+                                            if (njResult.addBack > 0) {
                                                 insights.push({ 
                                                     type: 'warning', 
-                                                    text: `A ${formatCurrency(njAddBack)} depreciation add-back is required for NJ.` 
+                                                    text: `NJ requires a ${formatCurrency(njResult.addBack)} depreciation add-back, limiting the deduction to ${formatCurrency(njResult.deduction)}.` 
                                                 });
                                             }
                                         }
                                         insights.push({ 
                                             type: 'insight', 
-                                            text: `Equipment purchase generated a ${formatCurrency(fedResult.deduction)} federal deduction.` 
+                                            text: `Equipment purchase generated a ${formatCurrency(fedResult.deduction)} federal deduction under Section 179.` 
                                         });
                                         break;
                                     }
@@ -558,7 +642,7 @@
                                         }
                                         insights.push({ 
                                             type: 'info', 
-                                            text: `Oil & Gas investment generated a ${formatCurrency(fedResult.deduction)} federal deduction.` 
+                                            text: `Oil & Gas investment generated a ${formatCurrency(fedResult.deduction)} federal deduction via IDCs.` 
                                         });
                                         break;
                                     }
@@ -570,18 +654,49 @@
                                         }
                                         insights.push({ 
                                             type: 'insight', 
-                                            text: `Film financing generated a ${formatCurrency(fedResult.deduction)} active loss deduction.` 
+                                            text: `Film financing generated a ${formatCurrency(fedResult.deduction)} active loss deduction under Section 181.` 
                                         });
                                         break;
                                     }
-                                    case 'QRP_DB_SOLO401K_01': {
-                                        const fedResult = strategy.fedCalcLogic(clientData.qrpContribution || 0);
+                                    case 'SOLO401K_EMPLOYEE_01': {
+                                        const fedResult = strategy.fedCalcLogic(clientData.solo401kEmployee || 0);
+                                        fedDeductions.aboveAGI += fedResult.deduction;
+                                        if (clientData.state === 'NY') {
+                                            const nyResult = strategy.nyCalcLogic(clientData.solo401kEmployee || 0);
+                                            stateDeductions.aboveAGI += nyResult.deduction;
+                                        } else {
+                                            const njResult = strategy.njCalcLogic(clientData.solo401kEmployee || 0);
+                                            njAddBack += njResult.addBack;
+                                            insights.push({ 
+                                                type: 'warning', 
+                                                text: `NJ taxes Solo 401(k) employee deferrals as current income. ${formatCurrency(njResult.addBack)} add-back required.` 
+                                            });
+                                        }
+                                        insights.push({ 
+                                            type: 'insight', 
+                                            text: `Solo 401(k) employee contribution of ${formatCurrency(fedResult.deduction)} reduces federal${clientData.state === 'NY' ? ' and NY' : ''} AGI.` 
+                                        });
+                                        break;
+                                    }
+                                    case 'SOLO401K_EMPLOYER_01': {
+                                        const fedResult = strategy.fedCalcLogic(clientData.solo401kEmployer || 0);
                                         fedDeductions.aboveAGI += fedResult.deduction;
                                         stateDeductions.aboveAGI += fedResult.deduction;
                                         qbiBaseIncome -= fedResult.deduction;
                                         insights.push({ 
                                             type: 'insight', 
-                                            text: `QRP contribution of ${formatCurrency(fedResult.deduction)} provides federal and state deduction.` 
+                                            text: `Solo 401(k) employer contribution of ${formatCurrency(fedResult.deduction)} deductible for federal and state taxes.` 
+                                        });
+                                        break;
+                                    }
+                                    case 'DB_PLAN_01': {
+                                        const fedResult = strategy.fedCalcLogic(clientData.dbContribution || 0);
+                                        fedDeductions.aboveAGI += fedResult.deduction;
+                                        stateDeductions.aboveAGI += fedResult.deduction;
+                                        qbiBaseIncome -= fedResult.deduction;
+                                        insights.push({ 
+                                            type: 'insight', 
+                                            text: `Defined Benefit plan contribution of ${formatCurrency(fedResult.deduction)} provides full federal and state deduction.` 
                                         });
                                         break;
                                     }
@@ -592,7 +707,12 @@
                                         if (fedResult.deduction > 0) {
                                             insights.push({ 
                                                 type: 'insight', 
-                                                text: `QBI deduction of ${formatCurrency(fedResult.deduction)} unlocked.` 
+                                                text: `QBI deduction of ${formatCurrency(fedResult.deduction)} unlocked (20% of qualifying business income).` 
+                                            });
+                                        } else if (qbiBaseIncome > 0) {
+                                            insights.push({ 
+                                                type: 'warning', 
+                                                text: `Taxable income exceeds QBI threshold ($383,900). No QBI deduction available.` 
                                             });
                                         }
                                         break;
