@@ -260,7 +260,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
 
 const ResultsDashboard = ({ results }) => {
     if (!results) return null;
-    const { baseline, withStrategies } = results;
+    const { baseline, withStrategies, totalCapitalAllocated } = results;
     const totalSavings = baseline.totalTax - withStrategies.totalTax;
     const savingsPercentage = baseline.totalTax > 0 ? totalSavings / baseline.totalTax : 0;
 
@@ -275,10 +275,11 @@ const ResultsDashboard = ({ results }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Executive Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard label="Baseline Tax" value={baseline.totalTax} change="Before Strategies" />
                 <MetricCard label="Optimized Tax" value={withStrategies.totalTax} change="After Strategies" />
                 <MetricCard label="Total Savings" value={totalSavings} change={`${(savingsPercentage * 100).toFixed(1)}% Reduction`} highlight={true} />
+                <MetricCard label="Capital Allocated" value={totalCapitalAllocated} change="Total Investment" />
             </div>
         </div>
     );
@@ -354,6 +355,7 @@ const useTaxCalculations = (scenario) => {
         if (!scenario) return null;
 
         const { clientData } = scenario;
+        let totalCapitalAllocated = 0;
 
         const calculateTax = (income, brackets) => {
             if (income <= 0) return 0;
@@ -376,10 +378,16 @@ const useTaxCalculations = (scenario) => {
             let qbiBaseIncome = clientData.businessIncome || 0;
             let currentCapitalGains = clientData.capitalGains || 0;
             let insights = [];
+            totalCapitalAllocated = 0; // Reset for each calculation run
 
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
             allStrategies.forEach(strategy => {
                 if (enabledStrategies[strategy.id]) {
+                    // Add to capital allocated if it's an investment
+                    if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
+                        totalCapitalAllocated += clientData[strategy.inputRequired];
+                    }
+                    
                     switch (strategy.id) {
                         case 'QUANT_DEALS_01':
                             const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
@@ -469,12 +477,12 @@ const useTaxCalculations = (scenario) => {
             const stateTaxableIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0) + currentCapitalGains - stateDeductions;
             const stateTax = calculateTax(stateTaxableIncome, NJ_TAX_BRACKETS);
 
-            return { totalTax: fedTax + stateTax, fedTax, stateTax, insights };
+            return { totalTax: fedTax + stateTax, fedTax, stateTax, insights, totalCapitalAllocated };
         };
 
         const baselineTaxes = getTaxesForScenario({});
         const baseline = { ...baselineTaxes, ordinaryIncome: (clientData.w2Income || 0) + (clientData.businessIncome || 0) };
-        const { totalTax, fedTax, stateTax, insights } = getTaxesForScenario(scenario.enabledStrategies);
+        const { totalTax, fedTax, stateTax, insights, totalCapitalAllocated: finalCapital } = getTaxesForScenario(scenario.enabledStrategies);
         const withStrategies = { totalTax, fedTax, stateTax, insights };
         
         const strategyImpacts = [];
@@ -503,7 +511,7 @@ const useTaxCalculations = (scenario) => {
             }
         });
 
-        return { baseline, withStrategies, strategyImpacts, insights };
+        return { baseline, withStrategies, strategyImpacts, insights, totalCapitalAllocated: finalCapital };
     }, [scenario]);
 };
 
@@ -512,7 +520,7 @@ const PrintableReport = ({ scenario, results }) => {
     if (!results || !scenario) return null;
     
     const { clientData } = scenario;
-    const { baseline, withStrategies, insights } = results;
+    const { baseline, withStrategies, insights, totalCapitalAllocated } = results;
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
@@ -527,6 +535,7 @@ const PrintableReport = ({ scenario, results }) => {
                         <tr><td className="py-1">Baseline Tax Liability</td><td className="text-right font-medium">{formatCurrency(baseline.totalTax)}</td></tr>
                         <tr><td className="py-1">Optimized Tax Liability</td><td className="text-right font-medium">{formatCurrency(withStrategies.totalTax)}</td></tr>
                         <tr className="border-t"><td className="py-1 font-bold">Total Potential Savings</td><td className="text-right font-bold">{formatCurrency(baseline.totalTax - withStrategies.totalTax)}</td></tr>
+                        <tr><td className="py-1">Total Capital Allocated</td><td className="text-right font-medium">{formatCurrency(totalCapitalAllocated)}</td></tr>
                     </tbody>
                 </table>
             </div>
