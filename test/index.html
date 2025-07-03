@@ -169,61 +169,6 @@
             gap: 2rem;
         }
 
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
-            border-radius: var(--radius-xl);
-            padding: 3rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-        }
-
-        .hero-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
-        .hero-subtitle {
-            font-size: 18px;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
-
-        .hero-features {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-feature {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
         .section {
             background: var(--background-primary);
             border-radius: var(--radius-lg);
@@ -551,6 +496,19 @@
             height: 400px;
             width: 100%;
         }
+
+        .app-footer {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: justify;
+            border-top: 1px solid var(--border-primary);
+        }
+        .app-footer p {
+            margin-bottom: 1rem;
+        }
         
         /* Print-specific styles */
         .printable-area {
@@ -558,7 +516,7 @@
         }
 
         @media print {
-            /* Hide the main application, not just all elements */
+            /* Hide the main application */
             body > #root {
                 display: none;
             }
@@ -568,27 +526,24 @@
                 display: block;
             }
             
-            /* Reset body and html for clean printing */
             html, body {
                 width: 100%;
                 height: auto;
-                background: #fff; /* Ensure white background */
+                background: #fff;
                 overflow: visible;
                 margin: 0;
                 padding: 0;
             }
 
-            /* Make the printable area visible and flow normally */
             .printable-area {
                 display: block;
                 visibility: visible;
                 width: 100%;
-                font-family: 'Inter', Arial, sans-serif; /* Use Sans-Serif font */
+                font-family: 'Inter', Arial, sans-serif;
                 color: #000;
-                padding: 20px; /* Add some padding to the page */
+                padding: 20px;
             }
             
-            /* Make all children of the printable area visible */
             .printable-area * {
                 visibility: visible;
             }
@@ -600,35 +555,35 @@
                 padding-bottom: 15px;
             }
             .print-header h1 {
-                font-size: 22px; /* Smaller font */
+                font-size: 22px;
                 font-weight: bold;
                 margin: 0;
             }
             .print-header p {
-                font-size: 12px; /* Smaller font */
+                font-size: 12px;
                 margin: 4px 0 0;
             }
             
             .print-section {
-                margin-bottom: 20px; /* Less spacing */
+                margin-bottom: 20px;
             }
             
             .print-section-title {
-                font-size: 16px; /* Smaller font */
+                font-size: 16px;
                 font-weight: bold;
                 border-bottom: 1px solid #ccc;
                 padding-bottom: 6px;
-                margin-bottom: 10px; /* Less spacing */
+                margin-bottom: 10px;
             }
             
             .print-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 12px; /* Smaller font */
+                font-size: 12px;
             }
             .print-table th, .print-table td {
                 border: 1px solid #ccc;
-                padding: 6px; /* Less spacing */
+                padding: 6px;
                 text-align: left;
             }
             .print-table th {
@@ -645,9 +600,9 @@
             }
             
             .print-insight-item {
-                font-size: 12px; /* Smaller font */
-                margin-bottom: 8px; /* Less spacing */
-                padding: 8px; /* Less spacing */
+                font-size: 12px;
+                margin-bottom: 8px;
+                padding: 8px;
                 border: 1px solid #eee;
                 border-radius: 4px;
             }
@@ -660,8 +615,19 @@
                 border-left: 3px solid #d97706;
             }
             
-             /* Ensure no page breaks inside tables or sections where possible */
-            .print-section, .print-table {
+            .print-footer {
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 1px solid #ccc;
+                font-size: 8px;
+                color: #666;
+                line-height: 1.4;
+            }
+            .print-footer p {
+                margin-bottom: 8px;
+            }
+            
+            .print-section, .print-table, .print-footer {
                 page-break-inside: avoid;
             }
         }
@@ -867,6 +833,7 @@
         const STANDARD_DEDUCTION = 29200;
 
         const INITIAL_CLIENT_DATA = {
+            clientName: 'John & Jane Doe',
             w2Income: 500000,
             businessIncome: 2000000,
             capitalGains: 1000000,
@@ -1145,10 +1112,15 @@
         );
 
         const ClientInputSection = ({ data, setData }) => {
-            const handleInputChange = (e) => {
+            const handleNumericInputChange = (e) => {
                 const { name, value } = e.target;
                 const numericValue = Number(value.replace(/[^0-9.-]+/g, '')) || 0;
                 setData(prev => ({ ...prev, [name]: Math.max(0, numericValue) }));
+            };
+
+            const handleTextChange = (e) => {
+                const { name, value } = e.target;
+                setData(prev => ({ ...prev, [name]: value }));
             };
 
             const handleSelectChange = (e) => {
@@ -1156,7 +1128,7 @@
                 setData(prev => ({ ...prev, [name]: value }));
             };
 
-            const renderFormField = (name, label, description) => (
+            const renderNumericField = (name, label, description) => (
                 <div className="form-field">
                     <label className="form-label">{label}</label>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
@@ -1166,9 +1138,26 @@
                         type="text"
                         name={name}
                         value={data[name] ? new Intl.NumberFormat('en-US').format(data[name]) : ''}
-                        onChange={handleInputChange}
+                        onChange={handleNumericInputChange}
                         className="form-input"
                         placeholder="$ 0"
+                    />
+                </div>
+            );
+            
+            const renderTextField = (name, label, description) => (
+                 <div className="form-field">
+                    <label className="form-label">{label}</label>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                        {description}
+                    </div>
+                    <input
+                        type="text"
+                        name={name}
+                        value={data[name] || ''}
+                        onChange={handleTextChange}
+                        className="form-input"
+                        placeholder="Enter Name"
                     />
                 </div>
             );
@@ -1206,27 +1195,28 @@
                     </div>
                     <div className="section-content">
                         <div className="grid grid-2">
-                            {renderFormField('w2Income', 'W-2 Income', 'Salary and wages from employment')}
-                            {renderFormField('businessIncome', 'Business Income', 'Schedule C/K-1 business earnings')}
-                            {renderFormField('capitalGains', 'Long-Term Capital Gains', 'Gains from asset sales held > 1 year')}
+                            {renderTextField('clientName', 'Client Name', 'Full name of the client for reporting')}
                             {renderSelectField('state', 'State', 'Primary tax residence', [
                                 { value: 'NY', label: 'New York (NY)' },
                                 { value: 'NJ', label: 'New Jersey (NJ)' }
                             ])}
-                            {renderFormField('investmentAmount', 'Quantino DEALS Investment', 'Total investment in DEALS strategy')}
+                            {renderNumericField('w2Income', 'W-2 Income', 'Salary and wages from employment')}
+                            {renderNumericField('businessIncome', 'Business Income', 'Schedule C/K-1 business earnings')}
+                            {renderNumericField('capitalGains', 'Long-Term Capital Gains', 'Gains from asset sales held > 1 year')}
+                            {renderNumericField('investmentAmount', 'Quantino DEALS Investment', 'Total investment in DEALS strategy')}
                             {renderSelectField('dealsExposure', 'DEALS Exposure Level', 'Long/short exposure ratio', 
                                 Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, level]) => ({
                                     value: key,
                                     label: `${level.description} - ${level.subtitle}`
                                 }))
                             )}
-                            {renderFormField('equipmentCost', 'Equipment Cost', 'Section 179 qualifying equipment')}
-                            {renderFormField('charitableIntent', 'Charitable Intent', 'CLAT appreciated asset value')}
-                            {renderFormField('ogInvestment', 'Oil & Gas Investment', 'Energy sector investment amount')}
-                            {renderFormField('filmInvestment', 'Film Financing', 'Section 181 qualifying investment')}
-                            {renderFormField('solo401kEmployee', 'Solo 401(k) Employee', 'Employee elective deferrals (max $23,000)')}
-                            {renderFormField('solo401kEmployer', 'Solo 401(k) Employer', 'Employer profit-sharing contribution')}
-                            {renderFormField('dbContribution', 'Defined Benefit Plan', 'DB plan employer contribution')}
+                            {renderNumericField('equipmentCost', 'Equipment Cost', 'Section 179 qualifying equipment')}
+                            {renderNumericField('charitableIntent', 'Charitable Intent', 'CLAT appreciated asset value')}
+                            {renderNumericField('ogInvestment', 'Oil & Gas Investment', 'Energy sector investment amount')}
+                            {renderNumericField('filmInvestment', 'Film Financing', 'Section 181 qualifying investment')}
+                            {renderNumericField('solo401kEmployee', 'Solo 401(k) Employee', 'Employee elective deferrals (max $23,000)')}
+                            {renderNumericField('solo401kEmployer', 'Solo 401(k) Employer', 'Employer profit-sharing contribution')}
+                            {renderNumericField('dbContribution', 'Defined Benefit Plan', 'DB plan employer contribution')}
                         </div>
                     </div>
                 </div>
@@ -1383,11 +1373,20 @@
             </div>
         );
         
+        const AppFooter = () => (
+            <footer className="app-footer">
+                <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
+                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
+                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
+                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
+            </footer>
+        );
+
         // Printable Report Component
         const PrintableReport = ({ clientData, results }) => {
             if (!results || !results.baseline) return null;
             
-            const { baseline, withStrategies, enabledStrategies, strategyImpacts } = results;
+            const { baseline, withStrategies, enabledStrategies } = results;
             const totalSavings = baseline.totalTax - withStrategies.totalTax;
             const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -1409,7 +1408,7 @@
                 <div className="printable-area">
                     <div className="print-header">
                         <h1>Tax Optimization Analysis Report</h1>
-                        <p>Prepared by Able Wealth Management</p>
+                        <p><strong>For:</strong> {clientData.clientName}</p>
                         <p>Date: {today}</p>
                     </div>
                     
@@ -1514,6 +1513,13 @@
                             ))}
                         </ul>
                     </div>
+                    
+                    <footer className="print-footer">
+                        <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
+                        <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
+                        <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
+                        <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
+                    </footer>
                 </div>
             );
         };
@@ -1733,6 +1739,7 @@
                         <ChartsSection results={calculationResults} />
                         <InsightsSection insights={calculationResults.withStrategies.insights} />
                     </div>
+                    <AppFooter />
                 </div>
             );
         }
