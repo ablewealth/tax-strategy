@@ -528,7 +528,7 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
+         // {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
             <Header onPrint={handlePrint} clientName={activeScenario?.clientData.clientName} />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <ScenarioTabs 
