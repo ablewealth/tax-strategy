@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import {
@@ -339,10 +340,12 @@ const ChartsSection = ({ results }) => (
     </div>
 );
 
-const ComparisonView = ({ allScenarioResults }) => (
+const ComparisonView = ({ allScenarioResults, projectionYears }) => (
     <div className="bg-white p-6 rounded-b-lg shadow-lg">
         <h3 className="text-xl font-semibold mb-6 text-gray-800">Scenario Comparison</h3>
-        <div className="overflow-x-auto">
+        {/* Cumulative Summary Table */}
+        <div className="overflow-x-auto mb-8">
+            <h4 className="text-lg font-semibold mb-2">Cumulative Summary</h4>
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
@@ -370,6 +373,51 @@ const ComparisonView = ({ allScenarioResults }) => (
                     ))}
                 </tbody>
             </table>
+        </div>
+
+        {/* Year-by-Year Breakdown Table */}
+        <div>
+            <h4 className="text-lg font-semibold mb-2">Year-by-Year Breakdown</h4>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year / Metric</th>
+                            {allScenarioResults.map(({ scenario }) => (
+                                <th key={scenario.id} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{scenario.name}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {Array.from({ length: projectionYears }, (_, i) => i + 1).map(year => (
+                            <React.Fragment key={year}>
+                                <tr className="bg-gray-100">
+                                    <td className="px-6 py-3 text-sm font-bold text-gray-800" colSpan={allScenarioResults.length + 1}>Year {year}</td>
+                                </tr>
+                                <tr>
+                                    <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Annual Tax Savings</td>
+                                    {allScenarioResults.map(({ scenario, results }) => {
+                                        const yearData = results?.projections?.[year - 1];
+                                        const annualSavings = yearData ? yearData.baseline.totalTax - yearData.withStrategies.totalTax : 0;
+                                        return (
+                                            <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right">{formatCurrency(annualSavings)}</td>
+                                        );
+                                    })}
+                                </tr>
+                                <tr>
+                                    <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Optimized Annual Tax</td>
+                                    {allScenarioResults.map(({ scenario, results }) => {
+                                        const yearData = results?.projections?.[year - 1];
+                                        return (
+                                            <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{formatCurrency(yearData?.withStrategies.totalTax)}</td>
+                                        );
+                                    })}
+                                </tr>
+                            </React.Fragment>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 );
@@ -428,7 +476,41 @@ const performTaxCalculations = (scenario, years, growthRate) => {
                             fedDeductions.belowAGI += ordinaryOffset;
                             currentLtGains += ltGainFromDeals;
                             break;
-                        // Other strategy calculations...
+                        case 'EQUIP_S179_01':
+                            const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
+                            qbiBaseIncome -= s179Ded;
+                            fedDeductions.aboveAGI += s179Ded;
+                            stateDeductions += Math.min(clientData.equipmentCost, 25000);
+                            break;
+                        case 'CHAR_CLAT_01':
+                            const fedAGIForClat = (clientData.w2Income + clientData.businessIncome) - fedDeductions.aboveAGI;
+                            const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
+                            fedDeductions.belowAGI += clatDed;
+                            stateDeductions += clatDed;
+                            break;
+                        case 'OG_USENERGY_01':
+                            fedDeductions.belowAGI += (clientData.ogInvestment || 0) * 0.70;
+                            stateDeductions += (clientData.ogInvestment || 0) * 0.70;
+                            break;
+                        case 'FILM_SEC181_01':
+                            fedDeductions.belowAGI += clientData.filmInvestment || 0;
+                            stateDeductions += clientData.filmInvestment || 0;
+                            break;
+                        case 'SOLO401K_EMPLOYEE_01':
+                            fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
+                            break;
+                        case 'SOLO401K_EMPLOYER_01':
+                            const s401kEmpDed = clientData.solo401kEmployer || 0;
+                            qbiBaseIncome -= s401kEmpDed;
+                            fedDeductions.aboveAGI += s401kEmpDed;
+                            stateDeductions += s401kEmpDed;
+                            break;
+                        case 'DB_PLAN_01':
+                            const dbDed = clientData.dbContribution || 0;
+                            qbiBaseIncome -= dbDed;
+                            fedDeductions.aboveAGI += dbDed;
+                            stateDeductions += dbDed;
+                            break;
                     }
                 }
             });
@@ -550,7 +632,7 @@ export default function App() {
                     <ScenarioTabs scenarios={scenarios} activeView={activeView} setActiveView={setActiveView} addScenario={addScenario} removeScenario={removeScenario} />
                     
                     {activeView === 'compare' ? (
-                        <ComparisonView allScenarioResults={allScenarioResults} />
+                        <ComparisonView allScenarioResults={allScenarioResults} projectionYears={projectionYears} />
                     ) : activeScenario ? (
                         <>
                             <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
