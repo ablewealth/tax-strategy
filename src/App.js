@@ -1,68 +1,20 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import {
+    DEALS_EXPOSURE_LEVELS,
+    STRATEGY_LIBRARY,
+    RETIREMENT_STRATEGIES,
+    FED_TAX_BRACKETS,
+    AMT_BRACKETS,
+    AMT_EXEMPTION,
+    NJ_TAX_BRACKETS,
+    STANDARD_DEDUCTION,
+    createNewScenario
+} from './constants';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler);
-
-// --- Constants and Configuration (Moved outside component) ---
-
-const DEALS_EXPOSURE_LEVELS = {
-    '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, netBenefit: 0.035, description: '130/30 Strategy - 3.5% annual tax benefits' },
-    '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, netBenefit: 0.046, description: '145/45 Strategy - 4.6% annual tax benefits' },
-    '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, netBenefit: 0.069, description: '175/75 Strategy - 6.9% annual tax benefits' },
-    '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, netBenefit: 0.106, description: '225/125 Strategy - 10.6% annual tax benefits' },
-};
-
-const STRATEGY_LIBRARY = [
-    { id: 'QUANT_DEALS_01', name: 'Quantino DEALS™', category: 'Systematic Investment', description: 'Algorithmic trading generating strategic capital losses to offset gains.', inputRequired: 'investmentAmount', type: 'capital' },
-    { id: 'EQUIP_S179_01', name: 'Section 179 Acceleration', category: 'Business Tax Strategy', description: 'Immediate expensing of qualifying business equipment purchases up to $1.22M.', inputRequired: 'equipmentCost', type: 'aboveAGI' },
-    { id: 'CHAR_CLAT_01', name: 'Charitable CLAT', category: 'Philanthropic Planning', description: 'Charitable giving structure providing immediate substantial deductions.', inputRequired: 'charitableIntent', type: 'belowAGI' },
-    { id: 'OG_USENERGY_01', name: 'Energy Investment IDCs', category: 'Alternative Investment', description: 'Participation in domestic oil & gas ventures providing upfront deductions.', inputRequired: 'ogInvestment', type: 'belowAGI' },
-    { id: 'FILM_SEC181_01', name: 'Film Financing (Sec 181)', category: 'Alternative Investment', description: '100% upfront deduction of investment in qualified film production.', inputRequired: 'filmInvestment', type: 'belowAGI' },
-    { id: 'QBI_FINAL_01', name: 'QBI Optimization', category: 'Income Strategy', description: 'Maximizing the 20% Qualified Business Income deduction.', inputRequired: 'businessIncome', type: 'qbi' },
-];
-
-const RETIREMENT_STRATEGIES = [
-    { id: 'SOLO401K_EMPLOYEE_01', name: 'Solo 401(k) - Employee', description: 'Employee elective deferral contributions.', inputRequired: 'solo401kEmployee', type: 'aboveAGI' },
-    { id: 'SOLO401K_EMPLOYER_01', name: 'Solo 401(k) - Employer', description: 'Employer profit-sharing contributions.', inputRequired: 'solo401kEmployer', type: 'aboveAGI' },
-    { id: 'DB_PLAN_01', name: 'Executive Retirement Plan', description: 'High-contribution defined benefit pension plan.', inputRequired: 'dbContribution', type: 'aboveAGI' },
-];
-
-const FED_TAX_BRACKETS = [
-    { rate: 0.10, min: 0, max: 23200 }, { rate: 0.12, min: 23201, max: 94300 }, { rate: 0.22, min: 94301, max: 201050 },
-    { rate: 0.24, min: 201051, max: 383900 }, { rate: 0.32, min: 383901, max: 487450 }, { rate: 0.35, min: 487451, max: 731200 },
-    { rate: 0.37, min: 731201, max: Infinity },
-];
-
-const AMT_BRACKETS = [
-    { rate: 0.26, min: 0, max: 220700 },
-    { rate: 0.28, min: 220701, max: Infinity }
-];
-const AMT_EXEMPTION = 126500;
-
-const NJ_TAX_BRACKETS = [
-    { rate: 0.014, min: 0, max: 20000 }, { rate: 0.0175, min: 20001, max: 35000 }, { rate: 0.035, min: 35001, max: 40000 },
-    { rate: 0.05525, min: 40001, max: 75000 }, { rate: 0.0637, min: 75001, max: 500000 }, { rate: 0.0897, min: 500001, max: 1000000 },
-    { rate: 0.1075, min: 1000001, max: Infinity },
-];
-
-const STANDARD_DEDUCTION = 29200;
-
-const createNewScenario = (name) => ({
-    id: Date.now(),
-    name: name,
-    clientData: {
-        clientName: 'John & Jane Doe',
-        w2Income: 500000, businessIncome: 2000000, shortTermGains: 150000, longTermGains: 850000,
-        incomeGrowth: 3, investmentGrowth: 5,
-        investmentAmount: 500000, dealsExposure: '175/75',
-        equipmentCost: 0, charitableIntent: 0, ogInvestment: 0, filmInvestment: 0,
-        solo401kEmployee: 0, solo401kEmployer: 0, dbContribution: 0,
-    },
-    enabledStrategies: [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].reduce((acc, s) => ({ ...acc, [s.id]: false }), {})
-});
-
 
 // --- Helper & Utility Components ---
 
@@ -193,10 +145,11 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
     return (
         <div className="bg-white p-6 rounded-b-lg shadow-lg">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Client Financial Profile</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <InputField name="clientName" label="Client Name" tooltip="The name of the client for this report." isNumeric={false} />
                 <InputField name="w2Income" label="W-2 Income" tooltip="Salary and wages from employment." />
                 <InputField name="businessIncome" label="Business Income" tooltip="Net income from self-employment or pass-through entities." />
+                <InputField name="shortTermGains" label="Short-Term Capital Gains" tooltip="Gains from assets held one year or less." />
                 <InputField name="longTermGains" label="Long-Term Capital Gains" tooltip="Gains from assets held over one year." />
             </div>
         </div>
@@ -469,6 +422,53 @@ const ComparisonView = ({ allScenarioResults, projectionYears }) => (
     </div>
 );
 
+const PrintableReport = ({ scenario, results }) => {
+    if (!results || !scenario) return null;
+    
+    const { clientData } = scenario;
+    const { cumulative, projections } = results;
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    return (
+        <div className="print-report-area">
+            <div className="print-header">
+                <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="print-logo" />
+                <div className="print-title">
+                    <h1>Tax Optimization Analysis</h1>
+                    <p className="print-date">For: {clientData.clientName} | Scenario: {scenario.name} | Date: {today}</p>
+                </div>
+            </div>
+            <table className="print-table summary-table">
+                <thead>
+                    <tr><th colSpan="2">Cumulative Summary over {projections.length} Years</th></tr>
+                </thead>
+                <tbody>
+                    <tr><th>Baseline Tax Liability</th><td>{formatCurrency(cumulative.baselineTax)}</td></tr>
+                    <tr><th>Optimized Tax Liability</th><td>{formatCurrency(cumulative.optimizedTax)}</td></tr>
+                    <tr className="highlight"><th>Total Potential Savings</th><td>{formatCurrency(cumulative.totalSavings)}</td></tr>
+                </tbody>
+            </table>
+            
+            <div className="print-chart">
+                 <h3 className="text-lg font-semibold mb-2">Annual Tax Liability</h3>
+                 <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={projections}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                        <RechartsTooltip formatter={(value) => formatCurrency(value)} />
+                        <Bar dataKey="baseline.totalTax" fill="#ef4444" name="Baseline Tax" />
+                        <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+            <p className="print-disclaimer">
+                Disclaimer: The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.
+            </p>
+        </div>
+    );
+};
+
 
 // --- Calculation Logic (Moved outside of component to be a pure function) ---
 
@@ -646,7 +646,14 @@ export default function App() {
         localStorage.setItem('taxOptimizerScenarios', JSON.stringify(scenarios));
     }, [scenarios]);
 
-    const handlePrint = () => window.print();
+    const handlePrint = () => {
+        const printContainer = document.getElementById('print-mount');
+        if (printContainer && activeScenario && calculationResults) {
+            ReactDOM.render(<PrintableReport scenario={activeScenario} results={calculationResults} />, printContainer, () => {
+                window.print();
+            });
+        }
+    };
     
     const handleUpdateClientData = useCallback((field, value) => {
         setScenarios(prev => prev.map(s => s.id === activeView ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
@@ -693,9 +700,7 @@ export default function App() {
                     )}
                 </main>
             </div>
-            <div id="print-mount" className="hidden">
-                 {/* Printable report would need to be adapted for multi-year/comparison */}
-            </div>
+            <div id="print-mount"></div>
         </>
     );
 }
