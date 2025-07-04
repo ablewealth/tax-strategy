@@ -12,6 +12,11 @@ body {
   background-color: #f9fafb;
 }
 
+/* Hide printable report except during print */
+#printable-area {
+  display: none;
+}
+
 /* Print-specific styles */
 @media print {
   body * {
@@ -19,6 +24,7 @@ body {
   }
   #printable-area, #printable-area * {
     visibility: visible !important;
+    display: block !important;
   }
   #printable-area {
     position: absolute !important;
@@ -29,8 +35,9 @@ body {
     z-index: 9999 !important;
     padding: 0 !important;
     margin: 0 !important;
+    display: block !important;
   }
-  .print-hide, header, .DisclaimerModal, #app-root > main > :not(#printable-area) {
+  .print-hide, header, nav, .DisclaimerModal, #print-mount, #app-root > main > :not(#printable-area) {
     display: none !important;
   }
 }
