@@ -81,15 +81,10 @@ const TooltipWrapper = ({ text, children }) => {
 const Header = ({ onPrint }) => (
     <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-3">
-                <div className="flex items-center space-x-4">
-                    <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12" />
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
-                        <p className="text-sm text-gray-500">
-                            For Able Wealth Management
-                        </p>
-                    </div>
+            <div className="flex justify-between items-center py-4">
+                <div className="flex items-center space-x-3">
+                    <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-10" />
+                    <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
                 </div>
                 <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
             </div>
@@ -528,11 +523,10 @@ const PrintableReport = ({ scenario, results }) => {
     return (
         <div className="printable-area">
              <div className="text-center mb-8">
-                <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-16 mx-auto mb-4" />
+                <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold">Tax Optimization Analysis Report</h1>
-                <p className="text-base text-gray-600">Report by Able Wealth Management</p>
                 <div className="mt-4 text-sm">
-                    <p className="font-semibold">{clientData.clientName}</p>
+                    <p className="font-semibold">Report for: {clientData.clientName}</p>
                     <p className="text-gray-600">{today}</p>
                 </div>
             </div>
@@ -576,7 +570,7 @@ const PrintableReport = ({ scenario, results }) => {
                 </div>
             )}
 
-             <div className="text-xs text-gray-500 mt-8 space-y-2">
+             <div className="text-[10px] text-gray-500 mt-8 space-y-1 leading-snug">
                 <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
                 <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
                 <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
