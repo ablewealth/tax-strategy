@@ -1,585 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QBI Deduction Calculator: A Comparative Analysis</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"><style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-        }
-        h1, h2, h3 {
-            font-family: 'Inter', serif;
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 280px;
-            background-color: #343a40;
-            color: #fff;
-            text-align: left;
-            border-radius: 8px;
-            padding: 10px;
-            position: absolute;
-            z-index: 10;
-            bottom: 130%;
-            left: 50%;
-            margin-left: -140px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        .details-content {
-            background-color: #ffffff;
-            border-left: 3px solid #c0a172;
-        }
-        .status-good { color: #28a745; }
-        .status-warn { color: #fd7e14; }
-        .status-bad { color: #dc3545; }
-        
-        /* Custom Styles for HNW Look */
-        .hnw-card {
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-        }
-        .hnw-input {
-            border: 1px solid #ced4da;
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            font-size: 0.875rem;
-            padding: 0.75rem 1rem;
-        }
-        .hnw-input:focus {
-            border-color: #c0a172;
-            box-shadow: 0 0 0 3px rgba(192, 161, 114, 0.2);
-            outline: none;
-        }
-        .hnw-select {
-            border: 1px solid #ced4da;
-            font-size: 0.8rem;
-            padding: 0.75rem 1rem;
-        }
-        .hnw-button {
-            background-color: #1d3557;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            padding: 0.875rem 2.5rem;
-            border-radius: 8px;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0 4px 10px rgba(29, 53, 87, 0.2);
-        }
-        .hnw-button:hover {
-            background-color: #457b9d;
-            transform: translateY(-2px);
-        }
-        .hnw-table th {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            color: #495057;
-            background-color: #f1f3f5;
-            font-size: 0.7rem;
-            letter-spacing: 0.5px;
-        }
-        .hnw-table td {
-            font-size: 0.75rem;
-        }
-        .hnw-summary {
-            background-color: #e9ecef;
-            border-left: 4px solid #1d3557;
-            color: #1d3557;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QBI Deduction Calculator - Current vs Final OBBB Rules</title>
+  
+  <!-- External Dependencies -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #c0a172;
+      --primary-hover: #ab8c61;
+      --border-color: #dee2e6;
+      --focus-ring: rgba(192, 161, 114, 0.2);
+      --shadow-base: 0 6px 18px rgba(0, 0, 0, 0.05);
+      --shadow-tooltip: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
 
-    </style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8f9fa;
+      color: #343a40;
+      line-height: 1.6;
+    }
+
+    /* Form Elements */
+    .form-input, .form-select {
+      border: 1px solid #ced4da;
+      font-size: 0.875rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--focus-ring);
+      outline: none;
+    }
+
+    .form-input:invalid {
+      border-color: #dc3545;
+    }
+
+    /* Cards */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-base);
+      border-radius: 0.75rem;
+      padding: 2rem;
+    }
+
+    /* Button */
+    .btn-primary {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Tooltips */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      width: 280px;
+      background: #343a40;
+      color: #fff;
+      text-align: left;
+      border-radius: 8px;
+      padding: 12px;
+      position: absolute;
+      z-index: 1000;
+      bottom: 130%;
+      left: 50%;
+      margin-left: -140px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      box-shadow: var(--shadow-tooltip);
+    }
+
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Results Table */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      overflow: hidden;
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow-base);
+    }
+
+    .results-table th {
+      background: #f8f9fa;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .results-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .results-table tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    /* Status Indicators */
+    .status-good { color: #28a745; }
+    .status-warn { color: #fd7e14; }
+    .status-bad { color: #dc3545; }
+
+    /* Details Section */
+    .details-content {
+      background: #fff;
+      border-left: 3px solid var(--primary-color);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    /* Grid Layouts */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    /* Loading State */
+    .loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Error Messages */
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .tooltip-text {
+        width: 240px;
+        margin-left: -120px;
+      }
+    }
+  </style>
 </head>
-<body class="text-base">
 
-    <div class="container mx-auto p-4 sm:p-8 md:p-12">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#1d3557]">QBI Deduction Analysis</h1>
-            <p class="mt-4 text-xl text-gray-600">Current Law vs. Proposed Legislative Changes</p>
-        </header>
+<body class="p-6 md:p-10">
+  <header class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Qualified Business Income (QBI) Deduction Calculator</h1>
+    <p class="text-gray-600 mt-2">Compare current law (2025) vs. OBBB final rules (2026+)</p>
+  </header>
 
-        <main class="hnw-card p-6 md:p-10 rounded-2xl">
-            <!-- Business Inputs -->
-            <section id="business-inputs">
-                <h2 class="text-3xl font-semibold mb-6 border-b border-gray-200 pb-4 text-gray-800">Entity Profile</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div>
-                        <label for="businessStructure" class="block text-base font-medium text-gray-700 mb-2">Business Structure</label>
-                        <select id="businessStructure" class="hnw-select block w-full rounded-lg">
-                            <option>LLC (taxed as Partnership)</option>
-                            <option>LLC (taxed as S Corp)</option>
-                            <option>S Corporation</option>
-                            <option>Partnership</option>
-                            <option>Sole Proprietorship</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-base font-medium text-gray-700 mb-2">Specified Service Trade or Business (SSTB)?
-                            <span class="tooltip text-[#c0a172] cursor-pointer font-bold">(?)
-                                <span class="tooltiptext">An SSTB includes fields like health, law, accounting, financial services, and consulting. RIAs are considered SSTBs. Owners face stricter QBI deduction limits at higher incomes.</span>
-                            </span>
-                        </label>
-                        <div class="mt-3 flex items-center space-x-6">
-                            <label class="flex items-center text-base"><input type="radio" name="isSSTB" value="yes" class="form-radio h-5 w-5 text-[#1d3557] focus:ring-[#c0a172]" checked> <span class="ml-2">Yes</span></label>
-                            <label class="flex items-center text-base"><input type="radio" name="isSSTB" value="no" class="form-radio h-5 w-5 text-[#1d3557] focus:ring-[#c0a172]"> <span class="ml-2">No</span></label>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="numOwners" class="block text-base font-medium text-gray-700 mb-2">Number of Owners/Partners</label>
-                        <input type="number" id="numOwners" value="1" min="1" class="hnw-input block w-full rounded-lg">
-                    </div>
-                    <div>
-                        <label for="totalW2Wages" class="block text-base font-medium text-gray-700 mb-2">Total W-2 Wages Paid by Business</label>
-                        <input type="number" id="totalW2Wages" placeholder="e.g., 200000" class="hnw-input block w-full rounded-lg">
-                    </div>
-                    <div>
-                        <label for="totalUBIA" class="block text-base font-medium text-gray-700 mb-2">Total UBIA of Qualified Property
-                            <span class="tooltip text-[#c0a172] cursor-pointer font-bold">(?)
-                                <span class="tooltiptext">Unadjusted Basis Immediately after Acquisition. The original cost of tangible business assets like buildings and machinery. It's not reduced by depreciation.</span>
-                            </span>
-                        </label>
-                        <input type="number" id="totalUBIA" placeholder="e.g., 50000" class="hnw-input block w-full rounded-lg">
-                    </div>
-                    <div>
-                        <label for="totalPTET" class="block text-base font-medium text-gray-700 mb-2">State & Local Taxes Paid by Entity (PTET)
-                             <span class="tooltip text-[#c0a172] cursor-pointer font-bold">(?)
-                                <span class="tooltiptext">Pass-Through Entity Tax. A state tax paid by the business for its owners. Current law allows a full deduction, but proposed laws would limit or disallow it for SSTBs.</span>
-                            </span>
-                        </label>
-                        <input type="number" id="totalPTET" placeholder="e.g., 75000" class="hnw-input block w-full rounded-lg">
-                    </div>
-                </div>
-            </section>
+  <!-- Business Profile Section -->
+  <section class="card mb-8">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-700">Business Profile</h2>
+    <div class="form-grid">
+      <div>
+        <label for="entityType" class="block text-base font-medium text-gray-700 mb-2">Business Structure</label>
+        <select id="entityType" class="form-select">
+          <option value="llc-partnership">LLC (taxed as Partnership)</option>
+          <option value="llc-scorp">LLC (taxed as S Corp)</option>
+          <option value="scorp">S Corporation</option>
+          <option value="partnership">Partnership</option>
+          <option value="sole-prop">Sole Proprietorship</option>
+        </select>
+      </div>
 
-            <!-- Owner Inputs -->
-            <section id="owner-inputs" class="mt-10"></section>
+      <div class="tooltip">
+        <label for="isSSTB" class="block text-base font-medium text-gray-700 mb-2">
+          Specified Service Trade or Business (SSTB)?
+          <span class="text-gray-400 ml-1">ⓘ</span>
+        </label>
+        <select id="isSSTB" class="form-select">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+        <span class="tooltip-text">
+          An SSTB includes health, law, accounting, financial services, consulting, 
+          engineering, architecture, performing arts, and other professional services.
+        </span>
+      </div>
 
-            <div class="text-center mt-10 pt-6 border-t border-gray-200">
-                <button id="calculateBtn" class="hnw-button">
-                    Analyze Scenarios
-                </button>
-            </div>
-        </main>
+      <div>
+        <label for="numOwners" class="block text-base font-medium text-gray-700 mb-2">Number of Owners/Partners</label>
+        <input id="numOwners" type="number" min="1" max="10" value="1" class="form-input" required>
+        <div class="error-message" id="numOwners-error">Please enter a valid number of owners (1-10)</div>
+      </div>
 
-        <!-- Results -->
-        <section id="results-container" class="mt-12 hidden">
-             <h2 class="text-3xl font-semibold mb-6 text-center text-gray-800">Comparative Analysis</h2>
-             <div id="results-summary" class="hnw-summary p-5 rounded-lg mb-8 text-base"></div>
-             <div class="overflow-x-auto hnw-card p-1 rounded-2xl">
-                <table class="min-w-full divide-y divide-gray-200 hnw-table">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Owner / Metric</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Current Law (2025)</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Proposed House Bill</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Proposed Senate Bill</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-table-body" class="bg-white divide-y divide-gray-200">
-                    </tbody>
-                </table>
-             </div>
-             <div id="details-container" class="mt-10"></div>
-        </section>
+      <div>
+        <label for="totalW2" class="block text-base font-medium text-gray-700 mb-2">Total W-2 Wages Paid by Business</label>
+        <input id="totalW2" type="number" min="0" step="100" value="80000" class="form-input" required>
+        <div class="error-message" id="totalW2-error">Please enter a valid wage amount</div>
+      </div>
 
-        <!-- Disclaimer -->
-        <footer class="mt-16 text-center">
-            <p class="text-sm text-gray-500 max-w-4xl mx-auto leading-relaxed">
-                <strong>Disclaimer:</strong> This calculator is for informational and educational purposes only and does not constitute tax, legal, or financial advice. The results are estimates based on the data you provide and an interpretation of a complex, evolving legal framework. All legislative proposals are subject to change. We are not liable for any damages arising from the use of this tool. Please consult a qualified tax professional for personalized advice.
-            </p>
-        </footer>
+      <div class="tooltip">
+        <label for="totalUBIA" class="block text-base font-medium text-gray-700 mb-2">
+          Total UBIA of Qualified Property
+          <span class="text-gray-400 ml-1">ⓘ</span>
+        </label>
+        <input id="totalUBIA" type="number" min="0" step="100" value="300000" class="form-input" required>
+        <span class="tooltip-text">
+          UBIA = Unadjusted Basis Immediately After Acquisition. This is the original cost 
+          of qualified property used in the business.
+        </span>
+        <div class="error-message" id="totalUBIA-error">Please enter a valid UBIA amount</div>
+      </div>
+
+      <div class="tooltip">
+        <label for="totalPTET" class="block text-base font-medium text-gray-700 mb-2">
+          State & Local Taxes Paid by Entity (PTET)
+          <span class="text-gray-400 ml-1">ⓘ</span>
+        </label>
+        <input id="totalPTET" type="number" min="0" step="100" value="0" class="form-input" required>
+        <span class="tooltip-text">
+          Pass-Through Entity Tax is currently fully deductible and reduces QBI for 
+          purposes of the Section 199A deduction.
+        </span>
+        <div class="error-message" id="totalPTET-error">Please enter a valid PTET amount</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Owner/Partner Sections -->
+  <div id="ownersContainer"></div>
+
+  <!-- Action Button -->
+  <div class="mt-8 text-center">
+    <button id="analyzeBtn" class="btn-primary" onclick="QBICalculator.runAnalysis()">
+      <span id="analyzeText">Analyze Scenarios</span>
+      <span id="analyzeSpinner" class="hidden">Calculating...</span>
+    </button>
+  </div>
+
+  <!-- Results Section -->
+  <section id="resultsContainer" class="hidden mt-12">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-700">Comparative Analysis</h2>
+
+    <div class="overflow-x-auto">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th class="text-left">Owner / Metric</th>
+            <th class="text-right">Current Law<br><span class="font-normal text-sm">(2025)</span></th>
+            <th class="text-right">Final Bill<br><span class="font-normal text-sm">(OBBB 2026+)</span></th>
+            <th class="text-right">Difference</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
     </div>
 
-    <script>
-        // --- Constants and Thresholds for 2025 ---
-        const THRESHOLDS_2025 = {
-            'Single': { lower: 197300, upper: 247300, range: 50000 },
-            'Married Filing Jointly': { lower: 394600, upper: 494600, range: 100000 },
-            'Married Filing Separately': { lower: 197300, upper: 247300, range: 50000 },
-            'Head of Household': { lower: 197300, upper: 247300, range: 50000 }
-        };
-        const SENATE_THRESHOLDS_PROPOSED = {
-            'Single': { lower: 197300, upper: 297300, range: 100000 },
-            'Married Filing Jointly': { lower: 394600, upper: 594600, range: 200000 },
-            'Married Filing Separately': { lower: 197300, upper: 297300, range: 100000 },
-            'Head of Household': { lower: 197300, upper: 297300, range: 100000 }
-        };
+    <div id="thresholdStatus" class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+      <p class="text-blue-800 font-medium">Key Changes in OBBB:</p>
+      <ul class="text-blue-700 mt-2 list-disc list-inside text-sm">
+        <li>Phase-in ranges widened to $75,000 / $150,000</li>
+        <li>$400 minimum deduction when materially participating and QBI ≥ $1,000</li>
+      </ul>
+    </div>
 
-        const numOwnersInput = document.getElementById('numOwners');
-        const ownerInputsContainer = document.getElementById('owner-inputs');
-        const calculateBtn = document.getElementById('calculateBtn');
-        
-        // --- UI Generation ---
-        function generateOwnerInputs() {
-            const count = parseInt(numOwnersInput.value) || 1;
-            ownerInputsContainer.innerHTML = '';
-            for (let i = 1; i <= count; i++) {
-                const ownerDiv = document.createElement('div');
-                ownerDiv.className = 'owner-section mt-8 pt-8 border-t border-dashed border-gray-300';
-                ownerDiv.innerHTML = `
-                    <h3 class="text-2xl font-semibold mb-6 text-gray-700">Partner / Shareholder ${i} Profile</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <div>
-                            <label for="ownerLabel${i}" class="block text-base font-medium text-gray-700 mb-2">Owner Label</label>
-                            <input type="text" id="ownerLabel${i}" value="Partner ${i}" class="hnw-input block w-full rounded-lg">
-                        </div>
-                        <div>
-                            <label for="ownershipPercentage${i}" class="block text-base font-medium text-gray-700 mb-2">Ownership Percentage (%)</label>
-                            <input type="number" id="ownershipPercentage${i}" value="${(100/count).toFixed(2)}" class="hnw-input block w-full rounded-lg">
-                        </div>
-                        <div>
-                            <label for="qbiAllocated${i}" class="block text-base font-medium text-gray-700 mb-2">Allocated QBI (pre-PTET)</label>
-                            <input type="number" id="qbiAllocated${i}" placeholder="e.g., 500000" class="hnw-input block w-full rounded-lg">
-                        </div>
-                        <div class="lg:col-span-1">
-                            <label for="taxableIncome${i}" class="block text-base font-medium text-gray-700 mb-2">Owner's Taxable Income</label>
-                            <input type="number" id="taxableIncome${i}" oninput="updateThresholdIndicator(${i})" placeholder="e.g., 450000" class="hnw-input block w-full rounded-lg">
-                        </div>
-                         <div class="lg:col-span-2">
-                             <label class="block text-base font-medium text-gray-700 mb-2">Income Phase-Out Status</label>
-                             <div id="thresholdIndicator${i}" class="mt-2 p-4 bg-gray-50 rounded-lg text-sm space-y-2 border border-gray-200"></div>
-                         </div>
-                        <div>
-                            <label for="netCapitalGain${i}" class="block text-base font-medium text-gray-700 mb-2">Owner's Net Capital Gain</label>
-                            <input type="number" id="netCapitalGain${i}" placeholder="e.g., 20000" class="hnw-input block w-full rounded-lg">
-                        </div>
-                        <div>
-                            <label for="filingStatus${i}" class="block text-base font-medium text-gray-700 mb-2">Filing Status</label>
-                            <select id="filingStatus${i}" onchange="updateThresholdIndicator(${i})" class="hnw-select block w-full rounded-lg">
-                                <option>Married Filing Jointly</option>
-                                <option>Single</option>
-                                <option>Married Filing Separately</option>
-                                <option>Head of Household</option>
-                            </select>
-                        </div>
-                         <div>
-                            <label class="block text-base font-medium text-gray-700 mb-2">Materially Participates?
-                                <span class="tooltip text-[#c0a172] cursor-pointer font-bold">(?)
-                                    <span class="tooltiptext">Required for the Senate Bill's proposed $400 minimum deduction if QBI is at least $1,000.</span>
-                                </span>
-                            </label>
-                            <div class="mt-3 flex items-center space-x-6">
-                                <label class="flex items-center text-base"><input type="radio" name="materiallyParticipates${i}" value="yes" class="form-radio h-5 w-5 text-[#1d3557] focus:ring-[#c0a172]" checked> <span class="ml-2">Yes</span></label>
-                                <label class="flex items-center text-base"><input type="radio" name="materiallyParticipates${i}" value="no" class="form-radio h-5 w-5 text-[#1d3557] focus:ring-[#c0a172]"> <span class="ml-2">No</span></label>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                ownerInputsContainer.appendChild(ownerDiv);
-                updateThresholdIndicator(i); // Initial call
-            }
+    <details class="details-content mt-6">
+      <summary class="cursor-pointer font-semibold text-gray-700 hover:text-gray-900">
+        View Detailed Calculations
+      </summary>
+      <pre id="detailsLog" class="mt-4 text-xs md:text-sm whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded overflow-x-auto"></pre>
+    </details>
+  </section>
+
+  <script>
+    const QBICalculator = (function() {
+      'use strict';
+
+      // Constants
+      const THRESHOLDS = {
+        current: {
+          'single': { lower: 197300, range: 50000 },
+          'married-jointly': { lower: 394600, range: 100000 },
+          'married-separately': { lower: 197300, range: 50000 },
+          'head-of-household': { lower: 197300, range: 50000 }
+        },
+        obbb: {
+          'single': { lower: 197300, range: 75000 },
+          'married-jointly': { lower: 394600, range: 150000 },
+          'married-separately': { lower: 197300, range: 75000 },
+          'head-of-household': { lower: 197300, range: 75000 }
         }
+      };
 
-        numOwnersInput.addEventListener('change', generateOwnerInputs);
-        calculateBtn.addEventListener('click', runCalculations);
+      const CPI_ADJUSTMENT = 1.00; // Future inflation adjustment hook
 
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-        }
+      // DOM Elements
+      const elements = {
+        numOwners: null,
+        ownersContainer: null,
+        analyzeBtn: null,
+        resultsContainer: null,
+        resultsBody: null,
+        detailsLog: null,
+        analyzeText: null,
+        analyzeSpinner: null
+      };
 
-        function updateThresholdIndicator(index) {
-            const container = document.getElementById(`thresholdIndicator${index}`);
-            const taxableIncome = parseFloat(document.getElementById(`taxableIncome${index}`).value) || 0;
-            const filingStatus = document.getElementById(`filingStatus${index}`).value;
+      // Utility Functions
+      const utils = {
+        formatCurrency: (amount) => {
+          const abs = Math.abs(amount);
+          const sign = amount < 0 ? '-' : '';
+          return `${sign}$${abs.toLocaleString('en-US')}`;
+        },
 
-            if (!container || !filingStatus) return;
+        validateNumber: (value, min = 0, max = Infinity) => {
+          const num = parseFloat(value);
+          return !isNaN(num) && num >= min && num <= max;
+        },
 
-            const current = THRESHOLDS_2025[filingStatus];
-            const senate = SENATE_THRESHOLDS_PROPOSED[filingStatus];
-            const house = THRESHOLDS_2025[filingStatus]; // House uses same lower threshold
+        showError: (fieldId, message) => {
+          const errorElement = document.getElementById(`${fieldId}-error`);
+          if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+          }
+        },
 
-            let statusCurrent = '';
-            if (taxableIncome <= current.lower) {
-                statusCurrent = `<span class="status-good font-semibold">Below Threshold</span> (Full deduction before limits)`;
-            } else if (taxableIncome > current.upper) {
-                statusCurrent = `<span class="status-bad font-semibold">Above Threshold</span> (SSTB Deduction Disallowed)`;
+        hideError: (fieldId) => {
+          const errorElement = document.getElementById(`${fieldId}-error`);
+          if (errorElement) {
+            errorElement.style.display = 'none';
+          }
+        },
+
+        inflateThreshold: (threshold, cpi = CPI_ADJUSTMENT) => ({
+          lower: Math.round(threshold.lower * cpi),
+          upper: Math.round((threshold.lower + threshold.range) * cpi),
+          range: Math.round(threshold.range * cpi)
+        })
+      };
+
+      // Validation
+      const validation = {
+        validateBusinessProfile: () => {
+          let isValid = true;
+          const fields = ['numOwners', 'totalW2', 'totalUBIA', 'totalPTET'];
+          
+          fields.forEach(field => {
+            const element = document.getElementById(field);
+            const value = element.value;
+            
+            utils.hideError(field);
+            
+            if (field === 'numOwners') {
+              if (!utils.validateNumber(value, 1, 10)) {
+                utils.showError(field, 'Please enter a valid number of owners (1-10)');
+                isValid = false;
+              }
             } else {
-                statusCurrent = `<span class="status-warn font-semibold">In Phase-Out Range</span> (${formatCurrency(current.lower)} - ${formatCurrency(current.upper)})`;
+              if (!utils.validateNumber(value, 0)) {
+                utils.showError(field, 'Please enter a valid positive number');
+                isValid = false;
+              }
             }
+          });
+          
+          return isValid;
+        },
 
-            let statusHouse = '';
-            if (taxableIncome <= house.lower) {
-                statusHouse = `<span class="status-good font-semibold">Below Threshold</span> (Full 23% deduction)`;
+        validateOwner: (ownerNum) => {
+          let isValid = true;
+          const fields = ['taxableIncome', 'netCapGain', 'qbiAllocated', 'ownershipPct'];
+          
+          fields.forEach(field => {
+            const element = document.getElementById(`${field}${ownerNum}`);
+            const value = element.value;
+            const fieldId = `${field}${ownerNum}`;
+            
+            utils.hideError(fieldId);
+            
+            if (field === 'ownershipPct') {
+              if (!utils.validateNumber(value, 0, 100)) {
+                utils.showError(fieldId, 'Ownership must be between 0% and 100%');
+                isValid = false;
+              }
             } else {
-                statusHouse = `<span class="status-warn font-semibold">Above Threshold</span> (New limitation applies)`;
+              if (!utils.validateNumber(value)) {
+                utils.showError(fieldId, 'Please enter a valid number');
+                isValid = false;
+              }
             }
-
-            let statusSenate = '';
-            if (taxableIncome <= senate.lower) {
-                statusSenate = `<span class="status-good font-semibold">Below Threshold</span> (Full deduction before limits)`;
-            } else if (taxableIncome > senate.upper) {
-                statusSenate = `<span class="status-bad font-semibold">Above Wider Threshold</span> (Deduction Disallowed)`;
-            } else {
-                statusSenate = `<span class="status-warn font-semibold">In Wider Phase-Out Range</span> (${formatCurrency(senate.lower)} - ${formatCurrency(senate.upper)})`;
-            }
-
-            container.innerHTML = `
-                <div><strong>Current Law:</strong> ${statusCurrent}</div>
-                <div><strong>House Bill:</strong> ${statusHouse}</div>
-                <div><strong>Senate Bill:</strong> ${statusSenate}</div>
-            `;
+          });
+          
+          return isValid;
         }
+      };
 
-        // --- Calculation Logic (Identical to previous version) ---
+      // Owner Management
+      const ownerManager = {
+        generateOwnerInputs: () => {
+          const count = Math.max(1, parseInt(elements.numOwners.value) || 1);
+          elements.ownersContainer.innerHTML = '';
+          
+          for (let i = 1; i <= count; i++) {
+            elements.ownersContainer.insertAdjacentHTML('beforeend', ownerManager.createOwnerCard(i, count));
+          }
+        },
 
-        function calculateCurrentLaw(owner, business, details) {
-            const { taxableIncome, filingStatus, netCapitalGain, qbiAllocated, ownershipPercentage } = owner;
-            const { totalW2Wages, totalUBIA, totalPTET, isSSTB } = business;
-            const thresholds = THRESHOLDS_2025[filingStatus];
-            details.push(`<strong>--- Current Law (2025) ---</strong>`);
-            const allocatedPTET = totalPTET * (ownershipPercentage / 100);
-            const adjustedQBI = qbiAllocated - allocatedPTET;
-            details.push(`1. Adjusted QBI: ${formatCurrency(qbiAllocated)} - ${formatCurrency(allocatedPTET)} = <strong>${formatCurrency(adjustedQBI)}</strong>`);
-            if (adjustedQBI <= 0) { details.push(`QBI is zero or negative. Deduction is $0.`); return { deduction: 0, adjustedQBI: adjustedQBI }; }
-            const tentativeDeduction = adjustedQBI * 0.20;
-            const allocatedWages = totalW2Wages * (ownershipPercentage / 100);
-            const allocatedUBIA = totalUBIA * (ownershipPercentage / 100);
-            const wqpLimit = Math.max(allocatedWages * 0.50, (allocatedWages * 0.25) + (allocatedUBIA * 0.025));
-            details.push(`2. Tentative Deduction (20%): ${formatCurrency(tentativeDeduction)}`);
-            details.push(`3. WQP Limit: ${formatCurrency(wqpLimit)}`);
-            let qbiComponent = 0;
-            details.push(`4. Income vs Thresholds:`);
-            if (taxableIncome <= thresholds.lower) {
-                qbiComponent = tentativeDeduction;
-                details.push(`   - Below threshold. Limits don't apply.`);
-            } else if (taxableIncome > thresholds.upper) {
-                qbiComponent = isSSTB ? 0 : Math.min(tentativeDeduction, wqpLimit);
-                details.push(isSSTB ? `   - Above threshold. SSTB deduction disallowed.` : `   - Above threshold. Limited by WQP.`);
-            } else { 
-                if (isSSTB) {
-                    const excessAmount = Math.max(0, tentativeDeduction - wqpLimit);
-                    const phaseinPercentage = (taxableIncome - thresholds.lower) / thresholds.range;
-                    const reductionAmount = excessAmount * phaseinPercentage;
-                    qbiComponent = Math.max(0, tentativeDeduction - reductionAmount);
-                    details.push(`   - In SSTB phase-out. Reduction: ${formatCurrency(reductionAmount)}`);
-                } else {
-                    const reduction = Math.max(0, tentativeDeduction - wqpLimit);
-                    const phaseinPercentage = (taxableIncome - thresholds.lower) / thresholds.range;
-                    qbiComponent = tentativeDeduction - (reduction * phaseinPercentage);
-                    details.push(`   - In non-SSTB phase-in.`);
-                }
-            }
-            details.push(`5. QBI Component: <strong>${formatCurrency(qbiComponent)}</strong>`);
-            const overallLimit = Math.max(0, taxableIncome - netCapitalGain) * 0.20;
-            const finalDeduction = Math.min(qbiComponent, overallLimit);
-            details.push(`6. Overall Limit (20% of TI-NCG): ${formatCurrency(overallLimit)}`);
-            details.push(`7. Final Deduction: <strong>${formatCurrency(finalDeduction)}</strong>`);
-            return { deduction: finalDeduction, adjustedQBI: adjustedQBI };
+        createOwnerCard: (index, totalOwners) => {
+          const defaultOwnership = (100 / totalOwners).toFixed(1);
+          
+          return `
+            <section class="card mt-8">
+              <h3 class="text-xl font-semibold mb-6 text-gray-700">Owner/Partner ${index} Profile</h3>
+              <div class="form-grid">
+                <div>
+                  <label for="ownerLabel${index}" class="block text-base font-medium text-gray-700 mb-2">Owner Label</label>
+                  <input type="text" id="ownerLabel${index}" value="Partner ${index}" class="form-input">
+                </div>
+                
+                <div>
+                  <label for="filingStatus${index}" class="block text-base font-medium text-gray-700 mb-2">Filing Status</label>
+                  <select id="filingStatus${index}" class="form-select">
+                    <option value="single">Single</option>
+                    <option value="married-jointly">Married Filing Jointly</option>
+                    <option value="married-separately">Married Filing Separately</option>
+                    <option value="head-of-household">Head of Household</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label for="taxableIncome${index}" class="block text-base font-medium text-gray-700 mb-2">Taxable Income (TI)</label>
+                  <input type="number" id="taxableIncome${index}" value="250000" step="100" class="form-input" required>
+                  <div class="error-message" id="taxableIncome${index}-error">Please enter a valid income amount</div>
+                </div>
+                
+                <div>
+                  <label for="netCapGain${index}" class="block text-base font-medium text-gray-700 mb-2">Net Capital Gain (in TI)</label>
+                  <input type="number" id="netCapGain${index}" value="0" step="100" class="form-input" required>
+                  <div class="error-message" id="netCapGain${index}-error">Please enter a valid capital gain amount</div>
+                </div>
+                
+                <div>
+                  <label for="qbiAllocated${index}" class="block text-base font-medium text-gray-700 mb-2">QBI Allocated to Owner</label>
+                  <input type="number" id="qbiAllocated${index}" value="100000" step="100" class="form-input" required>
+                  <div class="error-message" id="qbiAllocated${index}-error">Please enter a valid QBI amount</div>
+                </div>
+                
+                <div>
+                  <label for="ownershipPct${index}" class="block text-base font-medium text-gray-700 mb-2">Ownership %</label>
+                  <input type="number" id="ownershipPct${index}" value="${defaultOwnership}" step="0.1" min="0" max="100" class="form-input" required>
+                  <div class="error-message" id="ownershipPct${index}-error">Ownership must be between 0% and 100%</div>
+                </div>
+                
+                <div>
+                  <label for="matPart${index}" class="block text-base font-medium text-gray-700 mb-2">Materially Participates?</label>
+                  <select id="matPart${index}" class="form-select">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+          `;
         }
+      };
 
-        function calculateHouseBill(owner, business, details) {
-            const { taxableIncome, filingStatus, netCapitalGain, qbiAllocated } = owner;
-            const { isSSTB } = business;
-            const thresholds = THRESHOLDS_2025[filingStatus];
-            details.push(`<strong>--- Proposed House Bill ---</strong>`);
-            const adjustedQBI = qbiAllocated;
-            details.push(`1. Adjusted QBI: <strong>${formatCurrency(adjustedQBI)}</strong> (PTET disallowed)`);
-            if (adjustedQBI <= 0) { details.push(`QBI is zero or negative. Deduction is $0.`); return { deduction: 0, adjustedQBI: adjustedQBI }; }
-            let qbiComponent = 0;
-            details.push(`2. Income vs Threshold:`);
-            if (taxableIncome <= thresholds.lower) {
-                qbiComponent = adjustedQBI * 0.23;
-                details.push(`   - Below threshold. Deduction is 23% of QBI.`);
-            } else { 
-                 details.push(`   - Above threshold. Using two-step rule.`);
-                 const step1Result = 0;
-                 const step2Tentative = adjustedQBI * 0.23;
-                 const step2Reduction = (taxableIncome - thresholds.lower) * 0.75;
-                 const step2Result = Math.max(0, step2Tentative - step2Reduction);
-                 qbiComponent = Math.max(step1Result, step2Result);
-                 details.push(`   - Step 2 Result: ${formatCurrency(step2Result)}`);
+      // Calculation Engine
+      const calculator = {
+        calculateCurrent: (owner, business, log) => {
+          const threshold = utils.inflateThreshold(THRESHOLDS.current[owner.filingStatus]);
+          const adjustedQBI = owner.qbi - business.ptetAllocation;
+          
+          log.push(`Adjusted QBI: ${utils.formatCurrency(owner.qbi)} − ${utils.formatCurrency(business.ptetAllocation)} = ${utils.formatCurrency(adjustedQBI)}`);
+          
+          if (adjustedQBI <= 0) {
+            log.push('QBI ≤ 0 → $0 deduction');
+            return calculator.createSummary(0, 0, 0, 0, 0, adjustedQBI);
+          }
+
+          const tentativeAmount = 0.20 * adjustedQBI;
+          const wageQualifiedProperty = Math.max(
+            business.w2Allocation * 0.50,
+            business.w2Allocation * 0.25 + business.ubiaAllocation * 0.025
+          );
+          
+          const qbiComponent = calculator.calculatePhaseIn(tentativeAmount, wageQualifiedProperty, threshold, owner, business);
+          const overallLimit = 0.20 * Math.max(0, owner.taxableIncome - owner.netCapitalGain);
+          const finalDeduction = Math.min(qbiComponent, overallLimit);
+
+          return calculator.createSummary(tentativeAmount, wageQualifiedProperty, qbiComponent, overallLimit, finalDeduction, adjustedQBI);
+        },
+
+        calculateOBBB: (owner, business, log) => {
+          const threshold = utils.inflateThreshold(THRESHOLDS.obbb[owner.filingStatus]);
+          const adjustedQBI = owner.qbi - business.ptetAllocation;
+          
+          log.push(`Adjusted QBI: ${utils.formatCurrency(owner.qbi)} − ${utils.formatCurrency(business.ptetAllocation)} = ${utils.formatCurrency(adjustedQBI)}`);
+          
+          if (adjustedQBI <= 0) {
+            log.push('QBI ≤ 0 → $0 deduction');
+            return calculator.createSummary(0, 0, 0, 0, 0, adjustedQBI);
+          }
+
+          const tentativeAmount = 0.20 * adjustedQBI;
+          const wageQualifiedProperty = Math.max(
+            business.w2Allocation * 0.50,
+            business.w2Allocation * 0.25 + business.ubiaAllocation * 0.025
+          );
+          
+          const qbiComponent = calculator.calculatePhaseIn(tentativeAmount, wageQualifiedProperty, threshold, owner, business);
+          const overallLimit = 0.20 * Math.max(0, owner.taxableIncome - owner.netCapitalGain);
+          let finalDeduction = Math.min(qbiComponent, overallLimit);
+
+          // Apply $400 minimum for material participation
+          if (owner.materiallyParticipates === 'yes' && adjustedQBI >= 1000) {
+            finalDeduction = Math.max(finalDeduction, 400);
+            if (finalDeduction === 400) {
+              log.push('Applied $400 minimum deduction for material participation');
             }
-            details.push(`3. QBI Component: <strong>${formatCurrency(qbiComponent)}</strong>`);
-            const overallLimit = Math.max(0, taxableIncome - netCapitalGain) * 0.23;
-            const finalDeduction = Math.min(qbiComponent, overallLimit);
-            details.push(`4. Overall Limit (23% of TI-NCG): ${formatCurrency(overallLimit)}`);
-            details.push(`5. Final Deduction: <strong>${formatCurrency(finalDeduction)}</strong>`);
-            return { deduction: finalDeduction, adjustedQBI: adjustedQBI };
-        }
+          }
 
-        function calculateSenateBill(owner, business, details) {
-            const { taxableIncome, filingStatus, netCapitalGain, qbiAllocated, ownershipPercentage, materiallyParticipates } = owner;
-            const { totalW2Wages, totalUBIA, totalPTET, isSSTB } = business;
-            const thresholds = SENATE_THRESHOLDS_PROPOSED[filingStatus]; 
-            details.push(`<strong>--- Proposed Senate Bill ---</strong>`);
-            const allowablePTETDeduction = Math.max(40000, totalPTET * 0.50);
-            const allocatedLimitedPTET = allowablePTETDeduction * (ownershipPercentage / 100);
-            const adjustedQBI = qbiAllocated - allocatedLimitedPTET;
-            details.push(`1. Limited PTET Ded: ${formatCurrency(allocatedLimitedPTET)}`);
-            details.push(`2. Adjusted QBI: <strong>${formatCurrency(adjustedQBI)}</strong>`);
-            if (adjustedQBI <= 0) { details.push(`QBI is zero or negative. Deduction is $0.`); return { deduction: 0, adjustedQBI: adjustedQBI }; }
-            const tentativeDeduction = adjustedQBI * 0.20;
-            const allocatedWages = totalW2Wages * (ownershipPercentage / 100);
-            const allocatedUBIA = totalUBIA * (ownershipPercentage / 100);
-            const wqpLimit = Math.max(allocatedWages * 0.50, (allocatedWages * 0.25) + (allocatedUBIA * 0.025));
-            details.push(`3. Tentative Deduction (20%): ${formatCurrency(tentativeDeduction)}`);
-            details.push(`4. WQP Limit: ${formatCurrency(wqpLimit)}`);
-            let qbiComponent = 0;
-            details.push(`5. Income vs Wider Thresholds:`);
-            if (taxableIncome <= thresholds.lower) {
-                qbiComponent = tentativeDeduction;
-                 details.push(`   - Below threshold. Limits don't apply.`);
-            } else if (taxableIncome > thresholds.upper) {
-                qbiComponent = isSSTB ? 0 : Math.min(tentativeDeduction, wqpLimit);
-                 details.push(isSSTB ? `   - Above wider threshold. SSTB deduction disallowed.` : `   - Above wider threshold. Limited by WQP.`);
-            } else { 
-                if (isSSTB) {
-                    const excessAmount = Math.max(0, tentativeDeduction - wqpLimit);
-                    const phaseinPercentage = (taxableIncome - thresholds.lower) / thresholds.range;
-                    const reductionAmount = excessAmount * phaseinPercentage;
-                    qbiComponent = Math.max(0, tentativeDeduction - reductionAmount);
-                    details.push(`   - In wider SSTB phase-out. Reduction: ${formatCurrency(reductionAmount)}`);
-                } else {
-                    const reduction = Math.max(0, tentativeDeduction - wqpLimit);
-                    const phaseinPercentage = (taxableIncome - thresholds.lower) / thresholds.range;
-                    qbiComponent = tentativeDeduction - (reduction * phaseinPercentage);
-                    details.push(`   - In wider non-SSTB phase-in.`);
-                }
+          return calculator.createSummary(tentativeAmount, wageQualifiedProperty, qbiComponent, overallLimit, finalDeduction, adjustedQBI);
+        },
+
+        calculatePhaseIn: (tentativeAmount, wageQualifiedProperty, threshold, owner, business) => {
+          if (owner.taxableIncome <= threshold.lower) {
+            return tentativeAmount;
+          }
+          
+          if (owner.taxableIncome > threshold.upper) {
+            return business.isSSTB === 'yes' ? 0 : Math.min(tentativeAmount, wageQualifiedProperty);
+          }
+          
+          const phaseInPercentage = (owner.taxableIncome - threshold.lower) / threshold.range;
+          const excess = Math.max(0, tentativeAmount - wageQualifiedProperty);
+          return tentativeAmount - (excess * phaseInPercentage);
+        },
+
+        createSummary: (tentative, wageQP, qbiComp, overallLimit, final, adjustedQBI) => ({
+          tentative,
+          wageQualifiedProperty: wageQP,
+          qbiComponent: qbiComp,
+          overallLimit,
+          final,
+          adjustedQBI
+        })
+      };
+
+      // Main Analysis Function
+      const runAnalysis = () => {
+        // Show loading state
+        elements.analyzeBtn.disabled = true;
+        elements.analyzeText.classList.add('hidden');
+        elements.analyzeSpinner.classList.remove('hidden');
+
+        setTimeout(() => {
+          try {
+            if (!validation.validateBusinessProfile()) {
+              return;
             }
-            details.push(`6. QBI Component: <strong>${formatCurrency(qbiComponent)}</strong>`);
-            const overallLimit = Math.max(0, taxableIncome - netCapitalGain) * 0.20;
-            const preMinimumDeduction = Math.min(qbiComponent, overallLimit);
-            details.push(`7. Overall Limit (20% of TI-NCG): ${formatCurrency(overallLimit)}`);
-            let finalDeduction = preMinimumDeduction;
-            if (materiallyParticipates === 'yes' && adjustedQBI >= 1000) {
-                finalDeduction = Math.max(preMinimumDeduction, 400);
-                 if (finalDeduction === 400 && preMinimumDeduction < 400) {
-                    details.push(`8. Applied $400 minimum deduction.`);
-                }
-            }
-            details.push(`9. Final Deduction: <strong>${formatCurrency(finalDeduction)}</strong>`);
-            return { deduction: finalDeduction, adjustedQBI: adjustedQBI };
-        }
 
-
-        // --- Main Execution ---
-        function runCalculations() {
-            const businessData = {
-                isSSTB: document.querySelector('input[name="isSSTB"]:checked').value === 'yes',
-                totalW2Wages: parseFloat(document.getElementById('totalW2Wages').value) || 0,
-                totalUBIA: parseFloat(document.getElementById('totalUBIA').value) || 0,
-                totalPTET: parseFloat(document.getElementById('totalPTET').value) || 0,
+            const business = {
+              w2: parseFloat(document.getElementById('totalW2').value) || 0,
+              ubia: parseFloat(document.getElementById('totalUBIA').value) || 0,
+              ptet: parseFloat(document.getElementById('totalPTET').value) || 0,
+              isSSTB: document.getElementById('isSSTB').value
             };
 
-            const numOwners = parseInt(numOwnersInput.value) || 1;
-            let ownersData = [];
-            for (let i = 1; i <= numOwners; i++) {
-                ownersData.push({
-                    label: document.getElementById(`ownerLabel${i}`).value,
-                    ownershipPercentage: parseFloat(document.getElementById(`ownershipPercentage${i}`).value) || 0,
-                    qbiAllocated: parseFloat(document.getElementById(`qbiAllocated${i}`).value) || 0,
-                    taxableIncome: parseFloat(document.getElementById(`taxableIncome${i}`).value) || 0,
-                    netCapitalGain: parseFloat(document.getElementById(`netCapitalGain${i}`).value) || 0,
-                    filingStatus: document.getElementById(`filingStatus${i}`).value,
-                    materiallyParticipates: document.querySelector(`input[name="materiallyParticipates${i}"]:checked`).value,
-                });
+            const results = [];
+            const logs = [];
+            const ownerCount = parseInt(elements.numOwners.value) || 1;
+
+            for (let i = 1; i <= ownerCount; i++) {
+              if (!validation.validateOwner(i)) {
+                return;
+              }
+
+              const owner = {
+                label: document.getElementById(`ownerLabel${i}`).value || `Owner ${i}`,
+                filingStatus: document.getElementById(`filingStatus${i}`).value,
+                taxableIncome: parseFloat(document.getElementById(`taxableIncome${i}`).value) || 0,
+                netCapitalGain: parseFloat(document.getElementById(`netCapGain${i}`).value) || 0,
+                qbi: parseFloat(document.getElementById(`qbiAllocated${i}`).value) || 0,
+                ownershipPercentage: (parseFloat(document.getElementById(`ownershipPct${i}`).value) || 0) / 100,
+                materiallyParticipates: document.getElementById(`matPart${i}`).value
+              };
+
+              // Calculate allocations
+              business.w2Allocation = business.w2 * owner.ownershipPercentage;
+              business.ubiaAllocation = business.ubia * owner.ownershipPercentage;
+              business.ptetAllocation = business.ptet * owner.ownershipPercentage;
+
+              const log = [`── ${owner.label} ──`];
+              
+              log.push('• Current Law (2025)');
+              const currentResult = calculator.calculateCurrent(owner, business, log);
+              
+              log.push('• Final Bill (OBBB 2026+)');
+              const obbbResult = calculator.calculateOBBB(owner, business, log);
+              
+              logs.push(log.join('\n'));
+
+              const difference = obbbResult.final - currentResult.final;
+              const differenceClass = difference > 0 ? 'status-good' : difference < 0 ? 'status-bad' : '';
+
+              results.push(`
+                <tr>
+                  <td class="font-medium">${owner.label}</td>
+                  <td class="text-right">${utils.formatCurrency(currentResult.final)}</td>
+                  <td class="text-right">${utils.formatCurrency(obbbResult.final)}</td>
+                  <td class="text-right ${differenceClass}">${utils.formatCurrency(difference)}</td>
+                </tr>
+              `);
             }
 
-            const tableBody = document.getElementById('results-table-body');
-            const detailsContainer = document.getElementById('details-container');
-            tableBody.innerHTML = '';
-            detailsContainer.innerHTML = '';
-            let totalDeductions = { current: 0, house: 0, senate: 0 };
+            elements.resultsBody.innerHTML = results.join('');
+            elements.resultsContainer.classList.remove('hidden');
+            elements.detailsLog.textContent = logs.join('\n\n');
 
-            ownersData.forEach((owner, index) => {
-                const i = index + 1;
-                const detailsCurrent = [];
-                const detailsHouse = [];
-                const detailsSenate = [];
-
-                const resultCurrent = calculateCurrentLaw(owner, businessData, detailsCurrent);
-                const resultHouse = calculateHouseBill(owner, businessData, detailsHouse);
-                const resultSenate = calculateSenateBill(owner, businessData, detailsSenate);
-
-                totalDeductions.current += resultCurrent.deduction;
-                totalDeductions.house += resultHouse.deduction;
-                totalDeductions.senate += resultSenate.deduction;
-
-                const ownerHeaderRow = `
-                    <tr class="bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-base font-bold text-gray-900" colspan="4">${owner.label}</td>
-                    </tr>
-                `;
-                
-                const qbiRow = `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">Adjusted QBI</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">${formatCurrency(resultCurrent.adjustedQBI)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">${formatCurrency(resultHouse.adjustedQBI)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">${formatCurrency(resultSenate.adjustedQBI)}</td>
-                    </tr>
-                `;
-
-                const deductionRow = `
-                     <tr class="bg-[#e9ecef]">
-                        <td class="px-6 py-4 whitespace-nowrap font-bold text-[#1d3557]">Final QBI Deduction</td>
-                        <td class="px-6 py-4 whitespace-nowrap font-bold text-[#1d3557]">${formatCurrency(resultCurrent.deduction)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap font-bold text-[#1d3557]">${formatCurrency(resultHouse.deduction)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap font-bold text-[#1d3557]">${formatCurrency(resultSenate.deduction)}</td>
-                    </tr>
-                `;
-                
-                tableBody.innerHTML += ownerHeaderRow + qbiRow + deductionRow;
-
-                const detailsSection = `
-                    <div class="mt-8">
-                        <details>
-                            <summary class="font-semibold text-xl cursor-pointer text-gray-700 hover:text-[#1d3557]">Calculation Details for ${owner.label}</summary>
-                            <div class="mt-4 p-6 rounded-lg border details-content grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-                                <div class="space-y-2">${detailsCurrent.join('<br>')}</div>
-                                <div class="space-y-2">${detailsHouse.join('<br>')}</div>
-                                <div class="space-y-2">${detailsSenate.join('<br>')}</div>
-                            </div>
-                        </details>
-                    </div>
-                `;
-                detailsContainer.innerHTML += detailsSection;
+            // Smooth scroll to results
+            elements.resultsContainer.scrollIntoView({ 
+              behavior: 'smooth',
+              block: 'start'
             });
-            
-            const totalRow = `
-                <tr class="bg-[#1d3557] text-white">
-                    <td class="px-6 py-4 whitespace-nowrap text-base font-bold">Entity Total Deduction</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-base font-bold">${formatCurrency(totalDeductions.current)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-base font-bold">${formatCurrency(totalDeductions.house)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-base font-bold">${formatCurrency(totalDeductions.senate)}</td>
-                </tr>
-            `;
-            tableBody.innerHTML += totalRow;
 
-            const summaryContainer = document.getElementById('results-summary');
-            summaryContainer.innerHTML = `
-                <p class="font-bold text-lg mb-2">Key Legislative Differences:</p>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><strong>Current Law:</strong> Allows full deduction of entity-paid state taxes (PTET), reducing QBI. SSTB owners are fully phased out of the deduction at higher incomes.</li>
-                    <li><strong>House Bill:</strong> Disallows the PTET deduction for SSTBs, increasing their QBI base but losing the SALT cap workaround. Introduces a 23% rate and a new, more gradual phase-out for high-income SSTB owners.</li>
-                    <li><strong>Senate Bill:</strong> Limits the PTET deduction. Keeps the 20% rate but proposes wider income phase-out ranges for SSTBs and adds a $400 minimum deduction for smaller businesses.</li>
-                </ul>
-            `;
+          } catch (error) {
+            console.error('Calculation error:', error);
+            alert('An error occurred during calculation. Please check your inputs and try again.');
+          } finally {
+            // Reset loading state
+            elements.analyzeBtn.disabled = false;
+            elements.analyzeText.classList.remove('hidden');
+            elements.analyzeSpinner.classList.add('hidden');
+          }
+        }, 100); // Small delay to show loading state
+      };
 
-            document.getElementById('results-container').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('results-container').offsetTop, behavior: 'smooth' });
-        }
+      // Initialization
+      const init = () => {
+        // Cache DOM elements
+        elements.numOwners = document.getElementById('numOwners');
+        elements.ownersContainer = document.getElementById('ownersContainer');
+        elements.analyzeBtn = document.getElementById('analyzeBtn');
+        elements.resultsContainer = document.getElementById('resultsContainer');
+        elements.resultsBody = document.getElementById('resultsBody');
+        elements.detailsLog = document.getElementById('detailsLog');
+        elements.analyzeText = document.getElementById('analyzeText');
+        elements.analyzeSpinner = document.getElementById('analyzeSpinner');
 
-        // Initial setup
-        generateOwnerInputs();
+        // Event listeners
+        elements.numOwners.addEventListener('input', ownerManager.generateOwnerInputs);
+        
+        // Generate initial owner inputs
+        ownerManager.generateOwnerInputs();
+      };
 
-    </script>
+      // Public API
+      return {
+        init,
+        runAnalysis
+      };
+    })();
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', QBICalculator.init);
+  </script>
 </body>
 </html>
