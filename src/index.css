@@ -2,221 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== CSS Custom Properties ===== */
-:root {
-  --print-primary-color: #2563eb;
-  --print-text-color: #222222;
-  --print-muted-color: #666666;
-  --print-light-color: #999999;
-  --print-border-color: #eeeeee;
-  --print-highlight-bg: #f0f6ff;
-  --print-width: 800px;
-  --print-padding: 2rem;
-  --print-gap: 1.5rem;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f9fafb; /* A light gray from Tailwind */
 }
 
-/* ===== Base Styles ===== */
-@layer base {
+/* Print-specific styles */
+@media print {
   body {
-    @apply m-0 bg-gray-50 antialiased;
-    font-family: 
-      -apple-system, 
-      BlinkMacSystemFont, 
-      'Segoe UI', 
-      'Roboto', 
-      'Oxygen',
-      'Ubuntu', 
-      'Cantarell', 
-      'Fira Sans', 
-      'Droid Sans', 
-      'Helvetica Neue',
-      sans-serif;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-/* ===== Print Area Visibility ===== */
-@layer components {
-  .printable-area {
-    @apply hidden;
-  }
-}
-
-/* ===== Print Media Queries ===== */
-@media print {
-  /* Reset and hide all elements by default */
-  body * {
-    visibility: hidden;
+    background-color: #fff;
   }
   
-  /* Show only printable content */
-  .printable-area,
-  .printable-area * {
-    visibility: visible;
-    display: block;
+  /* Hide the main interactive app when printing */
+  .print-hide {
+    display: none !important;
   }
   
-  /* Position printable area for full page coverage */
-  .printable-area {
-    position: absolute;
-    inset: 0;
-    width: 100vw;
-    height: auto;
-    background: white;
-    z-index: 9999;
-    padding: 0;
-    margin: 0;
-    display: block;
+  /* Make the dedicated print container visible */
+  #print-mount {
+    display: block !important;
   }
   
-  /* Hide non-printable elements */
-  .print-hide,
-  header,
-  nav,
-  .DisclaimerModal,
-  #print-mount,
-  #app-root > main > :not(.printable-area) {
-    display: none;
-  }
-  
-  /* Optimize for print */
-  * {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-}
-
-/* ===== Print Report Components ===== */
-@layer components {
-  .print-report {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    color: var(--print-text-color);
-    background: white;
-    padding: var(--print-padding);
-    width: min(var(--print-width), 100%);
+  /* Style the printable area */
+  .print-report-area {
+    max-width: 1152px; /* Corresponds to max-w-7xl */
     margin: 0 auto;
-    line-height: 1.5;
-  }
-  
-  .print-header {
-    @apply flex items-center gap-6 mb-3;
-  }
-  
-  .print-logo {
-    @apply h-14 flex-shrink-0;
-  }
-  
-  .print-title h1 {
-    @apply text-3xl font-bold mb-1 leading-tight;
-    margin: 0;
-  }
-  
-  .print-date {
-    @apply text-base;
-    color: var(--print-muted-color);
-    margin: 0;
-  }
-  
-  .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-    font-size: 0.95rem;
-  }
-  
-  .print-table th,
-  .print-table td {
-    text-align: left;
-    border-bottom: 1px solid var(--print-border-color);
-    padding: 0.75rem 0.875rem;
-    vertical-align: top;
-  }
-  
-  .print-table th {
-    width: 40%;
-    color: var(--print-muted-color);
-    font-weight: 500;
-    background-color: #fafbfc;
-  }
-  
-  .print-table.summary-table th {
-    font-weight: 700;
-    color: var(--print-text-color);
-  }
-  
-  .print-table .highlight {
-    color: var(--print-primary-color);
-    font-weight: 700;
-    background-color: var(--print-highlight-bg);
-  }
-  
-  .print-chart {
-    margin: 1.5rem 0 2rem;
-    padding: 1rem 0;
-    text-align: center;
-    page-break-inside: avoid;
-  }
-  
-  .print-disclaimer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    font-size: 0.875rem;
-    color: var(--print-light-color);
-    text-align: center;
-    border-top: 1px solid var(--print-border-color);
-    line-height: 1.4;
-  }
-  
-  /* Page break utilities */
-  .print-page-break {
-    page-break-before: always;
-  }
-  
-  .print-no-break {
-    page-break-inside: avoid;
-  }
-  
-  /* Print-specific typography */
-  .print-section-title {
-    @apply text-xl font-semibold mt-6 mb-3;
-    color: var(--print-text-color);
-  }
-  
-  .print-subsection-title {
-    @apply text-lg font-medium mt-4 mb-2;
-    color: var(--print-muted-color);
+    padding: 2rem;
   }
 }
 
-/* ===== Print Optimization ===== */
-@media print {
-  .print-report {
-    padding: 1.5rem 1rem;
-    box-shadow: none;
-  }
-  
-  .print-table {
-    font-size: 0.9rem;
-  }
-  
-  .print-table th,
-  .print-table td {
-    padding: 0.5rem 0.75rem;
-  }
-  
-  /* Ensure proper page breaks */
-  .print-header {
-    page-break-after: avoid;
-  }
-  
-  .print-chart {
-    page-break-inside: avoid;
-    margin: 1rem 0;
-  }
-  
-  /* Optimize colors for print */
-  .print-table .highlight {
-    background-color: #f8f9fa;
-    border: 1px solid var(--print-primary-color);
-  }
+/* Hide the print mount by default */
+#print-mount {
+    display: none;
 }
