@@ -12,7 +12,7 @@ body {
   background-color: #f9fafb; /* A light gray from Tailwind */
 }
 
-/* Print-specific styles */
+/* --- Print-specific styles --- */
 @media print {
   body {
     background-color: #fff;
@@ -29,10 +29,82 @@ body {
   }
   
   /* Style the printable area */
-  .print-report-area {
-    max-width: 1152px; /* Corresponds to max-w-7xl */
+  .printable-area {
+    max-width: 1152px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .print-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+  }
+
+  .print-logo {
+    height: 48px;
+  }
+
+  .print-title h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .print-title .print-date {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.8rem;
+  }
+
+  .print-table th,
+  .print-table td {
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 6px 8px;
+  }
+  
+  .print-table thead th {
+      background-color: #f9fafb;
+      font-weight: 600;
+  }
+
+  .print-table.summary-table th {
+    font-weight: 600;
+  }
+
+  .print-table .highlight {
+    color: #1d4ed8;
+    font-weight: bold;
+  }
+
+  .print-chart {
+    margin: 12px 0 24px 0;
+    padding: 8px 0;
+    text-align: center;
+  }
+  
+  .print-chart h3 {
+      font-size: 1rem;
+      font-weight: 600;
+  }
+
+  .print-disclaimer {
+    margin-top: 24px;
+    font-size: 0.65rem;
+    color: #6b7280;
+    text-align: justify;
+    line-height: 1.4;
   }
 }
 
