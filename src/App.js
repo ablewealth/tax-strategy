@@ -8,10 +8,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 // --- Constants and Configuration ---
 
 const DEALS_EXPOSURE_LEVELS = {
-    '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, description: '130/30 Strategy - 3.5% annual tax benefits' },
-    '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, description: '145/45 Strategy - 4.6% annual tax benefits' },
-    '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, description: '175/75 Strategy - 6.9% annual tax benefits' },
-    '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, description: '225/125 Strategy - 10.6% annual tax benefits' },
+    '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, netBenefit: 0.035, description: '130/30 Strategy - 3.5% annual tax benefits' },
+    '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, netBenefit: 0.046, description: '145/45 Strategy - 4.6% annual tax benefits' },
+    '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, netBenefit: 0.069, description: '175/75 Strategy - 6.9% annual tax benefits' },
+    '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, netBenefit: 0.106, description: '225/125 Strategy - 10.6% annual tax benefits' },
 };
 
 const STRATEGY_LIBRARY = [
@@ -208,12 +208,36 @@ const RetirementStrategies = ({ scenario, toggleStrategy, updateClientData }) =>
     )
 }
 
+const DealsTooltipContent = ({ exposureLevel }) => {
+    const levelData = DEALS_EXPOSURE_LEVELS[exposureLevel];
+    if (!levelData) return null;
+
+    const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
+
+    return (
+        <div>
+            <p className="font-bold mb-1">Quantino DEALS™ Details</p>
+            <p className="mb-2">Generates strategic short-term losses to offset capital gains.</p>
+            <p className="font-semibold">Selected Level ({exposureLevel}):</p>
+            <ul className="list-disc list-inside text-xs mt-1">
+                <li>Short-Term Losses: {formatPercent(levelData.shortTermLossRate)}</li>
+                <li>Long-Term Gains: {formatPercent(levelData.longTermGainRate)}</li>
+                <li>Net Annualized Benefit: {formatPercent(levelData.netBenefit)}</li>
+            </ul>
+        </div>
+    );
+};
+
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
     <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Tax Strategy Portfolio</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {STRATEGY_LIBRARY.map(strategy => {
                 const isActive = scenario.enabledStrategies[strategy.id];
+                const tooltipContent = strategy.id === 'QUANT_DEALS_01'
+                    ? <DealsTooltipContent exposureLevel={scenario.clientData.dealsExposure} />
+                    : strategy.description;
+
                 return (
                     <div key={strategy.id} className={`p-4 border rounded-lg transition ${isActive ? 'bg-blue-50 border-blue-300' : 'bg-gray-50'}`}>
                         <div className="flex items-start">
@@ -221,7 +245,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
                             <div className="ml-3 flex-1">
                                 <p className="font-semibold text-gray-800">{strategy.name}</p>
                                 <p className="text-xs text-gray-500">{strategy.category}</p>
-                                <TooltipWrapper text={strategy.description}>
+                                <TooltipWrapper text={tooltipContent}>
                                      <p className="text-sm text-gray-600 mt-1 cursor-help">{strategy.description.substring(0, 60)}...</p>
                                 </TooltipWrapper>
                             </div>
