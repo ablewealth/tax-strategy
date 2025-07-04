@@ -1,9 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip as ChartJsTooltip, Legend, Filler } from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
 import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, LineChart } from 'recharts';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, ChartJsTooltip, Legend, Filler);
 // --- Constants and Configuration ---
 
 const DEALS_EXPOSURE_LEVELS = {
@@ -387,7 +383,6 @@ const ResultsDashboard = ({ results }) => {
 
 const ChartsSection = ({ results }) => {
     if (!results || results.length === 0) return null;
-    
     return (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h3 className="text-lg font-semibold mb-4">Tax Projections</h3>
@@ -399,7 +394,7 @@ const ChartsSection = ({ results }) => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="year" />
                             <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                            <RechartsTooltip formatter={(value) => formatCurrency(value)} /> {/* Fixed */}
                             <Bar dataKey="totalTax" fill="#ef4444" />
                         </BarChart>
                     </ResponsiveContainer>
@@ -411,7 +406,7 @@ const ChartsSection = ({ results }) => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="year" />
                             <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                            <RechartsTooltip formatter={(value) => formatCurrency(value)} />
+                            <RechartsTooltip formatter={(value) => formatCurrency(value)} /> {/* Fixed */}
                             <Line type="monotone" dataKey="afterTaxIncome" stroke="#10b981" strokeWidth={2} />
                         </LineChart>
                     </ResponsiveContainer>
@@ -458,8 +453,8 @@ const ComparisonView = ({ allScenarioResults }) => (
 // --- Main App Component ---
 
 export default function App() {
-    const [scenarios, setScenarios] = useState([createNewScenario('Scenario 1')]);
-    const [activeView, setActiveView] = useState(scenarios[0]?.id);
+    const [scenarios, setScenarios] = useState(() => [createNewScenario('Scenario 1')]);
+    const [activeView, setActiveView] = useState(() => scenarios[0].id);
     const [projectionYears, setProjectionYears] = useState(5);
     const [growthRate, setGrowthRate] = useState(3.0);
 
