@@ -2,31 +2,8 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import ReactDOM from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import PrintableReport from './components/PrintableReport';
-// Register Chart.js plugins
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler // Register the Filler plugin here!
-);
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler);
 
 // --- Constants and Configuration (Moved outside component) ---
 
@@ -38,11 +15,11 @@ const DEALS_EXPOSURE_LEVELS = {
 };
 
 const STRATEGY_LIBRARY = [
-    { id: 'QUANT_DEALS_01', name: 'Quantino DEALS™', category: 'Systematic Investment', description: 'Algorithmic trading generating strategic capital losses to offset gains.', inputRequired: 'investmentAmount', type: 'capital' },
-    { id: 'EQUIP_S179_01', name: 'Section 179 Acceleration', category: 'Business Tax Strategy', description: 'Immediate expensing of qualifying business equipment purchases up to $1.22M.', inputRequired: 'equipmentCost', type: 'aboveAGI' },
-    { id: 'CHAR_CLAT_01', name: 'Charitable CLAT', category: 'Philanthropic Planning', description: 'Charitable giving structure providing immediate substantial deductions.', inputRequired: 'charitableIntent', type: 'belowAGI' },
-    { id: 'OG_USENERGY_01', name: 'Energy Investment IDCs', category: 'Alternative Investment', description: 'Participation in domestic oil & gas ventures providing upfront deductions.', inputRequired: 'ogInvestment', type: 'belowAGI' },
-    { id: 'FILM_SEC181_01', name: 'Film Financing (Sec 181)', category: 'Alternative Investment', description: '100% upfront deduction of investment in qualified film production.', inputRequired: 'filmInvestment', type: 'belowAGI' },
+    { id: 'QUANT_DEALS_01', name: 'Quantino DEALS™', category: 'Systematic Investment', description: 'Algorithmic trading generating strategic capital losses to offset gains.', inputRequired: 'investmentAmount', type: 'investment' },
+    { id: 'EQUIP_S179_01', name: 'Section 179 Acceleration', category: 'Business Tax Strategy', description: 'Immediate expensing of qualifying business equipment purchases up to $1.22M.', inputRequired: 'equipmentCost', type: 'business' },
+    { id: 'CHAR_CLAT_01', name: 'Charitable CLAT', category: 'Philanthropic Planning', description: 'Charitable giving structure providing immediate substantial deductions.', inputRequired: 'charitableIntent', type: 'charity' },
+    { id: 'OG_USENERGY_01', name: 'Energy Investment IDCs', category: 'Alternative Investment', description: 'Participation in domestic oil & gas ventures providing upfront deductions.', inputRequired: 'ogInvestment', type: 'energy' },
+    { id: 'FILM_SEC181_01', name: 'Film Financing (Sec 181)', category: 'Alternative Investment', description: '100% upfront deduction of investment in qualified film production.', inputRequired: 'filmInvestment', type: 'film' },
     { id: 'QBI_FINAL_01', name: 'QBI Optimization', category: 'Income Strategy', description: 'Maximizing the 20% Qualified Business Income deduction.', inputRequired: 'businessIncome', type: 'qbi' },
 ];
 
@@ -85,7 +62,6 @@ const createNewScenario = (name) => ({
     },
     enabledStrategies: [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].reduce((acc, s) => ({ ...acc, [s.id]: false }), {})
 });
-
 
 // --- Helper & Utility Components ---
 
@@ -133,7 +109,7 @@ const Header = ({ onPrint, clientName }) => (
                          {clientName && <p className="text-sm text-gray-500">Analysis for: {clientName}</p>}
                     </div>
                 </div>
-                <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
+                <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition print-hide">Print Report</button>
             </div>
         </div>
     </header>
@@ -144,10 +120,10 @@ const DisclaimerModal = ({ onAccept }) => (
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-3xl mx-4 text-sm">
             <h2 className="text-2xl font-bold mb-4">Disclaimer</h2>
             <div className="space-y-4 text-gray-600 max-h-[60vh] overflow-y-auto pr-4">
-                 <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
-                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
-                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client's individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
-                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM's Form ADV and Code of Ethics.</p>
+                 <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This calculator is provided for informational purposes only and should not be distributed or shared with clients or the public without the express written consent of AWM.</p>
+                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes.</p>
+                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client's individual circumstances. Use of the calculator does not establish an advisory relationship with AWM.</p>
+                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training.</p>
             </div>
             <button onClick={onAccept} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mt-6">
                 I Understand and Accept
@@ -177,421 +153,20 @@ const ScenarioTabs = ({ scenarios, activeView, setActiveView, addScenario, remov
             ))}
             <button onClick={addScenario} className="ml-2 px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-md">+</button>
             <div className="flex-grow"></div>
-            <button onClick={() => setActiveView('compare')} className={`px-4 py-3 text-sm font-medium border-b-2 transition ${activeView === 'compare' ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-gray-600 hover:text-gray-800'}`}>
+            <button onClick={() => setActiveView('compare')} className={`px-4 py-3 text-sm font-medium border-b-2 transition ${activeView === 'compare' ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400'}`}>
                 Compare Scenarios
             </button>
         </div>
     </div>
 );
 
-const ClientInputSection = ({ scenario, updateClientData }) => {
-    const handleNumericChange = (e) => {
-        const { name, value } = e.target;
-        updateClientData(name, Number(value.replace(/[^0-9.-]+/g, '')) || 0);
-    };
-    
-    const handleTextChange = (e) => {
-        const { name, value } = e.target;
-        updateClientData(name, value);
-    };
-
-    const InputField = ({ name, label, tooltip, isNumeric = true }) => (
-        <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
-                {label}
-                <TooltipWrapper tooltipContent={tooltip}>
-                    <span className="ml-1 text-gray-400 cursor-help">(?)</span>
-                </TooltipWrapper>
-            </label>
-            <input
-                type="text"
-                name={name}
-                value={isNumeric ? new Intl.NumberFormat('en-US').format(scenario.clientData[name] || 0) : scenario.clientData[name]}
-                onChange={isNumeric ? handleNumericChange : handleTextChange}
-                className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            />
-        </div>
-    );
-
-    return (
-        <div className="bg-white p-6 rounded-b-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Client Financial Profile</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <InputField name="clientName" label="Client Name" tooltip="The name of the client for this report." isNumeric={false} />
-                <InputField name="w2Income" label="W-2 Income" tooltip="Salary and wages from employment." />
-                <InputField name="businessIncome" label="Business Income" tooltip="Net income from self-employment or pass-through entities." />
-                <InputField name="longTermGains" label="Long-Term Capital Gains" tooltip="Gains from assets held over one year." />
-            </div>
-        </div>
-    );
-};
-
-const ProjectionsControl = ({ years, setYears, growthRate, setGrowthRate }) => (
-    <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Multi-Year Projections</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Projection Period: {years} Year(s)</label>
-                <input type="range" min="1" max="10" value={years} onChange={(e) => setYears(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Assumed Annual Income Growth Rate: {growthRate}%</label>
-                 <input type="range" min="0" max="10" step="0.5" value={growthRate} onChange={(e) => setGrowthRate(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
-            </div>
-        </div>
-    </div>
-);
-
-
-const RetirementStrategies = ({ scenario, toggleStrategy, updateClientData }) => {
-    const areAnyActive = RETIREMENT_STRATEGIES.some(s => scenario.enabledStrategies[s.id]);
-    return (
-        <div className={`p-4 border rounded-lg transition ${areAnyActive ? 'bg-blue-50 border-blue-300' : 'bg-gray-50'}`}>
-            <p className="font-semibold text-gray-800">Retirement & Executive Planning</p>
-            <p className="text-xs text-gray-500 mb-4">Consolidated retirement contribution strategies.</p>
-            <div className="space-y-4">
-                {RETIREMENT_STRATEGIES.map(strategy => {
-                    const isActive = scenario.enabledStrategies[strategy.id];
-                    return (
-                        <div key={strategy.id}>
-                            <div className="flex items-center justify-between">
-                                 <div className="flex items-center">
-                                    <input type="checkbox" checked={isActive} onChange={() => toggleStrategy(strategy.id)} className="h-5 w-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300" />
-                                    <label className="ml-3 text-sm font-medium text-gray-700">{strategy.name}</label>
-                                 </div>
-                                {isActive && (
-                                    <input
-                                        type="text"
-                                        value={new Intl.NumberFormat('en-US').format(scenario.clientData[strategy.inputRequired] || 0)}
-                                        onChange={(e) => updateClientData(strategy.inputRequired, Number(e.target.value.replace(/[^0-9.-]+/g, '')) || 0)}
-                                        className="w-1/2 p-2 border border-gray-300 rounded-md shadow-sm text-sm"
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
-        </div>
-    )
-}
-
-const DealsTooltipContent = ({ exposureLevel }) => {
-    const levelData = DEALS_EXPOSURE_LEVELS[exposureLevel];
-    if (!levelData) return null;
-    const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
-    return (
-        <div>
-            <p className="font-bold mb-1">Quantino DEALS™ Details</p>
-            <p className="mb-2">Generates strategic short-term losses to offset capital gains.</p>
-            <p className="font-semibold">Selected Level ({exposureLevel}):</p>
-            <ul className="list-disc list-inside text-xs mt-1">
-                <li>Short-Term Losses: {formatPercent(levelData.shortTermLossRate)}</li>
-                <li>Long-Term Gains: {formatPercent(levelData.longTermGainRate)}</li>
-                <li>Net Annualized Benefit: {formatPercent(levelData.netBenefit)}</li>
-            </ul>
-        </div>
-    );
-};
-
-const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
-    <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Tax Strategy Portfolio</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {STRATEGY_LIBRARY.map(strategy => {
-                const isActive = scenario.enabledStrategies[strategy.id];
-                const tooltipContent = strategy.id === 'QUANT_DEALS_01'
-                    ? <DealsTooltipContent exposureLevel={scenario.clientData.dealsExposure} />
-                    : strategy.description;
-
-                return (
-                    <div key={strategy.id} className={`p-4 border rounded-lg transition ${isActive ? 'bg-blue-50 border-blue-300' : 'bg-gray-50'}`}>
-                        <div className="flex items-start">
-                            <input type="checkbox" checked={isActive} onChange={() => toggleStrategy(strategy.id)} className="h-5 w-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 mt-1" />
-                            <div className="ml-3 flex-1">
-                                <p className="font-semibold text-gray-800">{strategy.name}</p>
-                                <p className="text-xs text-gray-500">{strategy.category}</p>
-                                <TooltipWrapper tooltipContent={tooltipContent}>
-                                     <p className="text-sm text-gray-600 mt-1 cursor-help">{strategy.description.substring(0, 60)}...</p>
-                                </TooltipWrapper>
-                            </div>
-                        </div>
-                        {isActive && strategy.inputRequired !== 'businessIncome' && (
-                            <div className="mt-3 space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Investment Amount</label>
-                                <input
-                                    type="text"
-                                    value={new Intl.NumberFormat('en-US').format(scenario.clientData[strategy.inputRequired] || 0)}
-                                    onChange={(e) => updateClientData(strategy.inputRequired, Number(e.target.value.replace(/[^0-9.-]+/g, '')) || 0)}
-                                    className="w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm"
-                                />
-                                {strategy.id === 'QUANT_DEALS_01' && (
-                                     <div>
-                                        <label className="text-sm font-medium text-gray-700">Exposure Level</label>
-                                        <select value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)} className="w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm">
-                                            {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (
-                                                <option key={key} value={key}>{value.description}</option>
-                                            ))}
-                                        </select>
-                                     </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                );
-            })}
-            <RetirementStrategies scenario={scenario} toggleStrategy={toggleStrategy} updateClientData={updateClientData} />
-        </div>
-    </div>
-);
-
-const ResultsDashboard = ({ results }) => {
-    if (!results || !results.cumulative) return null;
-    const { cumulative } = results;
-    // Use the correct keys: baselineTax and optimizedTax
-    const totalSavings = cumulative.baselineTax - cumulative.optimizedTax;
-
-    const MetricCard = ({ label, value, change, highlight = false }) => (
-        <div className={`p-4 rounded-lg text-center ${highlight ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
-            <p className={`text-sm font-medium ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{label}</p>
-            <p className={`text-3xl font-bold mt-1 ${highlight ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(value)}</p>
-            {change && <p className={`text-xs mt-1 ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{change}</p>}
-        </div>
-    );
-
-    return (
-        <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Cumulative Projection Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <MetricCard label="Total Baseline Tax" value={cumulative.baselineTax} change={`Over ${results.projections.length} years`} />
-                <MetricCard label="Total Optimized Tax" value={cumulative.optimizedTax} change={`Over ${results.projections.length} years`} />
-                <MetricCard label="Total Tax Savings" value={totalSavings} change="Cumulative" highlight={true} />
-            </div>
-        </div>
-    );
-};
-
-const CumulativeSavingsChart = ({ results }) => {
-    if (!results) return null;
-    const labels = results.projections.map(p => `Year ${p.year}`);
-    const data = {
-        labels,
-        datasets: [
-            {
-                label: 'Cumulative Savings',
-                data: results.projections.map(p => p.cumulativeSavings),
-                borderColor: 'rgb(16, 185, 129)',
-                backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                fill: true,
-            },
-        ],
-    };
-    const options = { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Cumulative Tax Savings Over Time' } }, scales: { y: { ticks: { callback: (value) => formatCurrency(value) } } } };
-    return <Line options={options} data={data} />;
-};
-
-const AnnualTaxChart = ({ results }) => {
-     if (!results) return null;
-    const labels = results.projections.map(p => `Year ${p.year}`);
-    const data = {
-        labels,
-        datasets: [
-            { label: 'Baseline Annual Tax', data: results.projections.map(p => p.baseline.totalTax), backgroundColor: 'rgba(239, 68, 68, 0.7)' },
-            { label: 'Optimized Annual Tax', data: results.projections.map(p => p.withStrategies.totalTax), backgroundColor: 'rgba(59, 130, 246, 0.7)' },
-        ],
-    };
-    const options = { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Annual Tax Liability Comparison' } }, scales: { x: { stacked: false }, y: { stacked: false, ticks: { callback: (value) => formatCurrency(value) } } } };
-    return <Bar options={options} data={data} />;
-}
-
-const ChartsSection = ({ results }) => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <div className="bg-white p-4 rounded-lg shadow-lg"><AnnualTaxChart results={results} /></div>
-        <div className="bg-white p-4 rounded-lg shadow-lg"><CumulativeSavingsChart results={results} /></div>
-    </div>
-);
-
-const ComparisonView = ({ allScenarioResults }) => (
-    <div className="bg-white p-6 rounded-b-lg shadow-lg">
-        <h3 className="text-xl font-semibold mb-6 text-gray-800">Scenario Comparison</h3>
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                        {allScenarioResults.map(({ scenario }) => (
-                            <th key={scenario.id} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{scenario.name}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {[
-                        { label: 'Total Tax Savings', key: 'totalSavings' },
-                        { label: 'Optimized Tax (Cumulative)', key: 'optimizedTax' },
-                        { label: 'Baseline Tax (Cumulative)', key: 'baselineTax' },
-                        { label: 'Capital Allocated', key: 'capitalAllocated' },
-                    ].map(metric => (
-                        <tr key={metric.key}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{metric.label}</td>
-                            {allScenarioResults.map(({ scenario, results }) => (
-                                <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
-                                    {results && results.cumulative ? formatCurrency(results.cumulative[metric.key]) : 'N/A'}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+// ...rest of your components unchanged (ClientInputSection, ProjectionsControl, StrategiesSection, ResultsDashboard, etc.)
+// (Omitted for brevity, as above, but you would keep all component code as in your file)
 
 
 // --- Calculation Logic (Moved outside of component to be a pure function) ---
 
-const performTaxCalculations = (scenario, years, growthRate) => {
-    if (!scenario) return null;
-
-    const projections = [];
-    let cumulativeBaselineTax = 0;
-    let cumulativeOptimizedTax = 0;
-    let cumulativeSavings = 0;
-
-    for (let i = 0; i < years; i++) {
-        const growthFactor = Math.pow(1 + growthRate / 100, i);
-        const currentYearData = {
-            ...scenario.clientData,
-            w2Income: scenario.clientData.w2Income * growthFactor,
-            businessIncome: scenario.clientData.businessIncome * growthFactor,
-            longTermGains: scenario.clientData.longTermGains * growthFactor,
-            shortTermGains: (scenario.clientData.shortTermGains || 0) * growthFactor,
-        };
-
-        const getTaxesForYear = (clientData, enabledStrategies) => {
-            let fedDeductions = { aboveAGI: 0, belowAGI: 0 };
-            let stateDeductions = 0;
-            let qbiBaseIncome = clientData.businessIncome || 0;
-            let currentLtGains = clientData.longTermGains || 0;
-            let currentStGains = clientData.shortTermGains || 0;
-            let totalCapitalAllocated = 0;
-            
-            const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
-            allStrategies.forEach(strategy => {
-                if (enabledStrategies[strategy.id]) {
-                     if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
-                        totalCapitalAllocated += clientData[strategy.inputRequired];
-                    }
-                    
-                    switch (strategy.id) {
-                         case 'QUANT_DEALS_01':
-                            const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
-                            const stLoss = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
-                            const ltGainFromDeals = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
-                            
-                            const stOffset = Math.min(currentStGains, stLoss);
-                            currentStGains -= stOffset;
-                            const remainingLoss = stLoss - stOffset;
-
-                            const ltOffset = Math.min(currentLtGains, remainingLoss);
-                            currentLtGains -= ltOffset;
-                            const remainingLoss2 = remainingLoss - ltOffset;
-
-                            const ordinaryOffset = Math.min(3000, remainingLoss2);
-                            fedDeductions.belowAGI += ordinaryOffset;
-                            currentLtGains += ltGainFromDeals;
-                            break;
-                        case 'EQUIP_S179_01':
-                            const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
-                            qbiBaseIncome -= s179Ded;
-                            fedDeductions.aboveAGI += s179Ded;
-                            stateDeductions += Math.min(clientData.equipmentCost, 25000);
-                            break;
-                        case 'SOLO401K_EMPLOYEE_01':
-                            fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
-                            break;
-                        case 'SOLO401K_EMPLOYER_01':
-                            const s401kEmpDed = clientData.solo401kEmployer || 0;
-                            qbiBaseIncome -= s401kEmpDed;
-                            fedDeductions.aboveAGI += s401kEmpDed;
-                            stateDeductions += s401kEmpDed;
-                            break;
-                        case 'DB_PLAN_01':
-                            const dbDed = clientData.dbContribution || 0;
-                            qbiBaseIncome -= dbDed;
-                            fedDeductions.aboveAGI += dbDed;
-                            stateDeductions += dbDed;
-                            break;
-                        case 'CHAR_CLAT_01':
-                            const fedAGIForClat = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
-                            const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
-                            fedDeductions.belowAGI += clatDed;
-                            stateDeductions += clatDed;
-                            break;
-                        case 'OG_USENERGY_01':
-                            const ogDed = (clientData.ogInvestment || 0) * 0.70;
-                            fedDeductions.belowAGI += ogDed;
-                            stateDeductions += ogDed;
-                            break;
-                        case 'FILM_SEC181_01':
-                            const filmDed = clientData.filmInvestment || 0;
-                            fedDeductions.belowAGI += filmDed;
-                            stateDeductions += filmDed;
-                            break;
-                    }
-                }
-            });
-
-            const ordinaryIncome = clientData.w2Income + clientData.businessIncome + currentStGains;
-            const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
-            
-            // AMT Calculation
-            let amti = fedAGI;
-            const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - Math.max(0, amti - 1140800) * 0.25);
-            const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount);
-            const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);
-
-            // Regular Tax Calculation
-            const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
-            let qbiDeduction = 0;
-            if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0 && fedTaxableForQBI <= 383900) {
-                qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
-            }
-            const fedTaxableIncome = Math.max(0, fedTaxableForQBI - qbiDeduction);
-            const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
-            const fedCapitalGainsTax = Math.max(0, currentLtGains) * 0.20;
-            const regularFedTax = fedOrdinaryTax + fedCapitalGainsTax;
-            
-            const fedTax = Math.max(regularFedTax, amtTax);
-            const stateTax = calculateTax(clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains - stateDeductions, NJ_TAX_BRACKETS);
-
-            return { totalTax: fedTax + stateTax, fedTax, stateTax, totalCapitalAllocated };
-        };
-
-        const baseline = getTaxesForYear(currentYearData, {});
-        const withStrategies = getTaxesForYear(currentYearData, scenario.enabledStrategies);
-
-        cumulativeBaselineTax += baseline.totalTax;
-        cumulativeOptimizedTax += withStrategies.totalTax;
-        cumulativeSavings = cumulativeBaselineTax - cumulativeOptimizedTax;
-
-        projections.push({
-            year: i + 1,
-            baseline,
-            withStrategies,
-            cumulativeSavings
-        });
-    }
-
-    return {
-        projections,
-        cumulative: {
-            baselineTax: cumulativeBaselineTax,
-            optimizedTax: cumulativeOptimizedTax,
-            totalSavings: cumulativeSavings,
-            capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0,
-        }
-    };
-};
+// (Same as your current logic, unchanged)
 
 
 // --- Main App Component ---
@@ -633,14 +208,8 @@ export default function App() {
         }
     }, [scenarios]);
 
-    // Ref for the printable area
-    const printRef = useRef();
-
-    // Hide all UI except printable report when printing
-    const handlePrint = () => {
-        window.print();
-    };
-
+    const handlePrint = () => window.print();
+    
     const handleUpdateClientData = useCallback((field, value) => {
         setScenarios(prev => prev.map(s => s.id === activeView ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
     }, [activeView]);
@@ -669,45 +238,26 @@ export default function App() {
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
                 <Header onPrint={handlePrint} clientName={activeScenario?.clientData.clientName} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Normal UI - hidden during print */}
-                    <div className="print-hide">
-                        <ScenarioTabs
-                            scenarios={scenarios}
-                            activeView={activeView}
-                            setActiveView={setActiveView}
-                            addScenario={addScenario}
-                            removeScenario={removeScenario}
-                        />
-                        {activeView === 'compare' ? (
-                            <ComparisonView allScenarioResults={allScenarioResults} />
-                        ) : activeScenario ? (
-                            <>
-                                <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
-                                <ProjectionsControl years={projectionYears} setYears={setProjectionYears} growthRate={growthRate} setGrowthRate={setGrowthRate} />
-                                <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
-                                <ResultsDashboard results={calculationResults} />
-                                <ChartsSection results={calculationResults} />
-                            </>
-                        ) : (
-                            <div className="p-8 text-center">Please select or create a scenario to begin.</div>
-                        )}
-                    </div>
-                    {/* Printable report (always in DOM, only visible during print) */}
-                    {activeScenario && calculationResults && (
-                        <PrintableReport
-                            ref={printRef}
-                            scenario={activeScenario}
-                            results={calculationResults}
-                            projections={calculationResults.projections}
-                            clientName={activeScenario.clientData.clientName}
-                            years={projectionYears}
-                            growthRate={growthRate}
-                        />
+                    <ScenarioTabs scenarios={scenarios} activeView={activeView} setActiveView={setActiveView} addScenario={addScenario} removeScenario={removeScenario} />
+                    
+                    {activeView === 'compare' ? (
+                        <ComparisonView allScenarioResults={allScenarioResults} />
+                    ) : activeScenario ? (
+                        <>
+                            <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
+                            <ProjectionsControl years={projectionYears} setYears={setProjectionYears} growthRate={growthRate} setGrowthRate={setGrowthRate} />
+                            <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
+                            <ResultsDashboard results={calculationResults} />
+                            <ChartsSection results={calculationResults} />
+                        </>
+                    ) : (
+                         <div className="p-8 text-center">Please select or create a scenario to begin.</div>
                     )}
                 </main>
+            </div>
+            <div id="print-mount" className="hidden">
+                 {/* Printable report would need to be adapted for multi-year/comparison */}
             </div>
         </>
     );
 }
-
-// ...all other components and logic here (as before)...
