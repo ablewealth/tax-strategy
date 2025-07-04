@@ -700,7 +700,7 @@ export default function App() {
                     )}
                 </main>
             </div>
-            <div id="print-mount"></div>
+            <div id="print-mount" className="print-only"></div>
         </>
     );
 }
