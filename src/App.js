@@ -13,7 +13,7 @@ import {
     createNewScenario
 } from './constants';
 
-// --- Helper & Utility Components ---
+// --- Helper Functions ---
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { 
     style: 'currency', 
@@ -99,7 +99,6 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
     
     return results;
 };
-
 
 // --- Components ---
 const TooltipWrapper = ({ tooltipContent, children }) => {
