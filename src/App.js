@@ -411,7 +411,7 @@ const ChartsSection = ({ results }) => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="year" />
                             <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                            <RechartsTooltip formatter={(value) => formatCurrency(value)} />
                             <Line type="monotone" dataKey="afterTaxIncome" stroke="#10b981" strokeWidth={2} />
                         </LineChart>
                     </ResponsiveContainer>
