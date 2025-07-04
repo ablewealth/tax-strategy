@@ -9,8 +9,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb; /* A light gray from Tailwind */
+  background-color: #f9fafb;
 }
+
+/* --- Default Styles --- */
+/* Hide the print container by default */
+#print-mount {
+    display: none;
+}
+
 
 /* --- Print-specific styles --- */
 @media print {
@@ -19,7 +26,7 @@ body {
   }
   
   /* Hide the main interactive app when printing */
-  .print-hide {
+  #app-root {
     display: none !important;
   }
   
@@ -29,11 +36,12 @@ body {
   }
   
   /* Style the printable area */
-  .printable-area {
+  .print-report-area {
     max-width: 1152px;
     margin: 0 auto;
     padding: 1rem;
     border: 1px solid #e5e7eb;
+    font-size: 12px;
   }
 
   .print-header {
@@ -71,7 +79,7 @@ body {
   .print-table td {
     text-align: left;
     border-bottom: 1px solid #f3f4f6;
-    padding: 6px 8px;
+    padding: 4px 6px;
   }
   
   .print-table thead th {
@@ -106,9 +114,4 @@ body {
     text-align: justify;
     line-height: 1.4;
   }
-}
-
-/* Hide the print mount by default */
-#print-mount {
-    display: none;
 }
