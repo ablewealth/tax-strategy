@@ -572,7 +572,7 @@ const PrintableReport = ({ scenario, results }) => {
                 <table className="w-full text-sm">
                      <tbody>
                         {[...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].map(s => {
-                            if (scenario.enabledStrategies[s.id] && clientData[s.inputRequired] > 0) {
+                            if (scenario.enabledStrategies[s.id] && clientData[s.inputRequired] > 0 && s.id !== 'QBI_FINAL_01') {
                                 return (
                                     <tr key={s.id}><td className="py-1">{s.name}</td><td className="text-right font-medium">{formatCurrency(clientData[s.inputRequired])}</td></tr>
                                 )
