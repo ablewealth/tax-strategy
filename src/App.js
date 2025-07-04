@@ -78,16 +78,16 @@ const TooltipWrapper = ({ text, children }) => {
 
 // --- Core Components ---
 
-const Header = ({ onPrint, clientName }) => (
+const Header = ({ onPrint }) => (
     <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
+            <div className="flex justify-between items-center py-3">
                 <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-white font-bold text-lg">AWM</div>
+                    <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12" />
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
                         <p className="text-sm text-gray-500">
-                            For Able Wealth Management {clientName && `| Client: ${clientName}`}
+                            For Able Wealth Management
                         </p>
                     </div>
                 </div>
@@ -527,9 +527,15 @@ const PrintableReport = ({ scenario, results }) => {
 
     return (
         <div className="printable-area">
-            <h1 className="text-2xl font-bold text-center mb-2">Tax Optimization Analysis Report</h1>
-            <p className="text-center text-sm text-gray-600 mb-1">For: {clientData.clientName}</p>
-            <p className="text-center text-sm text-gray-600 mb-6">Generated on {today}</p>
+             <div className="text-center mb-8">
+                <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-16 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold">Tax Optimization Analysis Report</h1>
+                <p className="text-base text-gray-600">Report by Able Wealth Management</p>
+                <div className="mt-4 text-sm">
+                    <p className="font-semibold">{clientData.clientName}</p>
+                    <p className="text-gray-600">{today}</p>
+                </div>
+            </div>
             
             <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-2 mb-3">Executive Summary</h2>
@@ -625,7 +631,7 @@ export default function App() {
         <>
             <div id="app-root">
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
-                <Header onPrint={handlePrint} clientName={activeScenario.clientData.clientName} />
+                <Header onPrint={handlePrint} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
                     <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
