@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar, Line } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
-// --- Constants and Configuration ---
+// --- Constants and Configuration (Moved outside component) ---
 
 const DEALS_EXPOSURE_LEVELS = {
     '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, netBenefit: 0.035, description: '130/30 Strategy - 3.5% annual tax benefits' },
@@ -29,12 +29,17 @@ const RETIREMENT_STRATEGIES = [
     { id: 'DB_PLAN_01', name: 'Executive Retirement Plan', description: 'High-contribution defined benefit pension plan.', inputRequired: 'dbContribution', type: 'aboveAGI' },
 ];
 
-
 const FED_TAX_BRACKETS = [
     { rate: 0.10, min: 0, max: 23200 }, { rate: 0.12, min: 23201, max: 94300 }, { rate: 0.22, min: 94301, max: 201050 },
     { rate: 0.24, min: 201051, max: 383900 }, { rate: 0.32, min: 383901, max: 487450 }, { rate: 0.35, min: 487451, max: 731200 },
     { rate: 0.37, min: 731201, max: Infinity },
 ];
+
+const AMT_BRACKETS = [
+    { rate: 0.26, min: 0, max: 220700 },
+    { rate: 0.28, min: 220701, max: Infinity }
+];
+const AMT_EXEMPTION = 126500;
 
 const NJ_TAX_BRACKETS = [
     { rate: 0.014, min: 0, max: 20000 }, { rate: 0.0175, min: 20001, max: 35000 }, { rate: 0.035, min: 35001, max: 40000 },
@@ -49,7 +54,8 @@ const createNewScenario = (name) => ({
     name: name,
     clientData: {
         clientName: 'John & Jane Doe',
-        w2Income: 500000, businessIncome: 2000000, capitalGains: 1000000, state: 'NJ',
+        w2Income: 500000, businessIncome: 2000000, shortTermGains: 150000, longTermGains: 850000,
+        incomeGrowth: 3, investmentGrowth: 5,
         investmentAmount: 500000, dealsExposure: '175/75',
         equipmentCost: 0, charitableIntent: 0, ogInvestment: 0, filmInvestment: 0,
         solo401kEmployee: 0, solo401kEmployer: 0, dbContribution: 0,
@@ -62,14 +68,29 @@ const createNewScenario = (name) => ({
 
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 
-const TooltipWrapper = ({ text, children }) => {
+const calculateTax = (income, brackets) => {
+    if (income <= 0) return 0;
+    let tax = 0;
+    let remainingIncome = income;
+    let lastMax = 0;
+    for (const bracket of brackets) {
+        if (remainingIncome <= 0) break;
+        const taxableInBracket = Math.min(remainingIncome, bracket.max - lastMax);
+        tax += taxableInBracket * bracket.rate;
+        remainingIncome -= taxableInBracket;
+        lastMax = bracket.max;
+    }
+    return tax;
+};
+
+const TooltipWrapper = ({ tooltipContent, children }) => {
     const [visible, setVisible] = useState(false);
     return (
         <div className="relative" onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}>
             {children}
             {visible && (
                 <div className="absolute bottom-full mb-2 w-64 bg-gray-800 text-white text-xs rounded py-2 px-3 z-50 shadow-lg">
-                    {text}
+                    {tooltipContent}
                 </div>
             )}
         </div>
@@ -100,10 +121,10 @@ const DisclaimerModal = ({ onAccept }) => (
         <div className="bg-white rounded-lg shadow-2xl p-8 max-w-3xl mx-4 text-sm">
             <h2 className="text-2xl font-bold mb-4">Disclaimer</h2>
             <div className="space-y-4 text-gray-600 max-h-[60vh] overflow-y-auto pr-4">
-                 <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
+                 <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
                 <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
-                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
-                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
+                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client's individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
+                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM's Form ADV and Code of Ethics.</p>
             </div>
             <button onClick={onAccept} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mt-6">
                 I Understand and Accept
@@ -112,15 +133,15 @@ const DisclaimerModal = ({ onAccept }) => (
     </div>
 );
 
-const ScenarioTabs = ({ scenarios, activeScenario, setActiveScenario, addScenario, removeScenario }) => (
+const ScenarioTabs = ({ scenarios, activeView, setActiveView, addScenario, removeScenario }) => (
     <div className="bg-gray-100 p-2 rounded-t-lg">
         <div className="flex items-center border-b border-gray-300">
             {scenarios.map(scenario => (
                 <button
                     key={scenario.id}
-                    onClick={() => setActiveScenario(scenario.id)}
+                    onClick={() => setActiveView(scenario.id)}
                     className={`flex items-center px-4 py-3 text-sm font-medium border-b-2 transition ${
-                        activeScenario === scenario.id
+                        activeView === scenario.id
                             ? 'border-blue-600 text-blue-600 bg-white'
                             : 'border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400'
                     }`}
@@ -131,7 +152,11 @@ const ScenarioTabs = ({ scenarios, activeScenario, setActiveScenario, addScenari
                     )}
                 </button>
             ))}
-            <button onClick={addScenario} className="ml-2 px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-md transition">+</button>
+            <button onClick={addScenario} className="ml-2 px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-md">+</button>
+            <div className="flex-grow"></div>
+            <button onClick={() => setActiveView('compare')} className={`px-4 py-3 text-sm font-medium border-b-2 transition ${activeView === 'compare' ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-gray-600 hover:text-gray-800'}`}>
+                Compare Scenarios
+            </button>
         </div>
     </div>
 );
@@ -151,7 +176,7 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
         <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                 {label}
-                <TooltipWrapper text={tooltip}>
+                <TooltipWrapper tooltipContent={tooltip}>
                     <span className="ml-1 text-gray-400 cursor-help">(?)</span>
                 </TooltipWrapper>
             </label>
@@ -172,11 +197,28 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
                 <InputField name="clientName" label="Client Name" tooltip="The name of the client for this report." isNumeric={false} />
                 <InputField name="w2Income" label="W-2 Income" tooltip="Salary and wages from employment." />
                 <InputField name="businessIncome" label="Business Income" tooltip="Net income from self-employment or pass-through entities." />
-                <InputField name="capitalGains" label="Long-Term Capital Gains" tooltip="Gains from assets held over one year." />
+                <InputField name="longTermGains" label="Long-Term Capital Gains" tooltip="Gains from assets held over one year." />
             </div>
         </div>
     );
 };
+
+const ProjectionsControl = ({ years, setYears, growthRate, setGrowthRate }) => (
+    <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">Multi-Year Projections</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Projection Period: {years} Year(s)</label>
+                <input type="range" min="1" max="10" value={years} onChange={(e) => setYears(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Assumed Annual Income Growth Rate: {growthRate}%</label>
+                 <input type="range" min="0" max="10" step="0.5" value={growthRate} onChange={(e) => setGrowthRate(Number(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+        </div>
+    </div>
+);
+
 
 const RetirementStrategies = ({ scenario, toggleStrategy, updateClientData }) => {
     const areAnyActive = RETIREMENT_STRATEGIES.some(s => scenario.enabledStrategies[s.id]);
@@ -214,9 +256,7 @@ const RetirementStrategies = ({ scenario, toggleStrategy, updateClientData }) =>
 const DealsTooltipContent = ({ exposureLevel }) => {
     const levelData = DEALS_EXPOSURE_LEVELS[exposureLevel];
     if (!levelData) return null;
-
     const formatPercent = (val) => `${(val * 100).toFixed(1)}%`;
-
     return (
         <div>
             <p className="font-bold mb-1">Quantino DEALS™ Details</p>
@@ -248,7 +288,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
                             <div className="ml-3 flex-1">
                                 <p className="font-semibold text-gray-800">{strategy.name}</p>
                                 <p className="text-xs text-gray-500">{strategy.category}</p>
-                                <TooltipWrapper text={tooltipContent}>
+                                <TooltipWrapper tooltipContent={tooltipContent}>
                                      <p className="text-sm text-gray-600 mt-1 cursor-help">{strategy.description.substring(0, 60)}...</p>
                                 </TooltipWrapper>
                             </div>
@@ -283,156 +323,165 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
 );
 
 const ResultsDashboard = ({ results }) => {
-    if (!results) return null;
-    const { baseline, withStrategies, totalCapitalAllocated } = results;
+    if (!results || !results.cumulative) return null;
+    const { cumulative } = results;
+    const { baseline, withStrategies } = cumulative;
     const totalSavings = baseline.totalTax - withStrategies.totalTax;
-    const savingsPercentage = baseline.totalTax > 0 ? totalSavings / baseline.totalTax : 0;
 
     const MetricCard = ({ label, value, change, highlight = false }) => (
         <div className={`p-4 rounded-lg text-center ${highlight ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
             <p className={`text-sm font-medium ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{label}</p>
             <p className={`text-3xl font-bold mt-1 ${highlight ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(value)}</p>
-            <p className={`text-xs mt-1 ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{change}</p>
+            {change && <p className={`text-xs mt-1 ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{change}</p>}
         </div>
     );
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Executive Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Baseline Tax" value={baseline.totalTax} change="Before Strategies" />
-                <MetricCard label="Optimized Tax" value={withStrategies.totalTax} change="After Strategies" />
-                <MetricCard label="Total Savings" value={totalSavings} change={`${(savingsPercentage * 100).toFixed(1)}% Reduction`} highlight={true} />
-                <MetricCard label="Capital Allocated" value={totalCapitalAllocated} change="Total Investment" />
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">Cumulative Projection Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <MetricCard label="Total Baseline Tax" value={baseline.totalTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Optimized Tax" value={withStrategies.totalTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Tax Savings" value={totalSavings} change="Cumulative" highlight={true} />
             </div>
         </div>
     );
 };
 
-const TaxComparisonChart = ({ results }) => {
+const CumulativeSavingsChart = ({ results }) => {
     if (!results) return null;
-    const { baseline, withStrategies } = results;
-
-    const chartData = {
-        labels: ['Baseline', 'With Strategies'],
+    const labels = results.projections.map(p => `Year ${p.year}`);
+    const data = {
+        labels,
         datasets: [
-            { label: 'Federal Tax', data: [baseline.fedTax, withStrategies.fedTax], backgroundColor: 'rgba(59, 130, 246, 0.7)' },
-            { label: 'State Tax', data: [baseline.stateTax, withStrategies.stateTax], backgroundColor: 'rgba(251, 191, 36, 0.7)' },
+            {
+                label: 'Cumulative Savings',
+                data: results.projections.map(p => p.cumulativeSavings),
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                fill: true,
+            },
         ],
     };
-
-    const options = { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Tax Liability Comparison' } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (value) => formatCurrency(value) } } }, };
-    return <Bar options={options} data={chartData} />;
+    const options = { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Cumulative Tax Savings Over Time' } }, scales: { y: { ticks: { callback: (value) => formatCurrency(value) } } } };
+    return <Line options={options} data={data} />;
 };
 
-const StrategicSavingsChart = ({ results }) => {
-    if (!results || !results.strategyImpacts) return null;
-    const filteredImpacts = results.strategyImpacts.filter(i => i.savings > 0);
-    const chartData = {
-        labels: filteredImpacts.map(i => i.name),
-        datasets: [{ label: 'Tax Savings', data: filteredImpacts.map(i => i.savings), backgroundColor: 'rgba(16, 185, 129, 0.7)' }],
+const AnnualTaxChart = ({ results }) => {
+     if (!results) return null;
+    const labels = results.projections.map(p => `Year ${p.year}`);
+    const data = {
+        labels,
+        datasets: [
+            { label: 'Baseline Annual Tax', data: results.projections.map(p => p.baseline.totalTax), backgroundColor: 'rgba(239, 68, 68, 0.7)' },
+            { label: 'Optimized Annual Tax', data: results.projections.map(p => p.withStrategies.totalTax), backgroundColor: 'rgba(59, 130, 246, 0.7)' },
+        ],
     };
-    const options = { indexAxis: 'y', responsive: true, plugins: { legend: { display: false }, title: { display: true, text: 'Savings by Strategy' } }, scales: { x: { ticks: { callback: (value) => formatCurrency(value) } } }, };
-    return <Bar options={options} data={chartData} />;
-};
+    const options = { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Annual Tax Liability Comparison' } }, scales: { x: { stacked: false }, y: { stacked: false, ticks: { callback: (value) => formatCurrency(value) } } } };
+    return <Bar options={options} data={data} />;
+}
 
 const ChartsSection = ({ results }) => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <div className="bg-white p-4 rounded-lg shadow-lg"><TaxComparisonChart results={results} /></div>
-        <div className="bg-white p-4 rounded-lg shadow-lg"><StrategicSavingsChart results={results} /></div>
+        <div className="bg-white p-4 rounded-lg shadow-lg"><AnnualTaxChart results={results} /></div>
+        <div className="bg-white p-4 rounded-lg shadow-lg"><CumulativeSavingsChart results={results} /></div>
     </div>
 );
 
-const InsightsSection = ({ insights }) => (
-    <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">💡 Strategic Implementation Insights</h3>
-        <div className="space-y-3">
-            {insights && insights.length > 0 ? (
-                insights.map((insight, index) => (
-                    <div key={index} className={`p-3 rounded-md flex items-start text-sm ${
-                        insight.type === 'success' ? 'bg-green-50 text-green-800' :
-                        insight.type === 'warning' ? 'bg-yellow-50 text-yellow-800' :
-                        'bg-blue-50 text-blue-800'
-                    }`}>
-                        <span className="mr-3 text-lg">{
-                            insight.type === 'success' ? '✅' :
-                            insight.type === 'warning' ? '⚠️' : 'ℹ️'
-                        }</span>
-                        <span>{insight.text}</span>
-                    </div>
-                ))
-            ) : (
-                <div className="p-3 rounded-md flex items-start text-sm bg-gray-50 text-gray-600">
-                    <span className="mr-3 text-lg">ℹ️</span>
-                    <span>Enable strategies and enter investment amounts to generate personalized insights.</span>
-                </div>
-            )}
+const ComparisonView = ({ allScenarioResults }) => (
+    <div className="bg-white p-6 rounded-b-lg shadow-lg">
+        <h3 className="text-xl font-semibold mb-6 text-gray-800">Scenario Comparison</h3>
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                        {allScenarioResults.map(({ scenario }) => (
+                            <th key={scenario.id} className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{scenario.name}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {[
+                        { label: 'Total Tax Savings', key: 'totalSavings' },
+                        { label: 'Optimized Tax (Cumulative)', key: 'optimizedTax' },
+                        { label: 'Baseline Tax (Cumulative)', key: 'baselineTax' },
+                        { label: 'Capital Allocated', key: 'capitalAllocated' },
+                    ].map(metric => (
+                        <tr key={metric.key}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{metric.label}</td>
+                            {allScenarioResults.map(({ scenario, results }) => (
+                                <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">
+                                    {results && results.cumulative ? formatCurrency(results.cumulative[metric.key]) : 'N/A'}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     </div>
 );
 
 
-// --- Calculation Logic Hook ---
+// --- Calculation Logic (Moved outside of component to be a pure function) ---
 
-const useTaxCalculations = (scenario) => {
-    return useMemo(() => {
-        if (!scenario) return null;
+const performTaxCalculations = (scenario, years, growthRate) => {
+    if (!scenario) return null;
 
-        const { clientData } = scenario;
-        let totalCapitalAllocated = 0;
+    const projections = [];
+    let cumulativeBaselineTax = 0;
+    let cumulativeOptimizedTax = 0;
+    let cumulativeSavings = 0;
 
-        const calculateTax = (income, brackets) => {
-            if (income <= 0) return 0;
-            let tax = 0;
-            let remainingIncome = income;
-            let lastMax = 0;
-            for (const bracket of brackets) {
-                if (remainingIncome <= 0) break;
-                const taxableInBracket = Math.min(remainingIncome, bracket.max - lastMax);
-                tax += taxableInBracket * bracket.rate;
-                remainingIncome -= taxableInBracket;
-                lastMax = bracket.max;
-            }
-            return tax;
+    for (let i = 0; i < years; i++) {
+        const growthFactor = Math.pow(1 + growthRate / 100, i);
+        const currentYearData = {
+            ...scenario.clientData,
+            w2Income: scenario.clientData.w2Income * growthFactor,
+            businessIncome: scenario.clientData.businessIncome * growthFactor,
+            longTermGains: scenario.clientData.longTermGains * growthFactor,
+            shortTermGains: (scenario.clientData.shortTermGains || 0) * growthFactor,
         };
-        
-        const getTaxesForScenario = (enabledStrategies) => {
+
+        const getTaxesForYear = (clientData, enabledStrategies) => {
             let fedDeductions = { aboveAGI: 0, belowAGI: 0 };
             let stateDeductions = 0;
             let qbiBaseIncome = clientData.businessIncome || 0;
-            let currentCapitalGains = clientData.capitalGains || 0;
-            let insights = [];
-            totalCapitalAllocated = 0; // Reset for each calculation run
-
+            let currentLtGains = clientData.longTermGains || 0;
+            let currentStGains = clientData.shortTermGains || 0;
+            let totalCapitalAllocated = 0;
+            
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
             allStrategies.forEach(strategy => {
                 if (enabledStrategies[strategy.id]) {
-                    // Add to capital allocated if it's an investment
-                    if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
+                     if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
                         totalCapitalAllocated += clientData[strategy.inputRequired];
                     }
                     
                     switch (strategy.id) {
-                        case 'QUANT_DEALS_01':
+                         case 'QUANT_DEALS_01':
                             const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
                             const stLoss = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
-                            const ltGain = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
-                            const gainOffset = Math.min(currentCapitalGains, stLoss);
-                            const ordinaryOffset = Math.min(3000, stLoss - gainOffset);
+                            const ltGainFromDeals = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                            
+                            const stOffset = Math.min(currentStGains, stLoss);
+                            currentStGains -= stOffset;
+                            const remainingLoss = stLoss - stOffset;
+
+                            const ltOffset = Math.min(currentLtGains, remainingLoss);
+                            currentLtGains -= ltOffset;
+                            const remainingLoss2 = remainingLoss - ltOffset;
+
+                            const ordinaryOffset = Math.min(3000, remainingLoss2);
                             fedDeductions.belowAGI += ordinaryOffset;
-                            currentCapitalGains = currentCapitalGains - gainOffset + ltGain;
-                            if (gainOffset > 0 || ordinaryOffset > 0) {
-                                insights.push({type: 'success', text: `DEALS strategy generated ${formatCurrency(gainOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.`});
-                            }
+                            currentLtGains += ltGainFromDeals;
                             break;
                         case 'EQUIP_S179_01':
                             const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
                             qbiBaseIncome -= s179Ded;
                             fedDeductions.aboveAGI += s179Ded;
                             stateDeductions += Math.min(clientData.equipmentCost, 25000);
-                             if (s179Ded > 0) {
-                                insights.push({type: 'success', text: `Section 179 provides a federal deduction of ${formatCurrency(s179Ded)}.`});
-                            }
                             break;
                         case 'SOLO401K_EMPLOYEE_01':
                             fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
@@ -454,158 +503,71 @@ const useTaxCalculations = (scenario) => {
                             const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                             fedDeductions.belowAGI += clatDed;
                             stateDeductions += clatDed;
-                            if (clatDed > 0) {
-                                insights.push({type: 'success', text: `Charitable CLAT provides a federal deduction of ${formatCurrency(clatDed)}.`});
-                                if (clatDed < clientData.charitableIntent) {
-                                    insights.push({type: 'warning', text: `Charitable deduction was limited by AGI to 30%.`});
-                                }
-                            }
                             break;
                         case 'OG_USENERGY_01':
                             const ogDed = (clientData.ogInvestment || 0) * 0.70;
                             fedDeductions.belowAGI += ogDed;
                             stateDeductions += ogDed;
-                             if (ogDed > 0) {
-                                insights.push({type: 'success', text: `Energy Investment generates a deduction of ${formatCurrency(ogDed)}.`});
-                            }
                             break;
                         case 'FILM_SEC181_01':
                             const filmDed = clientData.filmInvestment || 0;
                             fedDeductions.belowAGI += filmDed;
                             stateDeductions += filmDed;
-                            if (filmDed > 0) {
-                                insights.push({type: 'success', text: `Film Financing (Sec 181) provides a 100% upfront deduction of ${formatCurrency(filmDed)}.`});
-                            }
                             break;
                     }
                 }
             });
 
-            const fedAGI = (clientData.w2Income || 0) + (clientData.businessIncome || 0) - fedDeductions.aboveAGI;
+            const ordinaryIncome = clientData.w2Income + clientData.businessIncome + currentStGains;
+            const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
+            
+            // AMT Calculation
+            let amti = fedAGI;
+            const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - Math.max(0, amti - 1140800) * 0.25);
+            const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount);
+            const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);
+
+            // Regular Tax Calculation
             const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
             let qbiDeduction = 0;
             if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0 && fedTaxableForQBI <= 383900) {
                 qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
-                 if (qbiDeduction > 0) {
-                    insights.push({type: 'success', text: `Successfully unlocked a Qualified Business Income (QBI) deduction of ${formatCurrency(qbiDeduction)}.`});
-                }
-            } else if (enabledStrategies['QBI_FINAL_01'] && fedTaxableForQBI > 383900) {
-                insights.push({type: 'warning', text: `Taxable income exceeds the QBI threshold, preventing the QBI deduction.`});
             }
-            
             const fedTaxableIncome = Math.max(0, fedTaxableForQBI - qbiDeduction);
             const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
-            const fedCapitalGainsTax = Math.max(0, currentCapitalGains) * 0.20;
-            const fedTax = fedOrdinaryTax + fedCapitalGainsTax;
+            const fedCapitalGainsTax = Math.max(0, currentLtGains) * 0.20;
+            const regularFedTax = fedOrdinaryTax + fedCapitalGainsTax;
             
-            const stateTaxableIncome = (clientData.w2Income || 0) + (clientData.businessIncome || 0) + currentCapitalGains - stateDeductions;
-            const stateTax = calculateTax(stateTaxableIncome, NJ_TAX_BRACKETS);
+            const fedTax = Math.max(regularFedTax, amtTax);
+            const stateTax = calculateTax(clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains - stateDeductions, NJ_TAX_BRACKETS);
 
-            return { totalTax: fedTax + stateTax, fedTax, stateTax, insights, totalCapitalAllocated };
+            return { totalTax: fedTax + stateTax, fedTax, stateTax, totalCapitalAllocated };
         };
 
-        const baselineTaxes = getTaxesForScenario({});
-        const baseline = { ...baselineTaxes, ordinaryIncome: (clientData.w2Income || 0) + (clientData.businessIncome || 0) };
-        const { totalTax, fedTax, stateTax, insights, totalCapitalAllocated: finalCapital } = getTaxesForScenario(scenario.enabledStrategies);
-        const withStrategies = { totalTax, fedTax, stateTax, insights };
-        
-        const strategyImpacts = [];
-        
-        const retirementStrategyIds = RETIREMENT_STRATEGIES.map(s => s.id);
-        const areAnyRetirementStrategiesEnabled = retirementStrategyIds.some(id => scenario.enabledStrategies[id]);
+        const baseline = getTaxesForYear(currentYearData, {});
+        const withStrategies = getTaxesForYear(currentYearData, scenario.enabledStrategies);
 
-        if (areAnyRetirementStrategiesEnabled) {
-            const enabledWithoutRetirement = { ...scenario.enabledStrategies };
-            retirementStrategyIds.forEach(id => { enabledWithoutRetirement[id] = false; });
-            const taxWithoutRetirement = getTaxesForScenario(enabledWithoutRetirement).totalTax;
-            const retirementSavings = taxWithoutRetirement - withStrategies.totalTax;
-            if (retirementSavings > 0) {
-                strategyImpacts.push({ name: 'Retirement Planning', savings: retirementSavings });
-            }
-        }
+        cumulativeBaselineTax += baseline.totalTax;
+        cumulativeOptimizedTax += withStrategies.totalTax;
+        cumulativeSavings = cumulativeBaselineTax - cumulativeOptimizedTax;
 
-        STRATEGY_LIBRARY.forEach(strategy => {
-            if (scenario.enabledStrategies[strategy.id]) {
-                const enabledWithoutThisStrategy = { ...scenario.enabledStrategies, [strategy.id]: false };
-                const taxWithoutThisStrategy = getTaxesForScenario(enabledWithoutThisStrategy).totalTax;
-                const savings = taxWithoutThisStrategy - withStrategies.totalTax;
-                if (savings > 0) {
-                    strategyImpacts.push({ name: strategy.name, savings });
-                }
-            }
+        projections.push({
+            year: i + 1,
+            baseline,
+            withStrategies,
+            cumulativeSavings
         });
+    }
 
-        return { baseline, withStrategies, strategyImpacts, insights, totalCapitalAllocated: finalCapital };
-    }, [scenario]);
-};
-
-// --- Printable Report Component ---
-const PrintableReport = ({ scenario, results }) => {
-    if (!results || !scenario) return null;
-    
-    const { clientData } = scenario;
-    const { baseline, withStrategies, insights, totalCapitalAllocated } = results;
-    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-    return (
-        <div className="printable-area">
-            <div className="text-center mb-8">
-                <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12 mx-auto mb-4" />
-                <h1 className="text-2xl font-bold">Tax Optimization Analysis Report</h1>
-                <h2 className="text-lg font-semibold text-gray-700 mt-1">Scenario: {scenario.name}</h2>
-                <div className="mt-4 text-sm">
-                    <p className="font-semibold">Report for: {clientData.clientName}</p>
-                    <p className="text-gray-600">{today}</p>
-                </div>
-            </div>
-            
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold border-b pb-2 mb-3">Executive Summary</h2>
-                <table className="w-full text-sm">
-                    <tbody>
-                        <tr><td className="py-1">Baseline Tax Liability</td><td className="text-right font-medium">{formatCurrency(baseline.totalTax)}</td></tr>
-                        <tr><td className="py-1">Optimized Tax Liability</td><td className="text-right font-medium">{formatCurrency(withStrategies.totalTax)}</td></tr>
-                        <tr className="border-t"><td className="py-1 font-bold">Total Potential Savings</td><td className="text-right font-bold">{formatCurrency(baseline.totalTax - withStrategies.totalTax)}</td></tr>
-                        <tr><td className="py-1">Total Capital Allocated</td><td className="text-right font-medium">{formatCurrency(totalCapitalAllocated)}</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold border-b pb-2 mb-3">Applied Strategies & Investments</h2>
-                <table className="w-full text-sm">
-                     <tbody>
-                        {[...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].map(s => {
-                            if (scenario.enabledStrategies[s.id] && clientData[s.inputRequired] > 0 && s.id !== 'QBI_FINAL_01') {
-                                return (
-                                    <tr key={s.id}><td className="py-1">{s.name}</td><td className="text-right font-medium">{formatCurrency(clientData[s.inputRequired])}</td></tr>
-                                )
-                            }
-                            return null;
-                        })}
-                    </tbody>
-                </table>
-            </div>
-            
-            {insights && insights.length > 0 && (
-                 <div className="mb-6">
-                    <h2 className="text-lg font-semibold border-b pb-2 mb-3">Implementation Insights</h2>
-                    <ul className="list-disc list-inside space-y-2 text-sm">
-                        {insights.map((insight, index) => (
-                            <li key={index}>{insight.text}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-             <div className="text-[10px] text-gray-500 mt-8 space-y-1 leading-snug">
-                <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions.</p>
-                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes. The scenarios modeled should not be relied upon for making financial or tax-related decisions. Clients and other users must consult their own qualified tax professionals, legal advisors, or financial consultants before implementing any strategies described.</p>
-                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client’s individual circumstances. Use of the calculator does not create an advisory relationship with AWM, nor does it replace the need for a comprehensive, personalized analysis.</p>
-                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training. For additional information, please refer to AWM’s Form ADV and Code of Ethics.</p>
-            </div>
-        </div>
-    );
+    return {
+        projections,
+        cumulative: {
+            baselineTax: cumulativeBaselineTax,
+            optimizedTax: cumulativeOptimizedTax,
+            totalSavings: cumulativeSavings,
+            capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0,
+        }
+    };
 };
 
 
@@ -613,58 +575,90 @@ const PrintableReport = ({ scenario, results }) => {
 
 export default function App() {
     const [showDisclaimer, setShowDisclaimer] = useState(true);
-    const [scenarios, setScenarios] = useState([createNewScenario('Scenario 1')]);
-    const [activeScenarioId, setActiveScenarioId] = useState(scenarios[0].id);
+    const [scenarios, setScenarios] = useState(() => {
+        try {
+            const savedScenarios = localStorage.getItem('taxOptimizerScenarios');
+            return savedScenarios ? JSON.parse(savedScenarios) : [createNewScenario('Scenario 1')];
+        } catch (e) {
+            return [createNewScenario('Scenario 1')];
+        }
+    });
+    const [activeView, setActiveView] = useState(scenarios[0]?.id || 'compare');
+    const [projectionYears, setProjectionYears] = useState(5);
+    const [growthRate, setGrowthRate] = useState(3.0);
 
-    const activeScenario = scenarios.find(s => s.id === activeScenarioId);
-    const calculationResults = useTaxCalculations(activeScenario);
+    const activeScenario = scenarios.find(s => s.id === activeView);
+    
+    const allScenarioResults = useMemo(() => {
+        return scenarios.map(s => ({
+            scenario: s,
+            results: performTaxCalculations(s, projectionYears, growthRate)
+        }));
+    }, [scenarios, projectionYears, growthRate]);
 
-    const handlePrint = () => {
-        window.print();
-    };
+    const calculationResults = useMemo(() => {
+        if (activeView === 'compare' || !activeScenario) return null;
+        const activeResult = allScenarioResults.find(r => r.scenario.id === activeView);
+        return activeResult ? activeResult.results : null;
+    }, [activeView, allScenarioResults, activeScenario]);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('taxOptimizerScenarios', JSON.stringify(scenarios));
+        } catch (e) {
+            console.warn('Failed to save scenarios to localStorage:', e);
+        }
+    }, [scenarios]);
+
+    const handlePrint = () => window.print();
     
     const handleUpdateClientData = useCallback((field, value) => {
-        setScenarios(prev => prev.map(s => s.id === activeScenarioId ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
-    }, [activeScenarioId]);
+        setScenarios(prev => prev.map(s => s.id === activeView ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
+    }, [activeView]);
 
     const handleToggleStrategy = useCallback((strategyId) => {
-        setScenarios(prev => prev.map(s => s.id === activeScenarioId ? { ...s, enabledStrategies: { ...s.enabledStrategies, [strategyId]: !s.enabledStrategies[strategyId] } } : s));
-    }, [activeScenarioId]);
+        setScenarios(prev => prev.map(s => s.id === activeView ? { ...s, enabledStrategies: { ...s.enabledStrategies, [strategyId]: !s.enabledStrategies[strategyId] } } : s));
+    }, [activeView]);
     
     const addScenario = () => {
         const newScenario = createNewScenario(`Scenario ${scenarios.length + 1}`);
         setScenarios([...scenarios, newScenario]);
-        setActiveScenarioId(newScenario.id);
+        setActiveView(newScenario.id);
     };
     
     const removeScenario = (idToRemove) => {
         const newScenarios = scenarios.filter(s => s.id !== idToRemove);
         setScenarios(newScenarios);
-        if (activeScenarioId === idToRemove) {
-            setActiveScenarioId(newScenarios[0]?.id || null);
+        if (activeView === idToRemove) {
+            setActiveView(newScenarios[0]?.id || 'compare');
         }
     };
-
-    if (!activeScenario) {
-        return <div className="p-8 text-center">Please add a scenario to begin.</div>;
-    }
 
     return (
         <>
             <div id="app-root">
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
-                <Header onPrint={handlePrint} clientName={activeScenario.clientData.clientName} />
+                <Header onPrint={handlePrint} clientName={activeScenario?.clientData.clientName} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
-                    <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
-                    <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
-                    <ResultsDashboard results={calculationResults} />
-                    <ChartsSection results={calculationResults} />
-                    <InsightsSection insights={calculationResults?.insights} />
+                    <ScenarioTabs scenarios={scenarios} activeView={activeView} setActiveView={setActiveView} addScenario={addScenario} removeScenario={removeScenario} />
+                    
+                    {activeView === 'compare' ? (
+                        <ComparisonView allScenarioResults={allScenarioResults} />
+                    ) : activeScenario ? (
+                        <>
+                            <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
+                            <ProjectionsControl years={projectionYears} setYears={setProjectionYears} growthRate={growthRate} setGrowthRate={setGrowthRate} />
+                            <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
+                            <ResultsDashboard results={calculationResults} />
+                            <ChartsSection results={calculationResults} />
+                        </>
+                    ) : (
+                         <div className="p-8 text-center">Please select or create a scenario to begin.</div>
+                    )}
                 </main>
             </div>
             <div id="print-mount" className="hidden">
-                <PrintableReport scenario={activeScenario} results={calculationResults} />
+                 {/* Printable report would need to be adapted for multi-year/comparison */}
             </div>
         </>
     );
