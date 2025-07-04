@@ -107,5 +107,5 @@ body {
 
 /* Hide all app navigation/controls/buttons for print */
 .print-hide, .no-print, header, nav, .DisclaimerModal, #print-mount {
-  display: none !important;
+  display: auto;
 }
