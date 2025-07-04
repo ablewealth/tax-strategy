@@ -8,10 +8,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 // --- Constants and Configuration ---
 
 const DEALS_EXPOSURE_LEVELS = {
-    '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, description: '130/30 Strategy' },
-    '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, description: '145/45 Strategy' },
-    '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, description: '175/75 Strategy' },
-    '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, description: '225/125 Strategy' },
+    '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, description: '130/30 Strategy - 3.5% annual tax benefits' },
+    '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, description: '145/45 Strategy - 4.6% annual tax benefits' },
+    '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, description: '175/75 Strategy - 6.9% annual tax benefits' },
+    '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, description: '225/125 Strategy - 10.6% annual tax benefits' },
 };
 
 const STRATEGY_LIBRARY = [
