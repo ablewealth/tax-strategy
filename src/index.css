@@ -38,7 +38,7 @@ body {
     display: block !important;
   }
   .print-hide, header, nav, .DisclaimerModal, #print-mount, #app-root > main > :not(#printable-area) {
-    display: none !important;
+    display: none;
   }
 }
 
