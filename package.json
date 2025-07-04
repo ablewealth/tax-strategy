@@ -1,30 +1,40 @@
 {
   "name": "tax-optimizer-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "homepage": "https://ablewealth.github.io/tax-strategy",
+  "description": "Advanced Tax Strategy Optimizer with multi-year projections and scenario comparison",
+  "keywords": ["tax", "optimization", "wealth-management", "financial-planning", "react"],
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "chart.js": "^4.4.3",
+    "chart.js": "^4.4.4",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^3.5.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "lint": "eslint src/**/*.{js,jsx}",
+    "lint:fix": "eslint src/**/*.{js,jsx} --fix"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-console": "warn"
+    }
   },
   "browserslist": {
     "production": [
@@ -40,6 +50,22 @@
   },
   "devDependencies": {
     "gh-pages": "^6.1.1",
-    "tailwindcss": "^3.4.3"
-  }
+    "tailwindcss": "^3.4.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ablewealth/tax-strategy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ablewealth/tax-strategy/issues"
+  },
+  "author": "Able Wealth Management",
+  "license": "MIT"
 }
