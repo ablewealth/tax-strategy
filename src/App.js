@@ -178,9 +178,7 @@ const Header = ({ onPrint, clientName }) => (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">AWM</span>
-                    </div>
+                    <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-10" />
                     <div>
                         <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
                         {clientName && <p className="text-sm text-gray-500">Analysis for: {clientName}</p>}
