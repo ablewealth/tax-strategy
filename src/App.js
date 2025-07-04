@@ -78,13 +78,16 @@ const TooltipWrapper = ({ text, children }) => {
 
 // --- Core Components ---
 
-const Header = ({ onPrint }) => (
+const Header = ({ onPrint, clientName }) => (
     <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
                 <div className="flex items-center space-x-3">
                     <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-10" />
-                    <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Optimizer</h1>
+                         {clientName && <p className="text-sm text-gray-500">Analysis for: {clientName}</p>}
+                    </div>
                 </div>
                 <button onClick={onPrint} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Print Report</button>
             </div>
@@ -546,9 +549,10 @@ const PrintableReport = ({ scenario, results }) => {
 
     return (
         <div className="printable-area">
-             <div className="text-center mb-8">
+            <div className="text-center mb-8">
                 <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold">Tax Optimization Analysis Report</h1>
+                <h2 className="text-lg font-semibold text-gray-700 mt-1">Scenario: {scenario.name}</h2>
                 <div className="mt-4 text-sm">
                     <p className="font-semibold">Report for: {clientData.clientName}</p>
                     <p className="text-gray-600">{today}</p>
@@ -649,7 +653,7 @@ export default function App() {
         <>
             <div id="app-root">
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
-                <Header onPrint={handlePrint} />
+                <Header onPrint={handlePrint} clientName={activeScenario.clientData.clientName} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <ScenarioTabs scenarios={scenarios} activeScenario={activeScenarioId} setActiveScenario={setActiveScenarioId} addScenario={addScenario} removeScenario={removeScenario} />
                     <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
