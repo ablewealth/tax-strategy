@@ -14,18 +14,91 @@ body {
 
 /* Print-specific styles */
 @media print {
-  body {
-    background-color: #fff;
+  body * {
+    visibility: hidden !important;
   }
-  #app-root {
-    display: none;
+  #printable-area, #printable-area * {
+    visibility: visible !important;
   }
-  #print-mount {
-    display: block;
+  #printable-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    background: white !important;
+    z-index: 9999 !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
-  .printable-area {
-    max-width: 1152px; /* Corresponds to max-w-7xl */
-    margin: 0 auto;
-    padding: 2rem;
+  .print-hide, header, .DisclaimerModal, #app-root > main > :not(#printable-area) {
+    display: none !important;
   }
+}
+
+/* Print report styles */
+.print-report-area {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #222;
+  background: #fff;
+  padding: 32px 32px 16px 32px;
+  width: 800px;
+  margin: 0 auto;
+}
+.print-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+.print-logo {
+  height: 56px;
+}
+.print-title h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.25em;
+}
+.print-title .print-date {
+  font-size: 1rem;
+  color: #555;
+}
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+.print-table th,
+.print-table td {
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  padding: 8px 10px;
+}
+.print-table th {
+  width: 40%;
+  color: #666;
+  font-weight: normal;
+}
+.print-table.summary-table th {
+  font-weight: bold;
+}
+.print-table .highlight {
+  color: #2563eb;
+  font-weight: bold;
+  background: #f0f6ff;
+}
+.print-chart {
+  margin: 14px 0 28px 0;
+  padding: 12px 0 12px 0;
+  text-align: center;
+}
+.print-disclaimer {
+  margin-top: 28px;
+  font-size: 0.9em;
+  color: #999;
+  text-align: center;
+}
+
+/* Hide all app navigation/controls/buttons for print */
+.print-hide, .no-print, header, nav, .DisclaimerModal, #print-mount {
+  display: none !important;
 }
