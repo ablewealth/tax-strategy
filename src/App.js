@@ -195,22 +195,7 @@ const Header = ({ onPrint, clientName }) => (
     </header>
 );
 
-const DisclaimerModal = ({ onAccept }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-3xl mx-4 text-sm">
-            <h2 className="text-2xl font-bold mb-4">Disclaimer</h2>
-            <div className="space-y-4 text-gray-600 max-h-[60vh] overflow-y-auto pr-4">
-                <p>The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This calculator is provided for informational purposes only and should not be distributed or shared with clients or the public without the express written consent of AWM.</p>
-                <p>This calculator does not constitute legal, tax, or investment advice. All data and results are based on modeling assumptions that may not reflect actual outcomes or future tax law changes.</p>
-                <p>Tax laws and interpretations are subject to change, and the effectiveness or applicability of strategies modeled may vary based on a client's individual circumstances. Use of the calculator does not establish an advisory relationship with AWM.</p>
-                <p>Able Wealth Management LLC is a registered investment adviser with the U.S. Securities and Exchange Commission (SEC). Registration does not imply a certain level of skill or training.</p>
-            </div>
-            <button onClick={onAccept} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mt-6">
-                I Understand and Accept
-            </button>
-        </div>
-    </div>
-);
+
 
 const ScenarioTabs = ({ scenarios, activeView, setActiveView, addScenario, removeScenario }) => (
     <div className="bg-gray-100 p-2 rounded-t-lg">
@@ -473,7 +458,6 @@ const ComparisonView = ({ allScenarioResults }) => (
 // --- Main App Component ---
 
 export default function App() {
-// const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [scenarios, setScenarios] = useState([createNewScenario('Scenario 1')]);
     const [activeView, setActiveView] = useState(scenarios[0]?.id);
     const [projectionYears, setProjectionYears] = useState(5);
@@ -528,7 +512,6 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-         // {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
             <Header onPrint={handlePrint} clientName={activeScenario?.clientData.clientName} />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <ScenarioTabs 
