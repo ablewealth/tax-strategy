@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, LineChart } from 'recharts';
+import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, LineChart, Bar, Line } from 'recharts';
 // --- Constants and Configuration ---
 
 const DEALS_EXPOSURE_LEVELS = {
