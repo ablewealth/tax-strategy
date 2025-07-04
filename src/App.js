@@ -473,7 +473,7 @@ const ComparisonView = ({ allScenarioResults }) => (
 // --- Main App Component ---
 
 export default function App() {
-    const [showDisclaimer, setShowDisclaimer] = useState(false);
+// const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [scenarios, setScenarios] = useState([createNewScenario('Scenario 1')]);
     const [activeView, setActiveView] = useState(scenarios[0]?.id);
     const [projectionYears, setProjectionYears] = useState(5);
