@@ -325,8 +325,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
 const ResultsDashboard = ({ results }) => {
     if (!results || !results.cumulative) return null;
     const { cumulative } = results;
-    const { baseline, withStrategies } = cumulative;
-    const totalSavings = baseline.totalTax - withStrategies.totalTax;
+    // Use the correct keys: baselineTax and optimizedTax
+    const totalSavings = cumulative.baselineTax - cumulative.optimizedTax;
 
     const MetricCard = ({ label, value, change, highlight = false }) => (
         <div className={`p-4 rounded-lg text-center ${highlight ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
@@ -340,8 +340,8 @@ const ResultsDashboard = ({ results }) => {
         <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Cumulative Projection Summary</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <MetricCard label="Total Baseline Tax" value={baseline.totalTax} change={`Over ${results.projections.length} years`} />
-                <MetricCard label="Total Optimized Tax" value={withStrategies.totalTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Baseline Tax" value={cumulative.baselineTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Optimized Tax" value={cumulative.optimizedTax} change={`Over ${results.projections.length} years`} />
                 <MetricCard label="Total Tax Savings" value={totalSavings} change="Cumulative" highlight={true} />
             </div>
         </div>
