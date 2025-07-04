@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import ReactDOM from 'react-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import PrintableReport from './components/PrintableReport';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
 
@@ -610,8 +611,14 @@ export default function App() {
         }
     }, [scenarios]);
 
-    const handlePrint = () => window.print();
-    
+    // Ref for the printable area
+    const printRef = useRef();
+
+    // Hide all UI except printable report when printing
+    const handlePrint = () => {
+        window.print();
+    };
+
     const handleUpdateClientData = useCallback((field, value) => {
         setScenarios(prev => prev.map(s => s.id === activeView ? { ...s, clientData: { ...s.clientData, [field]: value } } : s));
     }, [activeView]);
@@ -640,26 +647,45 @@ export default function App() {
                 {showDisclaimer && <DisclaimerModal onAccept={() => setShowDisclaimer(false)} />}
                 <Header onPrint={handlePrint} clientName={activeScenario?.clientData.clientName} />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <ScenarioTabs scenarios={scenarios} activeView={activeView} setActiveView={setActiveView} addScenario={addScenario} removeScenario={removeScenario} />
-                    
-                    {activeView === 'compare' ? (
-                        <ComparisonView allScenarioResults={allScenarioResults} />
-                    ) : activeScenario ? (
-                        <>
-                            <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
-                            <ProjectionsControl years={projectionYears} setYears={setProjectionYears} growthRate={growthRate} setGrowthRate={setGrowthRate} />
-                            <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
-                            <ResultsDashboard results={calculationResults} />
-                            <ChartsSection results={calculationResults} />
-                        </>
-                    ) : (
-                         <div className="p-8 text-center">Please select or create a scenario to begin.</div>
+                    {/* Normal UI - hidden during print */}
+                    <div className="print-hide">
+                        <ScenarioTabs
+                            scenarios={scenarios}
+                            activeView={activeView}
+                            setActiveView={setActiveView}
+                            addScenario={addScenario}
+                            removeScenario={removeScenario}
+                        />
+                        {activeView === 'compare' ? (
+                            <ComparisonView allScenarioResults={allScenarioResults} />
+                        ) : activeScenario ? (
+                            <>
+                                <ClientInputSection scenario={activeScenario} updateClientData={handleUpdateClientData} />
+                                <ProjectionsControl years={projectionYears} setYears={setProjectionYears} growthRate={growthRate} setGrowthRate={setGrowthRate} />
+                                <StrategiesSection scenario={activeScenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
+                                <ResultsDashboard results={calculationResults} />
+                                <ChartsSection results={calculationResults} />
+                            </>
+                        ) : (
+                            <div className="p-8 text-center">Please select or create a scenario to begin.</div>
+                        )}
+                    </div>
+                    {/* Printable report (always in DOM, only visible during print) */}
+                    {activeScenario && calculationResults && (
+                        <PrintableReport
+                            ref={printRef}
+                            scenario={activeScenario}
+                            results={calculationResults}
+                            projections={calculationResults.projections}
+                            clientName={activeScenario.clientData.clientName}
+                            years={projectionYears}
+                            growthRate={growthRate}
+                        />
                     )}
                 </main>
-            </div>
-            <div id="print-mount" className="hidden">
-                 {/* Printable report would need to be adapted for multi-year/comparison */}
             </div>
         </>
     );
 }
+
+// ...all other components and logic here (as before)...
