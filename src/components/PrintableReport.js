@@ -10,6 +10,10 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(Math.round(value || 0));
 
+const formatPercentage = (value) => {
+    return `${(value * 100).toFixed(1)}%`;
+};
+
 const PrintableReport = forwardRef(
   ({ scenario, results, years, growthRate }, ref) => {
     if (!results || !scenario) return null;
@@ -21,6 +25,9 @@ const PrintableReport = forwardRef(
     const enabledRetirementStrategies = RETIREMENT_STRATEGIES.filter(
         strategy => scenario.enabledStrategies[strategy.id] && scenario.clientData[strategy.inputRequired] > 0
     );
+
+    // Calculate savings percentage for the summary
+    const savingsPercentage = cumulative.baselineTax > 0 ? cumulative.totalSavings / cumulative.baselineTax : 0;
 
     return (
       <div ref={ref} id="printable-area" style={{ fontFamily: 'Arial, sans-serif', padding: '2rem', color: '#000' }}>
@@ -36,37 +43,38 @@ const PrintableReport = forwardRef(
           </div>
         </header>
 
-        {/* Executive Summary Section */}
+        {/* REDESIGNED: Executive Tax Optimization Analysis Section */}
         <section style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid #ccc', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-            Executive Summary
-          </h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.75rem', textAlign: 'left' }}>State of Residence</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>{scenario.clientData.state}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.75rem', textAlign: 'left' }}>Projection Period</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>{years === 0 ? 'Current Year' : `${years} Years`}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.75rem', textAlign: 'left' }}>Total Baseline Tax</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right' }}>{formatCurrency(cumulative.baselineTax)}</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.75rem', textAlign: 'left' }}>Total Optimized Tax</td>
-                <td style={{ padding: '0.75rem', textAlign: 'right' }}>{formatCurrency(cumulative.optimizedTax)}</td>
-              </tr>
-              <tr style={{ backgroundColor: '#f0f0f0' }}>
-                <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 'bold', fontSize: '1.1rem' }}>Total Potential Tax Savings</th>
-                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold', fontSize: '1.2rem', color: '#006400' }}>
-                  {formatCurrency(cumulative.totalSavings)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>
+                    Executive Tax Optimization Analysis
+                </h2>
+                <p style={{ fontSize: '1rem', color: '#555', margin: '0' }}>
+                    Comprehensive strategic tax planning results for {scenario.clientData.state} over {years === 0 ? 'the Current Year' : `${years} Years`}.
+                </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', textAlign: 'center' }}>
+                <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#666', margin: '0 0 0.5rem 0' }}>Baseline Tax Liability</h3>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>{formatCurrency(cumulative.baselineTax)}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#666', margin: '0' }}>Pre-optimization scenario</p>
+                </div>
+                <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#666', margin: '0 0 0.5rem 0' }}>Optimized Tax Liability</h3>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>{formatCurrency(cumulative.optimizedTax)}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#666', margin: '0' }}>Post-strategy implementation</p>
+                </div>
+                <div style={{ border: '2px solid #006400', borderRadius: '8px', padding: '1rem', backgroundColor: '#f0fff4' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#006400', margin: '0 0 0.5rem 0' }}>Total Tax Optimization</h3>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#006400', margin: '0 0 0.25rem 0' }}>{formatCurrency(cumulative.totalSavings)}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#006400', margin: '0' }}>{formatPercentage(savingsPercentage)} effective reduction</p>
+                </div>
+                <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#666', margin: '0 0 0.5rem 0' }}>Total Capital Allocated</h3>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '0 0 0.25rem 0' }}>{formatCurrency(cumulative.capitalAllocated)}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#666', margin: '0' }}>Total investment in strategies</p>
+                </div>
+            </div>
         </section>
 
         {/* Retirement Contributions Section */}
