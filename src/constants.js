@@ -40,6 +40,19 @@ export const NJ_TAX_BRACKETS = [
     { rate: 0.1075, min: 1000001, max: Infinity },
 ];
 
+export const NY_TAX_BRACKETS = [
+    { rate: 0.04, min: 0, max: 17150 },
+    { rate: 0.045, min: 17151, max: 23900 },
+    { rate: 0.0525, min: 23901, max: 27900 },
+    { rate: 0.0585, min: 27901, max: 161550 },
+    { rate: 0.0625, min: 161551, max: 323200 },
+    { rate: 0.0685, min: 323201, max: 2155350 },
+    { rate: 0.0965, min: 2155351, max: 5000000 },
+    { rate: 0.103, min: 5000001, max: 25000000 },
+    { rate: 0.109, min: 25000001, max: Infinity },
+];
+
+
 export const STANDARD_DEDUCTION = 29200;
 
 export const createNewScenario = (name) => ({
@@ -47,6 +60,7 @@ export const createNewScenario = (name) => ({
     name: name,
     clientData: {
         clientName: 'John & Jane Doe',
+        state: 'NJ', // Default state
         w2Income: 500000, businessIncome: 2000000, shortTermGains: 150000, longTermGains: 850000,
         incomeGrowth: 3, investmentGrowth: 5,
         investmentAmount: 500000, dealsExposure: '175/75',
