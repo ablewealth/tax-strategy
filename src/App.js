@@ -113,9 +113,6 @@ const Header = ({ onPrint, clientName }) => (
                     <h1 className="font-serif text-2xl font-bold text-text-primary leading-tight">
                         Advanced Tax Strategy Optimizer
                     </h1>
-                    <p className="font-serif text-sm text-text-secondary mt-1">
-                        Able Wealth Management
-                    </p>
                 </div>
             </div>
 
