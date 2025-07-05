@@ -38,6 +38,10 @@ const PrintableReport = forwardRef(
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
               <tr style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '0.75rem', textAlign: 'left' }}>State of Residence</td>
+                <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>{scenario.clientData.state}</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: '0.75rem', textAlign: 'left' }}>Projection Period</td>
                 <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>{years === 0 ? 'Current Year' : `${years} Years`}</td>
               </tr>
@@ -105,4 +109,3 @@ const PrintableReport = forwardRef(
 );
 
 export default PrintableReport;
-
