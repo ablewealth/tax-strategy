@@ -125,7 +125,8 @@ const Section = ({ title, description, children }) => (
     </div>
 );
 
-const InputField = ({ label, type = 'number', value, onChange, placeholder }) => (
+// CORRECTED: InputField component to handle numeric input correctly
+const InputField = ({ label, type = 'text', value, onChange, placeholder }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
         <input
@@ -149,7 +150,8 @@ const SelectField = ({ label, value, onChange, children }) => (
 
 const ClientInputSection = ({ scenario, updateClientData }) => {
     const handleNumericChange = (field, value) => {
-        updateClientData(field, Number(value) || 0);
+        const numericValue = value.replace(/[^0-9]/g, ''); // Allow only numbers
+        updateClientData(field, Number(numericValue) || 0);
     };
     return (
         <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
@@ -159,10 +161,10 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
                     <option value="NJ">New Jersey</option>
                     <option value="NY">New York</option>
                 </SelectField>
-                <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={e => handleNumericChange('w2Income', e.target.value)} placeholder="$ 500,000" />
-                <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={e => handleNumericChange('businessIncome', e.target.value)} placeholder="$ 2,000,000" />
-                <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={e => handleNumericChange('shortTermGains', e.target.value)} placeholder="$ 150,000" />
-                <InputField label="Long Term Gains" value={scenario.clientData.longTermGains} onChange={e => handleNumericChange('longTermGains', e.target.value)} placeholder="$ 850,000" />
+                <InputField label="W-2 Income" value={formatCurrency(scenario.clientData.w2Income)} onChange={e => handleNumericChange('w2Income', e.target.value)} placeholder="$ 500,000" />
+                <InputField label="Business Income" value={formatCurrency(scenario.clientData.businessIncome)} onChange={e => handleNumericChange('businessIncome', e.target.value)} placeholder="$ 2,000,000" />
+                <InputField label="Short Term Gains" value={formatCurrency(scenario.clientData.shortTermGains)} onChange={e => handleNumericChange('shortTermGains', e.target.value)} placeholder="$ 150,000" />
+                <InputField label="Long Term Gains" value={formatCurrency(scenario.clientData.longTermGains)} onChange={e => handleNumericChange('longTermGains', e.target.value)} placeholder="$ 850,000" />
                 <SelectField label="Projection Years" value={scenario.projectionYears} onChange={e => updateClientData('projectionYears', parseInt(e.target.value))}>
                      <option value={0}>Current Year Only</option><option value={3}>3 Years</option><option value={5}>5 Years</option><option value={10}>10 Years</option>
                 </SelectField>
@@ -174,7 +176,8 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
 
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
     const handleNumericChange = (field, value) => {
-        updateClientData(field, Number(value) || 0);
+        const numericValue = value.replace(/[^0-9]/g, ''); // Allow only numbers
+        updateClientData(field, Number(numericValue) || 0);
     };
     const StrategyCard = ({ strategy, children }) => {
         const isActive = scenario.enabledStrategies[strategy.id];
@@ -198,7 +201,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {STRATEGY_LIBRARY.map(strategy => (
                     <StrategyCard key={strategy.id} strategy={strategy}>
-                        <InputField label="Investment Amount" value={scenario.clientData[strategy.inputRequired]} onChange={e => handleNumericChange(strategy.inputRequired, e.target.value)} placeholder="Enter amount"/>
+                        <InputField label="Investment Amount" value={formatCurrency(scenario.clientData[strategy.inputRequired])} onChange={e => handleNumericChange(strategy.inputRequired, e.target.value)} placeholder="Enter amount"/>
                         {strategy.id === 'QUANT_DEALS_01' && (
                             <div className="mt-4">
                                 <SelectField label="DEALS Exposure Level" value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>
@@ -212,7 +215,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                 ))}
                 {RETIREMENT_STRATEGIES.map(strategy => (
                     <StrategyCard key={strategy.id} strategy={strategy}>
-                        <InputField label="Contribution Amount" value={scenario.clientData[strategy.inputRequired]} onChange={e => handleNumericChange(strategy.inputRequired, e.target.value)} placeholder="Enter amount"/>
+                        <InputField label="Contribution Amount" value={formatCurrency(scenario.clientData[strategy.inputRequired])} onChange={e => handleNumericChange(strategy.inputRequired, e.target.value)} placeholder="Enter amount"/>
                     </StrategyCard>
                 ))}
             </div>
