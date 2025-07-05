@@ -9,6 +9,7 @@ import {
     AMT_BRACKETS,
     AMT_EXEMPTION,
     NJ_TAX_BRACKETS,
+    NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario
 } from './constants';
@@ -38,7 +39,7 @@ const calculateTax = (income, brackets) => {
     return tax;
 };
 
-// --- Tax Calculation Logic (No changes to logic) ---
+// --- Tax Calculation Logic (Updated for State Selection) ---
 
 const performTaxCalculations = (scenario, projectionYears, growthRate) => {
     if (!scenario) return null;
@@ -63,13 +64,16 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
 
         const getTaxesForYear = (clientData, enabledStrategies) => {
             let fedDeductions = { aboveAGI: 0, belowAGI: 0 };
-            let stateDeductions = 0;
+            let stateDeductions = { total: 0 };
+            let njAddBack = 0; // NJ specific add-backs
             let qbiBaseIncome = clientData.businessIncome || 0;
             let currentLtGains = clientData.longTermGains || 0;
             let currentStGains = clientData.shortTermGains || 0;
             let totalCapitalAllocated = 0;
             
+            const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+
             allStrategies.forEach(strategy => {
                 if (enabledStrategies[strategy.id]) {
                      if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
@@ -92,42 +96,65 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
 
                             const ordinaryOffset = Math.min(3000, remainingLoss2);
                             fedDeductions.belowAGI += ordinaryOffset;
+                            stateDeductions.total += ordinaryOffset;
                             currentLtGains += ltGainFromDeals;
                             break;
                         case 'EQUIP_S179_01':
                             const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
                             qbiBaseIncome -= s179Ded;
                             fedDeductions.aboveAGI += s179Ded;
-                            stateDeductions += Math.min(clientData.equipmentCost, 25000);
+                            
+                            if (clientData.state === 'NY') {
+                                stateDeductions.total += s179Ded;
+                            } else { // NJ logic
+                                const njDed = Math.min(clientData.equipmentCost, 25000);
+                                stateDeductions.total += njDed;
+                                njAddBack += Math.max(0, s179Ded - njDed);
+                            }
                             break;
                         case 'CHAR_CLAT_01':
                             const fedAGIForClat = (clientData.w2Income + clientData.businessIncome) - fedDeductions.aboveAGI;
                             const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                             fedDeductions.belowAGI += clatDed;
-                            stateDeductions += clatDed;
+                            // NY allows 50% of federal deduction, NJ does not have this specific rule for CLATs
+                            if (clientData.state === 'NY') {
+                                stateDeductions.total += clatDed * 0.5;
+                            }
                             break;
                         case 'OG_USENERGY_01':
-                            fedDeductions.belowAGI += (clientData.ogInvestment || 0) * 0.70;
-                            stateDeductions += (clientData.ogInvestment || 0) * 0.70;
+                            const ogDed = (clientData.ogInvestment || 0) * 0.70;
+                            fedDeductions.belowAGI += ogDed;
+                            if (clientData.state === 'NY') {
+                                stateDeductions.total += ogDed;
+                            }
                             break;
                         case 'FILM_SEC181_01':
-                            fedDeductions.belowAGI += clientData.filmInvestment || 0;
-                            stateDeductions += clientData.filmInvestment || 0;
+                            const filmDed = clientData.filmInvestment || 0;
+                            fedDeductions.belowAGI += filmDed;
+                            if (clientData.state === 'NY') {
+                                stateDctions.total += filmDed;
+                            }
                             break;
                         case 'SOLO401K_EMPLOYEE_01':
-                            fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
+                            const s401kEmpDed = Math.min(clientData.solo401kEmployee, 23000);
+                            fedDeductions.aboveAGI += s401kEmpDed;
+                            if (clientData.state === 'NY') {
+                                stateDeductions.total += s401kEmpDed;
+                            } else { // NJ taxes employee deferrals
+                                njAddBack += s401kEmpDed;
+                            }
                             break;
                         case 'SOLO401K_EMPLOYER_01':
-                            const s401kEmpDed = clientData.solo401kEmployer || 0;
-                            qbiBaseIncome -= s401kEmpDed;
-                            fedDeductions.aboveAGI += s401kEmpDed;
-                            stateDeductions += s401kEmpDed;
+                            const s401kEmployerDed = clientData.solo401kEmployer || 0;
+                            qbiBaseIncome -= s401kEmployerDed;
+                            fedDeductions.aboveAGI += s401kEmployerDed;
+                            stateDeductions.total += s401kEmployerDed;
                             break;
                         case 'DB_PLAN_01':
                             const dbDed = clientData.dbContribution || 0;
                             qbiBaseIncome -= dbDed;
                             fedDeductions.aboveAGI += dbDed;
-                            stateDeductions += dbDed;
+                            stateDeductions.total += dbDed;
                             break;
                         default:
                             break;
@@ -154,7 +181,9 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             const regularFedTax = fedOrdinaryTax + fedCapitalGainsTax;
             
             const fedTax = Math.max(regularFedTax, amtTax);
-            const stateTax = calculateTax(clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains - stateDeductions, NJ_TAX_BRACKETS);
+
+            const stateTaxableIncome = Math.max(0, (clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains) - stateDeductions.total + njAddBack);
+            const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
 
             const totalIncome = clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains;
             const afterTaxIncome = totalIncome - (fedTax + stateTax);
@@ -187,7 +216,6 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
         }
     };
 };
-
 
 // --- REDESIGNED UI COMPONENTS ---
 
@@ -247,6 +275,13 @@ const ClientInputSection = ({ scenario, updateClientData }) => (
         <SectionTitle>Client Financials</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
+            
+            {/* STATE SELECTOR ADDED HERE */}
+            <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
+                <option value="NJ">New Jersey</option>
+                <option value="NY">New York</option>
+            </SelectField>
+            
             <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={e => updateClientData('w2Income', parseFloat(e.target.value) || 0)} placeholder="e.g., 500000" />
             <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={e => updateClientData('businessIncome', parseFloat(e.target.value) || 0)} placeholder="e.g., 2000000" />
             <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={e => updateClientData('shortTermGains', parseFloat(e.target.value) || 0)} placeholder="e.g., 150000" />
