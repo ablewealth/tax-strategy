@@ -60,9 +60,10 @@ export const createNewScenario = (name) => ({
     name: name,
     clientData: {
         clientName: 'John & Jane Doe',
-        state: 'NJ', // Default state
+        state: 'NJ',
+        projectionYears: 0, // Defaulted to 0
+        growthRate: 0,      // Defaulted to 0
         w2Income: 500000, businessIncome: 2000000, shortTermGains: 150000, longTermGains: 850000,
-        incomeGrowth: 3, investmentGrowth: 5,
         investmentAmount: 500000, dealsExposure: '175/75',
         equipmentCost: 0, charitableIntent: 0, ogInvestment: 0, filmInvestment: 0,
         solo401kEmployee: 0, solo401kEmployer: 0, dbContribution: 0,
