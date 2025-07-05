@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import { BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { RETIREMENT_STRATEGIES } from '../constants'; // Import retirement strategies
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -15,6 +16,11 @@ const PrintableReport = forwardRef(
     const { cumulative, projections, withStrategies } = results;
 
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Filter for enabled retirement strategies to display them in their own section
+    const enabledRetirementStrategies = RETIREMENT_STRATEGIES.filter(
+        strategy => scenario.enabledStrategies[strategy.id] && scenario.clientData[strategy.inputRequired] > 0
+    );
 
     return (
       <div ref={ref} id="printable-area" style={{ fontFamily: 'Arial, sans-serif', padding: '2rem', color: '#000' }}>
@@ -62,6 +68,31 @@ const PrintableReport = forwardRef(
             </tbody>
           </table>
         </section>
+
+        {/* Retirement Contributions Section */}
+        {enabledRetirementStrategies.length > 0 && (
+            <section style={{ marginBottom: '2rem', pageBreakInside: 'avoid' }}>
+                <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid #ccc', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                    Retirement Contributions
+                </h2>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#f0f0f0' }}>
+                            <th style={{ padding: '0.5rem', textAlign: 'left' }}>Plan</th>
+                            <th style={{ padding: '0.5rem', textAlign: 'right' }}>Contribution Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {enabledRetirementStrategies.map((strategy) => (
+                            <tr key={strategy.id} style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '0.5rem', textAlign: 'left' }}>{strategy.name}</td>
+                                <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCurrency(scenario.clientData[strategy.inputRequired])}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </section>
+        )}
 
         {/* Strategic Insights Section */}
         {withStrategies?.insights && withStrategies.insights.length > 0 && (
