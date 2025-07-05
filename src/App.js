@@ -99,8 +99,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
 const Header = ({ onPrint }) => (
     <div className="bg-background-primary border-b border-border-primary px-8 h-20 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-            {/* LOGO RE-INTEGRATED HERE */}
-            <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12" />
+            <div className="w-14 h-14 bg-gradient-to-br from-primary-navy to-primary-blue rounded-md flex items-center justify-center text-white font-bold text-lg">AWM</div>
             <div>
                 <h1 className="font-serif text-xl font-semibold text-text-primary">Advanced Tax Strategy Optimizer</h1>
                 <p className="text-xs text-text-muted uppercase tracking-wider">Able Wealth Management</p>
@@ -126,10 +125,18 @@ const Section = ({ title, description, children }) => (
     </div>
 );
 
+// UPDATED: InputField component to fix typing issue
 const InputField = ({ label, type = 'number', value, onChange, placeholder }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
-        <input type={type} value={type === 'text' ? value : (value ? new Intl.NumberFormat('en-US').format(value) : '')} onChange={onChange} placeholder={placeholder} className="h-12 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"/>
+        <input
+            type={type}
+            // If value is 0, display an empty string to show the placeholder. Otherwise, show the value.
+            value={value || ''}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="h-12 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+        />
     </div>
 );
 
@@ -143,9 +150,10 @@ const SelectField = ({ label, value, onChange, children }) => (
 );
 
 const ClientInputSection = ({ scenario, updateClientData }) => {
+    // UPDATED: handleNumericChange to parse numbers correctly from input
     const handleNumericChange = (field, value) => {
-        const numericValue = Number(value.replace(/[^0-9.-]+/g, '')) || 0;
-        updateClientData(field, Math.max(0, numericValue));
+        // The value from a number input is a string. Convert to number, or default to 0 if empty.
+        updateClientData(field, Number(value) || 0);
     };
     return (
         <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
@@ -155,14 +163,14 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
                     <option value="NJ">New Jersey</option>
                     <option value="NY">New York</option>
                 </SelectField>
-                <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={e => handleNumericChange('w2Income', e.target.value)} placeholder="$ 0" />
-                <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={e => handleNumericChange('businessIncome', e.target.value)} placeholder="$ 0" />
-                <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={e => handleNumericChange('shortTermGains', e.target.value)} placeholder="$ 0" />
-                <InputField label="Long Term Gains" value={scenario.clientData.longTermGains} onChange={e => handleNumericChange('longTermGains', e.target.value)} placeholder="$ 0" />
+                <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={e => handleNumericChange('w2Income', e.target.value)} placeholder="$ 500,000" />
+                <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={e => handleNumericChange('businessIncome', e.target.value)} placeholder="$ 2,000,000" />
+                <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={e => handleNumericChange('shortTermGains', e.target.value)} placeholder="$ 150,000" />
+                <InputField label="Long Term Gains" value={scenario.clientData.longTermGains} onChange={e => handleNumericChange('longTermGains', e.target.value)} placeholder="$ 850,000" />
                 <SelectField label="Projection Years" value={scenario.projectionYears} onChange={e => updateClientData('projectionYears', parseInt(e.target.value))}>
                      <option value={0}>Current Year Only</option><option value={3}>3 Years</option><option value={5}>5 Years</option><option value={10}>10 Years</option>
                 </SelectField>
-                <InputField label="Income Growth Rate (%)" value={scenario.growthRate} onChange={e => handleNumericChange('growthRate', e.target.value)} />
+                <InputField label="Income Growth Rate (%)" value={scenario.growthRate} onChange={e => handleNumericChange('growthRate', e.target.value)} placeholder="e.g., 3" />
             </div>
         </Section>
     )
@@ -170,8 +178,7 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
 
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
     const handleNumericChange = (field, value) => {
-        const numericValue = Number(value.replace(/[^0-9.-]+/g, '')) || 0;
-        updateClientData(field, Math.max(0, numericValue));
+        updateClientData(field, Number(value) || 0);
     };
     const StrategyCard = ({ strategy, children }) => {
         const isActive = scenario.enabledStrategies[strategy.id];
@@ -307,7 +314,6 @@ const AppFooter = () => (
 // --- MAIN APP COMPONENT ---
 export default function App() {
     const [scenario, setScenario] = useState(() => createNewScenario('Default Scenario'));
-    // Set default projection years and growth rate to 0
     const [projectionYears, setProjectionYears] = useState(0);
     const [growthRate, setGrowthRate] = useState(0);
 
