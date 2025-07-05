@@ -132,7 +132,8 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                             const filmDed = clientData.filmInvestment || 0;
                             fedDeductions.belowAGI += filmDed;
                             if (clientData.state === 'NY') {
-                                stateDctions.total += filmDed;
+                                // THIS IS THE CORRECTED LINE
+                                stateDeductions.total += filmDed;
                             }
                             break;
                         case 'SOLO401K_EMPLOYEE_01':
@@ -276,7 +277,6 @@ const ClientInputSection = ({ scenario, updateClientData }) => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
             
-            {/* STATE SELECTOR ADDED HERE */}
             <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
                 <option value="NJ">New Jersey</option>
                 <option value="NY">New York</option>
