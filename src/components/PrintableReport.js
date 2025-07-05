@@ -261,9 +261,41 @@ const PrintableReport = forwardRef(
             </section>
         )}
 
+        {/* Tax Liability Breakdown Chart - Always show for current year */}
+        <section style={styles.section}>
+            <h2 style={styles.sectionTitle}>Tax Liability Analysis</h2>
+            <div style={styles.chartContainer}>
+                <h3 style={styles.chartTitle}>Federal vs State Tax Breakdown</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart 
+                        data={[
+                            {
+                                scenario: 'Baseline',
+                                federalTax: projections[0].baseline.fedTax,
+                                stateTax: projections[0].baseline.stateTax
+                            },
+                            {
+                                scenario: 'Optimized',
+                                federalTax: projections[0].withStrategies.fedTax,
+                                stateTax: projections[0].withStrategies.stateTax
+                            }
+                        ]} 
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="scenario" />
+                        <YAxis tickFormatter={(value) => `$${(value / 1000)}K`} />
+                        <Tooltip formatter={(value) => formatCurrency(value)} />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="#1e40af" name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#d4af37" name="State Tax" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </section>
+
         {projections && projections.length > 1 && (
             <section style={{...styles.section, pageBreakBefore: 'always'}}>
-                <h2 style={styles.sectionTitle}>Visual Projections</h2>
+                <h2 style={styles.sectionTitle}>Multi-Year Projections</h2>
                 <div style={styles.chartContainer}>
                     <h3 style={styles.chartTitle}>Annual Tax Liability Comparison</h3>
                     <ResponsiveContainer width="100%" height={300}>
@@ -294,7 +326,7 @@ const PrintableReport = forwardRef(
 
         <footer style={styles.footer}>
           <p>
-            <strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.
+            <strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.
           </p>
         </footer>
       </div>
