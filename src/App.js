@@ -105,7 +105,7 @@ const Header = ({ onPrint, clientName }) => (
             {/* Logo and Company Info */}
             <div className="flex items-center gap-6">
                 <img 
-                    src="/AWM Logo 3.png" 
+                    src="https://ablewealth.com/AWM%20Logo%203.png" 
                     alt="Able Wealth Management" 
                     className="h-16 w-auto"
                 />
