@@ -125,13 +125,11 @@ const Section = ({ title, description, children }) => (
     </div>
 );
 
-// UPDATED: InputField component to fix typing issue
 const InputField = ({ label, type = 'number', value, onChange, placeholder }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
         <input
             type={type}
-            // If value is 0, display an empty string to show the placeholder. Otherwise, show the value.
             value={value || ''}
             onChange={onChange}
             placeholder={placeholder}
@@ -150,9 +148,7 @@ const SelectField = ({ label, value, onChange, children }) => (
 );
 
 const ClientInputSection = ({ scenario, updateClientData }) => {
-    // UPDATED: handleNumericChange to parse numbers correctly from input
     const handleNumericChange = (field, value) => {
-        // The value from a number input is a string. Convert to number, or default to 0 if empty.
         updateClientData(field, Number(value) || 0);
     };
     return (
@@ -204,7 +200,13 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                     <StrategyCard key={strategy.id} strategy={strategy}>
                         <InputField label="Investment Amount" value={scenario.clientData[strategy.inputRequired]} onChange={e => handleNumericChange(strategy.inputRequired, e.target.value)} placeholder="Enter amount"/>
                         {strategy.id === 'QUANT_DEALS_01' && (
-                            <div className="mt-4"><SelectField label="DEALS Exposure Level" value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>{Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (<option key={key} value={key}>{`${value.description} - ${value.subtitle}`}</option>))}</SelectField></div>
+                            <div className="mt-4">
+                                <SelectField label="DEALS Exposure Level" value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>
+                                    {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (
+                                        <option key={key} value={key}>{value.description}</option>
+                                    ))}
+                                </SelectField>
+                            </div>
                         )}
                     </StrategyCard>
                 ))}
