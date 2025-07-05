@@ -12,14 +12,14 @@ const styles = {
         fontFamily: "'Roboto', sans-serif",
         padding: '2cm',
         color: '#333',
-        lineHeight: 1.5,
+        lineHeight: 1.4,
         fontSize: '10pt',
         backgroundColor: '#fff',
     },
     header: {
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         borderBottom: '1px solid #333',
         paddingBottom: '1rem',
         marginBottom: '2rem',
@@ -40,6 +40,7 @@ const styles = {
     clientInfo: {
         fontSize: '10pt',
         color: '#555',
+        lineHeight: 1.5,
     },
     section: {
         marginBottom: '2rem',
