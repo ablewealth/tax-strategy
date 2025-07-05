@@ -15,6 +15,8 @@ module.exports = {
         'secondary': '#2dd4bf', // Teal for highlights, charts
         'text-main': '#c9d1d9',  // Primary text
         'text-muted': '#8b949e', // Secondary text
+        // Adding yellow for warnings
+        'yellow-500': '#f59e0b',
       },
       fontFamily: {
         // Using a more modern, readable font
