@@ -39,7 +39,7 @@ const calculateTax = (income, brackets) => {
     return tax;
 };
 
-// --- Tax Calculation Logic (Updated for State Selection & Insights) ---
+// --- Tax Calculation Logic (No changes needed here) ---
 
 const performTaxCalculations = (scenario, projectionYears, growthRate) => {
     if (!scenario) return null;
@@ -70,7 +70,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             let currentLtGains = clientData.longTermGains || 0;
             let currentStGains = clientData.shortTermGains || 0;
             let totalCapitalAllocated = 0;
-            let insights = []; // Array to hold insights
+            let insights = [];
             
             const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
@@ -109,7 +109,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                             
                             if (clientData.state === 'NY') {
                                 stateDeductions.total += s179Ded;
-                            } else { // NJ logic
+                            } else {
                                 const njDed = Math.min(clientData.equipmentCost, 25000);
                                 stateDeductions.total += njDed;
                                 const addBack = Math.max(0, s179Ded - njDed);
@@ -235,7 +235,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             totalSavings: cumulativeSavings,
             capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0,
         },
-        withStrategies: projections[0]?.withStrategies // Return insights from the first year
+        withStrategies: projections[0]?.withStrategies
     };
 };
 
@@ -328,7 +328,7 @@ const ProjectionsControl = ({ years, setYears, growthRate, setGrowthRate }) => (
 
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
     <Card>
-        <SectionTitle>Tax Strategies</SectionTitle>
+        <SectionTitle>Investment & Deduction Strategies</SectionTitle>
         <div className="space-y-4">
             {STRATEGY_LIBRARY.map(strategy => (
                 <div key={strategy.id} className="bg-base-900 p-4 rounded-lg border border-base-700 transition-all hover:border-primary">
@@ -369,6 +369,40 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
                 </div>
             ))}
         </div>
+        
+        {/* Retirement Strategies Section */}
+        <h4 className="text-md font-semibold text-white mt-8 mb-4 border-t border-base-700 pt-4">Retirement & Pension Strategies</h4>
+        <div className="space-y-4">
+            {RETIREMENT_STRATEGIES.map(strategy => (
+                <div key={strategy.id} className="bg-base-900 p-4 rounded-lg border border-base-700 transition-all hover:border-primary">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id={`strat-${strategy.id}`}
+                                checked={scenario.enabledStrategies[strategy.id] || false}
+                                onChange={() => toggleStrategy(strategy.id)}
+                                className="h-4 w-4 rounded border-base-700 bg-base-800 text-primary focus:ring-primary"
+                            />
+                            <label htmlFor={`strat-${strategy.id}`} className="ml-3">
+                                <h4 className="font-medium text-text-main">{strategy.name}</h4>
+                                <p className="text-sm text-text-muted">{strategy.description}</p>
+                            </label>
+                        </div>
+                    </div>
+                    {scenario.enabledStrategies[strategy.id] && strategy.inputRequired && (
+                        <div className="mt-4 pl-7">
+                            <InputField 
+                                label="Contribution Amount"
+                                value={scenario.clientData[strategy.inputRequired] || ''}
+                                onChange={e => updateClientData(strategy.inputRequired, parseFloat(e.target.value) || 0)}
+                                placeholder="Enter amount"
+                            />
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
     </Card>
 );
 
@@ -401,7 +435,6 @@ const ResultsDashboard = ({ results }) => {
     );
 };
 
-// --- NEW INSIGHTS SECTION COMPONENT ---
 const InsightsSection = ({ insights }) => {
     if (!insights || insights.length === 0) {
         return (
@@ -565,7 +598,6 @@ export default function App() {
                             toggleStrategy={handleToggleStrategy} 
                             updateClientData={handleUpdateClientData} 
                         />
-                        {/* INSIGHTS SECTION ADDED HERE */}
                         <InsightsSection insights={calculationResults?.withStrategies?.insights} />
                         <ChartsSection results={calculationResults} />
                     </div>
