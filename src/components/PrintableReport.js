@@ -6,124 +6,154 @@ import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
 
-// --- Style Definitions for a Professional Report ---
+// --- Style Definitions for a Professional UHNW Report ---
 const styles = {
     page: {
-        fontFamily: "'Times New Roman', Times, serif",
-        padding: '2.5cm',
-        color: '#111',
-        lineHeight: 1.4,
-        fontSize: '12pt',
+        fontFamily: "'Roboto', sans-serif",
+        padding: '2cm',
+        color: '#333',
+        lineHeight: 1.5,
+        fontSize: '10pt',
+        backgroundColor: '#fff',
     },
     header: {
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        borderBottom: '2px solid #111',
+        alignItems: 'center',
+        borderBottom: '1px solid #333',
         paddingBottom: '1rem',
         marginBottom: '2rem',
+    },
+    logo: {
+        height: '50px',
     },
     headerText: {
         textAlign: 'right',
     },
     reportTitle: {
-        fontFamily: "'Helvetica', 'Arial', sans-serif",
-        fontSize: '24pt',
-        fontWeight: 'bold',
-        margin: '0 0 0.5rem 0',
+        fontFamily: "'Lato', sans-serif",
+        fontSize: '20pt',
+        fontWeight: '900',
+        margin: 0,
+        color: '#111',
     },
     clientInfo: {
-        fontSize: '11pt',
-        color: '#444',
-    },
-    logo: {
-        height: '60px',
-        filter: 'grayscale(100%)',
+        fontSize: '10pt',
+        color: '#555',
     },
     section: {
-        marginBottom: '2.5rem',
+        marginBottom: '2rem',
         pageBreakInside: 'avoid',
     },
     sectionTitle: {
-        fontFamily: "'Helvetica', 'Arial', sans-serif",
-        fontSize: '16pt',
-        fontWeight: 'bold',
-        borderBottom: '1px solid #ccc',
+        fontFamily: "'Lato', sans-serif",
+        fontSize: '14pt',
+        fontWeight: '700',
+        borderBottom: '1px solid #ddd',
         paddingBottom: '0.5rem',
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
+        color: '#111',
     },
     summaryGrid: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: '1.5rem 2rem',
+        gap: '1rem 1.5rem',
     },
     metric: {
+        backgroundColor: '#f9f9f9',
         border: '1px solid #eee',
         padding: '1rem',
-        borderRadius: '8px',
+        borderRadius: '4px',
     },
     metricLabel: {
-        fontSize: '10pt',
-        color: '#555',
-        marginBottom: '0.5rem',
+        fontSize: '9pt',
+        color: '#666',
+        marginBottom: '0.25rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
     },
     metricValue: {
-        fontSize: '18pt',
-        fontWeight: 'bold',
+        fontSize: '16pt',
+        fontWeight: '700',
+        color: '#111',
     },
     highlightMetric: {
-        border: '1px solid #005a2b',
-        backgroundColor: '#f0fff4',
-        color: '#005a2b',
+        backgroundColor: '#e8f5e9',
+        borderColor: '#a5d6a7',
+    },
+    highlightValue: {
+        color: '#2e7d32',
     },
     table: {
         width: '100%',
         borderCollapse: 'collapse',
-        fontSize: '11pt',
+        fontSize: '10pt',
     },
     th: {
         textAlign: 'left',
-        padding: '0.75rem',
-        borderBottom: '2px solid #333',
-        fontFamily: "'Helvetica', 'Arial', sans-serif",
+        padding: '0.5rem 0.75rem',
+        borderBottom: '1.5px solid #333',
+        fontFamily: "'Lato', sans-serif",
+        fontWeight: '700',
     },
     td: {
         textAlign: 'left',
-        padding: '0.75rem',
-        borderBottom: '1px solid #ddd',
+        padding: '0.5rem 0.75rem',
+        borderBottom: '1px solid #eee',
     },
     tdRight: {
         textAlign: 'right',
-        padding: '0.75rem',
-        borderBottom: '1px solid #ddd',
+        padding: '0.5rem 0.75rem',
+        borderBottom: '1px solid #eee',
     },
-    insightList: {
-        listStyle: 'none',
-        padding: 0,
+    insightContainer: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '1.5rem',
     },
-    insightItem: {
-        padding: '1rem',
-        marginBottom: '0.75rem',
+    insightColumn: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+    },
+    insightCard: {
+        border: '1px solid #eee',
         borderRadius: '4px',
-        borderLeft: '5px solid',
+        padding: '1rem',
+        backgroundColor: '#fdfdfd',
+    },
+    insightTitle: {
+        fontFamily: "'Lato', sans-serif",
+        fontWeight: '700',
+        fontSize: '10pt',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '0.5rem',
+    },
+    insightText: {
+        fontSize: '10pt',
+        color: '#444',
+        paddingLeft: '1.75rem',
     },
     chartContainer: {
-        marginBottom: '3rem',
+        marginBottom: '2.5rem',
     },
     chartTitle: {
         textAlign: 'center',
-        fontFamily: "'Helvetica', 'Arial', sans-serif",
-        fontWeight: 'bold',
-        fontSize: '12pt',
+        fontFamily: "'Lato', sans-serif",
+        fontWeight: '700',
+        fontSize: '11pt',
         marginBottom: '1rem',
         color: '#333',
     },
     footer: {
-        marginTop: '3rem',
+        marginTop: '2.5rem',
         paddingTop: '1rem',
         borderTop: '1px solid #ccc',
-        fontSize: '8pt',
-        color: '#666',
+        fontSize: '7.5pt',
+        color: '#777',
+        lineHeight: 1.4,
         pageBreakBefore: 'always',
     }
 };
@@ -141,11 +171,14 @@ const PrintableReport = forwardRef(
         strategy => scenario.enabledStrategies[strategy.id] && scenario.clientData[strategy.inputRequired] > 0
     );
 
+    const benefits = withStrategies?.insights?.filter(i => i.type === 'success') || [];
+    const considerations = withStrategies?.insights?.filter(i => i.type === 'warning') || [];
+
     return (
       <div ref={ref} style={styles.page}>
         
         <header style={styles.header}>
-          <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Logo" style={styles.logo} />
+          <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" style={styles.logo} />
           <div style={styles.headerText}>
             <h1 style={styles.reportTitle}>Tax Optimization Analysis</h1>
             <p style={styles.clientInfo}>
@@ -167,8 +200,8 @@ const PrintableReport = forwardRef(
               <div style={styles.metricValue}>{formatCurrency(cumulative.optimizedTax)}</div>
             </div>
             <div style={{...styles.metric, ...styles.highlightMetric}}>
-              <div style={{...styles.metricLabel, color: '#005a2b'}}>Total Potential Tax Savings</div>
-              <div style={{...styles.metricValue, color: '#005a2b'}}>{formatCurrency(cumulative.totalSavings)}</div>
+              <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Potential Tax Savings</div>
+              <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(cumulative.totalSavings)}</div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Effective Tax Rate Reduction</div>
@@ -202,18 +235,28 @@ const PrintableReport = forwardRef(
         {withStrategies?.insights && withStrategies.insights.length > 0 && (
             <section style={styles.section}>
                 <h2 style={styles.sectionTitle}>Strategic Implementation Insights</h2>
-                <ul style={styles.insightList}>
-                    {withStrategies.insights.map((insight, index) => (
-                        <li key={index} style={{
-                            ...styles.insightItem,
-                            borderColor: insight.type === 'success' ? '#28a745' : '#ffc107',
-                            backgroundColor: insight.type === 'success' ? '#f0fff4' : '#fffbeb'
-                        }}>
-                           <strong>{insight.type === 'success' ? 'Benefit: ' : 'Consideration: '}</strong>
-                           {insight.text}
-                        </li>
-                    ))}
-                </ul>
+                <div style={styles.insightContainer}>
+                    <div style={styles.insightColumn}>
+                        {benefits.map((insight, index) => (
+                            <div key={`b-${index}`} style={styles.insightCard}>
+                                <div style={{...styles.insightTitle, color: '#2e7d32'}}>
+                                    <span style={{fontSize: '1.2rem'}}>✓</span> Strategic Benefit
+                                </div>
+                                <p style={styles.insightText}>{insight.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={styles.insightColumn}>
+                        {considerations.map((insight, index) => (
+                             <div key={`c-${index}`} style={styles.insightCard}>
+                                <div style={{...styles.insightTitle, color: '#d97706'}}>
+                                    <span style={{fontSize: '1.2rem'}}>⚠️</span> Implementation Consideration
+                                </div>
+                                <p style={styles.insightText}>{insight.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </section>
         )}
 
@@ -241,7 +284,7 @@ const PrintableReport = forwardRef(
                             <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
                             <YAxis tickFormatter={(value) => `$${(value / 1000)}K`} />
                             <Tooltip formatter={(value) => formatCurrency(value)} />
-                            <Line type="monotone" dataKey="cumulativeSavings" stroke="#006400" strokeWidth={2} name="Savings" />
+                            <Line type="monotone" dataKey="cumulativeSavings" stroke="#2e7d32" strokeWidth={2} name="Savings" />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
