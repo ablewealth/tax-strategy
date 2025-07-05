@@ -99,7 +99,8 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
 const Header = ({ onPrint }) => (
     <div className="bg-background-primary border-b border-border-primary px-8 h-20 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-navy to-primary-blue rounded-md flex items-center justify-center text-white font-bold text-lg">AWM</div>
+            {/* LOGO RE-INTEGRATED HERE */}
+            <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="h-12" />
             <div>
                 <h1 className="font-serif text-xl font-semibold text-text-primary">Advanced Tax Strategy Optimizer</h1>
                 <p className="text-xs text-text-muted uppercase tracking-wider">Able Wealth Management</p>
