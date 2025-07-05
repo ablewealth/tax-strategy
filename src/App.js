@@ -39,7 +39,7 @@ const calculateTax = (income, brackets) => {
     return tax;
 };
 
-// --- Tax Calculation Logic (Updated for State Selection) ---
+// --- Tax Calculation Logic (Updated for State Selection & Insights) ---
 
 const performTaxCalculations = (scenario, projectionYears, growthRate) => {
     if (!scenario) return null;
@@ -65,11 +65,12 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
         const getTaxesForYear = (clientData, enabledStrategies) => {
             let fedDeductions = { aboveAGI: 0, belowAGI: 0 };
             let stateDeductions = { total: 0 };
-            let njAddBack = 0; // NJ specific add-backs
+            let njAddBack = 0; 
             let qbiBaseIncome = clientData.businessIncome || 0;
             let currentLtGains = clientData.longTermGains || 0;
             let currentStGains = clientData.shortTermGains || 0;
             let totalCapitalAllocated = 0;
+            let insights = []; // Array to hold insights
             
             const stateBrackets = clientData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
@@ -98,25 +99,34 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                             fedDeductions.belowAGI += ordinaryOffset;
                             stateDeductions.total += ordinaryOffset;
                             currentLtGains += ltGainFromDeals;
+                            insights.push({ type: 'success', text: `DEALS strategy generated ${formatCurrency(stOffset + ltOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` });
                             break;
                         case 'EQUIP_S179_01':
                             const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
                             qbiBaseIncome -= s179Ded;
                             fedDeductions.aboveAGI += s179Ded;
+                            insights.push({ type: 'success', text: `Section 179 provides a ${formatCurrency(s179Ded)} federal deduction.` });
                             
                             if (clientData.state === 'NY') {
                                 stateDeductions.total += s179Ded;
                             } else { // NJ logic
                                 const njDed = Math.min(clientData.equipmentCost, 25000);
                                 stateDeductions.total += njDed;
-                                njAddBack += Math.max(0, s179Ded - njDed);
+                                const addBack = Math.max(0, s179Ded - njDed);
+                                if (addBack > 0) {
+                                    njAddBack += addBack;
+                                    insights.push({ type: 'warning', text: `New Jersey requires a ${formatCurrency(addBack)} depreciation add-back for Section 179.` });
+                                }
                             }
                             break;
                         case 'CHAR_CLAT_01':
                             const fedAGIForClat = (clientData.w2Income + clientData.businessIncome) - fedDeductions.aboveAGI;
                             const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
                             fedDeductions.belowAGI += clatDed;
-                            // NY allows 50% of federal deduction, NJ does not have this specific rule for CLATs
+                            insights.push({ type: 'success', text: `Charitable CLAT provides a ${formatCurrency(clatDed)} federal itemized deduction.` });
+                            if (clatDed < (clientData.charitableIntent || 0)) {
+                                insights.push({ type: 'warning', text: `Charitable deduction was limited by AGI to ${formatCurrency(clatDed)}.` });
+                            }
                             if (clientData.state === 'NY') {
                                 stateDeductions.total += clatDed * 0.5;
                             }
@@ -124,6 +134,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                         case 'OG_USENERGY_01':
                             const ogDed = (clientData.ogInvestment || 0) * 0.70;
                             fedDeductions.belowAGI += ogDed;
+                            insights.push({ type: 'success', text: `Oil & Gas investment generates a ${formatCurrency(ogDed)} federal deduction.` });
                             if (clientData.state === 'NY') {
                                 stateDeductions.total += ogDed;
                             }
@@ -131,18 +142,20 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                         case 'FILM_SEC181_01':
                             const filmDed = clientData.filmInvestment || 0;
                             fedDeductions.belowAGI += filmDed;
+                            insights.push({ type: 'success', text: `Film financing provides a ${formatCurrency(filmDed)} federal deduction.` });
                             if (clientData.state === 'NY') {
-                                // THIS IS THE CORRECTED LINE
                                 stateDeductions.total += filmDed;
                             }
                             break;
                         case 'SOLO401K_EMPLOYEE_01':
                             const s401kEmpDed = Math.min(clientData.solo401kEmployee, 23000);
                             fedDeductions.aboveAGI += s401kEmpDed;
+                            insights.push({ type: 'success', text: `Solo 401(k) employee contribution of ${formatCurrency(s401kEmpDed)} reduces federal AGI.` });
                             if (clientData.state === 'NY') {
                                 stateDeductions.total += s401kEmpDed;
-                            } else { // NJ taxes employee deferrals
+                            } else { 
                                 njAddBack += s401kEmpDed;
+                                insights.push({ type: 'warning', text: `New Jersey taxes Solo 401(k) employee deferrals. A ${formatCurrency(s401kEmpDed)} add-back is required.` });
                             }
                             break;
                         case 'SOLO401K_EMPLOYER_01':
@@ -150,12 +163,14 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
                             qbiBaseIncome -= s401kEmployerDed;
                             fedDeductions.aboveAGI += s401kEmployerDed;
                             stateDeductions.total += s401kEmployerDed;
+                            insights.push({ type: 'success', text: `Solo 401(k) employer contribution of ${formatCurrency(s401kEmployerDed)} reduces business income for QBI.` });
                             break;
                         case 'DB_PLAN_01':
                             const dbDed = clientData.dbContribution || 0;
                             qbiBaseIncome -= dbDed;
                             fedDeductions.aboveAGI += dbDed;
                             stateDeductions.total += dbDed;
+                            insights.push({ type: 'success', text: `Defined Benefit plan contribution of ${formatCurrency(dbDed)} reduces business income for QBI.` });
                             break;
                         default:
                             break;
@@ -173,8 +188,13 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
 
             const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
             let qbiDeduction = 0;
-            if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0 && fedTaxableForQBI <= 383900) {
-                qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
+            if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
+                if (fedTaxableForQBI <= 383900) {
+                    qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
+                    insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} successfully applied.` });
+                } else {
+                    insights.push({ type: 'warning', text: `Client's taxable income exceeds the threshold for the QBI deduction.` });
+                }
             }
             const fedTaxableIncome = Math.max(0, fedTaxableForQBI - qbiDeduction);
             const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
@@ -189,7 +209,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             const totalIncome = clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains;
             const afterTaxIncome = totalIncome - (fedTax + stateTax);
 
-            return { totalTax: fedTax + stateTax, fedTax, stateTax, totalCapitalAllocated, afterTaxIncome };
+            return { totalTax: fedTax + stateTax, fedTax, stateTax, totalCapitalAllocated, afterTaxIncome, insights };
         };
 
         const baseline = getTaxesForYear(currentYearData, {});
@@ -214,7 +234,8 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             optimizedTax: cumulativeOptimizedTax,
             totalSavings: cumulativeSavings,
             capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0,
-        }
+        },
+        withStrategies: projections[0]?.withStrategies // Return insights from the first year
     };
 };
 
@@ -336,7 +357,7 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
                             />
                              {strategy.id === 'QUANT_DEALS_01' && (
                                 <div className="mt-2">
-                                    <SelectField value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>
+                                    <SelectField label="DEALS Exposure" value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>
                                         {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (
                                             <option key={key} value={key}>{value.description}</option>
                                         ))}
@@ -379,6 +400,45 @@ const ResultsDashboard = ({ results }) => {
         </Card>
     );
 };
+
+// --- NEW INSIGHTS SECTION COMPONENT ---
+const InsightsSection = ({ insights }) => {
+    if (!insights || insights.length === 0) {
+        return (
+            <Card>
+                <SectionTitle>Strategic Implementation Insights</SectionTitle>
+                <div className="text-text-muted">Enable strategies to see personalized recommendations and considerations.</div>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <SectionTitle>Strategic Implementation Insights</SectionTitle>
+            <div className="space-y-3">
+                {insights.map((insight, index) => (
+                    <div 
+                        key={index} 
+                        className={`p-4 rounded-lg flex items-start gap-4 border-l-4 ${
+                            insight.type === 'success' ? 'bg-secondary/10 border-secondary' : 'bg-yellow-500/10 border-yellow-500'
+                        }`}
+                    >
+                        <div className={`text-xl ${insight.type === 'success' ? 'text-secondary' : 'text-yellow-500'}`}>
+                            {insight.type === 'success' ? '✅' : '⚠️'}
+                        </div>
+                        <div>
+                            <h4 className={`font-semibold ${insight.type === 'success' ? 'text-secondary' : 'text-yellow-500'}`}>
+                                {insight.type === 'success' ? 'Strategic Benefit' : 'Implementation Consideration'}
+                            </h4>
+                            <p className="text-text-muted">{insight.text}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
 
 const ChartsSection = ({ results }) => {
     if (!results || !results.projections || results.projections.length === 0) return null;
@@ -505,6 +565,8 @@ export default function App() {
                             toggleStrategy={handleToggleStrategy} 
                             updateClientData={handleUpdateClientData} 
                         />
+                        {/* INSIGHTS SECTION ADDED HERE */}
+                        <InsightsSection insights={calculationResults?.withStrategies?.insights} />
                         <ChartsSection results={calculationResults} />
                     </div>
                 ) : (
