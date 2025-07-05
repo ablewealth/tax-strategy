@@ -12,7 +12,7 @@ const formatCurrency = (value) =>
 const PrintableReport = forwardRef(
   ({ scenario, results, years, growthRate }, ref) => {
     if (!results || !scenario) return null;
-    const { cumulative, projections } = results;
+    const { cumulative, projections, withStrategies } = results;
 
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -62,6 +62,29 @@ const PrintableReport = forwardRef(
             </tbody>
           </table>
         </section>
+
+        {/* Strategic Insights Section */}
+        {withStrategies?.insights && withStrategies.insights.length > 0 && (
+            <section style={{ marginBottom: '2rem', pageBreakInside: 'avoid' }}>
+                <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid #ccc', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                    Strategic Implementation Insights
+                </h2>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {withStrategies.insights.map((insight, index) => (
+                        <li key={index} style={{ 
+                            padding: '0.75rem', 
+                            marginBottom: '0.5rem', 
+                            borderRadius: '4px',
+                            borderLeft: `4px solid ${insight.type === 'success' ? '#28a745' : '#ffc107'}`,
+                            backgroundColor: insight.type === 'success' ? '#f0fff4' : '#fffbeb'
+                        }}>
+                           <strong>{insight.type === 'success' ? 'Benefit: ' : 'Consideration: '}</strong>
+                           {insight.text}
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )}
 
         {/* Charts Section */}
         {projections && projections.length > 1 && (
