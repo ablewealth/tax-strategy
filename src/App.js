@@ -40,78 +40,150 @@ const calculateTax = (income, brackets) => {
 // --- Tax Calculation Logic ---
 
 const performTaxCalculations = (scenario, projectionYears, growthRate) => {
-    const { clientData, enabledStrategies } = scenario;
-    const results = [];
-    const loopYears = projectionYears === 0 ? 1 : projectionYears;
+    if (!scenario) return null;
+
+    const projections = [];
+    let cumulativeBaselineTax = 0;
+    let cumulativeOptimizedTax = 0;
+    let cumulativeSavings = 0;
     
-    for (let year = 0; year < loopYears; year++) {
-        const growthFactor = Math.pow(1 + growthRate / 100, year);
-        
-        const adjustedW2Income = clientData.w2Income * growthFactor;
-        const adjustedBusinessIncome = clientData.businessIncome * growthFactor;
-        const adjustedShortTermGains = clientData.shortTermGains * growthFactor;
-        const adjustedLongTermGains = clientData.longTermGains * growthFactor;
-        
-        let totalIncome = adjustedW2Income + adjustedBusinessIncome + adjustedShortTermGains + adjustedLongTermGains;
-        let deductions = STANDARD_DEDUCTION;
-        let taxSavings = 0;
-        
-        // This is a simplified model. For a real-world scenario, you'd need a much more complex engine.
-        // The tax savings are approximated here for illustrative purposes.
-        if (enabledStrategies['EQUIP_S179_01'] && clientData.equipmentCost > 0) {
-            deductions += clientData.equipmentCost;
-            taxSavings += clientData.equipmentCost * 0.37; // Approximate marginal rate
-        }
-        
-        if (enabledStrategies['CHAR_CLAT_01'] && clientData.charitableIntent > 0) {
-            deductions += clientData.charitableIntent;
-            taxSavings += clientData.charitableIntent * 0.37;
-        }
+    const loopYears = projectionYears === 0 ? 1 : projectionYears;
 
-        if (enabledStrategies['OG_USENERGY_01'] && clientData.ogInvestment > 0) {
-            const deductionAmount = clientData.ogInvestment * 0.70;
-            deductions += deductionAmount;
-            taxSavings += deductionAmount * 0.37;
-        }
+    for (let i = 0; i < loopYears; i++) {
+        const growthFactor = Math.pow(1 + growthRate / 100, i);
+        
+        const currentYearData = {
+            ...scenario.clientData,
+            w2Income: scenario.clientData.w2Income * growthFactor,
+            businessIncome: scenario.clientData.businessIncome * growthFactor,
+            longTermGains: scenario.clientData.longTermGains * growthFactor,
+            shortTermGains: scenario.clientData.shortTermGains * growthFactor,
+        };
 
-        if (enabledStrategies['FILM_SEC181_01'] && clientData.filmInvestment > 0) {
-            deductions += clientData.filmInvestment;
-            taxSavings += clientData.filmInvestment * 0.37;
-        }
-        
-        if (enabledStrategies['SOLO401K_EMPLOYEE_01'] && clientData.solo401kEmployee > 0) {
-            deductions += clientData.solo401kEmployee;
-            taxSavings += clientData.solo401kEmployee * 0.37;
-        }
-        
-        if (enabledStrategies['QUANT_DEALS_01'] && clientData.investmentAmount > 0) {
-            const dealsLevel = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
-            const annualBenefit = clientData.investmentAmount * dealsLevel.netBenefit;
-            taxSavings += annualBenefit;
-        }
-        
-        const taxableIncome = Math.max(0, totalIncome - deductions);
-        const federalTax = calculateTax(taxableIncome, FED_TAX_BRACKETS);
-        const stateTax = calculateTax(taxableIncome, NJ_TAX_BRACKETS);
-        const totalTax = federalTax + stateTax - taxSavings;
-        const afterTaxIncome = totalIncome - totalTax;
-        
-        results.push({
-            year: year + 1,
-            totalIncome,
-            taxableIncome,
-            deductions,
-            federalTax,
-            stateTax,
-            taxSavings,
-            totalTax,
-            afterTaxIncome,
-            effectiveRate: totalTax > 0 ? totalTax / totalIncome : 0
+        const getTaxesForYear = (clientData, enabledStrategies) => {
+            let fedDeductions = { aboveAGI: 0, belowAGI: 0 };
+            let stateDeductions = 0;
+            let qbiBaseIncome = clientData.businessIncome || 0;
+            let currentLtGains = clientData.longTermGains || 0;
+            let currentStGains = clientData.shortTermGains || 0;
+            let totalCapitalAllocated = 0;
+            
+            const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+            allStrategies.forEach(strategy => {
+                if (enabledStrategies[strategy.id]) {
+                     if (strategy.type !== 'qbi' && clientData[strategy.inputRequired] > 0) {
+                        totalCapitalAllocated += clientData[strategy.inputRequired];
+                    }
+                    
+                    switch (strategy.id) {
+                         case 'QUANT_DEALS_01':
+                            const exposure = DEALS_EXPOSURE_LEVELS[clientData.dealsExposure];
+                            const stLoss = (clientData.investmentAmount || 0) * exposure.shortTermLossRate;
+                            const ltGainFromDeals = (clientData.investmentAmount || 0) * exposure.longTermGainRate;
+                            
+                            const stOffset = Math.min(currentStGains, stLoss);
+                            currentStGains -= stOffset;
+                            const remainingLoss = stLoss - stOffset;
+
+                            const ltOffset = Math.min(currentLtGains, remainingLoss);
+                            currentLtGains -= ltOffset;
+                            const remainingLoss2 = remainingLoss - ltOffset;
+
+                            const ordinaryOffset = Math.min(3000, remainingLoss2);
+                            fedDeductions.belowAGI += ordinaryOffset;
+                            currentLtGains += ltGainFromDeals;
+                            break;
+                        case 'EQUIP_S179_01':
+                            const s179Ded = Math.min(clientData.equipmentCost, qbiBaseIncome, 1220000);
+                            qbiBaseIncome -= s179Ded;
+                            fedDeductions.aboveAGI += s179Ded;
+                            stateDeductions += Math.min(clientData.equipmentCost, 25000);
+                            break;
+                        case 'CHAR_CLAT_01':
+                            const fedAGIForClat = (clientData.w2Income + clientData.businessIncome) - fedDeductions.aboveAGI;
+                            const clatDed = Math.min(clientData.charitableIntent || 0, fedAGIForClat * 0.30);
+                            fedDeductions.belowAGI += clatDed;
+                            stateDeductions += clatDed;
+                            break;
+                        case 'OG_USENERGY_01':
+                            fedDeductions.belowAGI += (clientData.ogInvestment || 0) * 0.70;
+                            stateDeductions += (clientData.ogInvestment || 0) * 0.70;
+                            break;
+                        case 'FILM_SEC181_01':
+                            fedDeductions.belowAGI += clientData.filmInvestment || 0;
+                            stateDeductions += clientData.filmInvestment || 0;
+                            break;
+                        case 'SOLO401K_EMPLOYEE_01':
+                            fedDeductions.aboveAGI += Math.min(clientData.solo401kEmployee, 23000);
+                            break;
+                        case 'SOLO401K_EMPLOYER_01':
+                            const s401kEmpDed = clientData.solo401kEmployer || 0;
+                            qbiBaseIncome -= s401kEmpDed;
+                            fedDeductions.aboveAGI += s401kEmpDed;
+                            stateDeductions += s401kEmpDed;
+                            break;
+                        case 'DB_PLAN_01':
+                            const dbDed = clientData.dbContribution || 0;
+                            qbiBaseIncome -= dbDed;
+                            fedDeductions.aboveAGI += dbDed;
+                            stateDeductions += dbDed;
+                            break;
+                    }
+                }
+            });
+
+            const ordinaryIncome = clientData.w2Income + clientData.businessIncome + currentStGains;
+            const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
+            
+            // AMT Calculation
+            let amti = fedAGI;
+            const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25);
+            const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount);
+            const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);
+
+            // Regular Tax Calculation
+            const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
+            let qbiDeduction = 0;
+            if (enabledStrategies['QBI_FINAL_01'] && qbiBaseIncome > 0 && fedTaxableForQBI <= 383900) {
+                qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20);
+            }
+            const fedTaxableIncome = Math.max(0, fedTaxableForQBI - qbiDeduction);
+            const fedOrdinaryTax = calculateTax(fedTaxableIncome, FED_TAX_BRACKETS);
+            const fedCapitalGainsTax = Math.max(0, currentLtGains) * 0.20;
+            const regularFedTax = fedOrdinaryTax + fedCapitalGainsTax;
+            
+            const fedTax = Math.max(regularFedTax, amtTax);
+            const stateTax = calculateTax(clientData.w2Income + clientData.businessIncome + currentLtGains + currentStGains - stateDeductions, NJ_TAX_BRACKETS);
+
+            return { totalTax: fedTax + stateTax, fedTax, stateTax, totalCapitalAllocated };
+        };
+
+        const baseline = getTaxesForYear(currentYearData, {});
+        const withStrategies = getTaxesForYear(currentYearData, scenario.enabledStrategies);
+
+        cumulativeBaselineTax += baseline.totalTax;
+        cumulativeOptimizedTax += withStrategies.totalTax;
+        cumulativeSavings = cumulativeBaselineTax - cumulativeOptimizedTax;
+
+        projections.push({
+            year: i + 1,
+            baseline,
+            withStrategies,
+            cumulativeSavings
         });
     }
-    
-    return results;
+
+    return {
+        projections,
+        cumulative: {
+            baselineTax: cumulativeBaselineTax,
+            optimizedTax: cumulativeOptimizedTax,
+            totalSavings: cumulativeSavings,
+            capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0,
+        }
+    };
 };
+
 
 // --- Components ---
 const TooltipWrapper = ({ tooltipContent, children }) => {
@@ -146,11 +218,11 @@ const Header = ({ onPrint, clientName }) => (
 );
 
 const PrintableReport = ({ scenario, results }) => {
-    if (!results || results.length === 0 || !scenario) return null;
+    if (!results || !scenario) return null;
+    
+    const { clientData } = scenario;
+    const { cumulative, projections } = results;
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const totalSavings = results.reduce((sum, year) => sum + year.taxSavings, 0);
-    const totalBaselineTax = results.reduce((sum, year) => sum + year.federalTax + year.stateTax, 0);
-    const totalOptimizedTax = totalBaselineTax - totalSavings;
 
     return (
         <div className="print-report-area">
@@ -158,29 +230,31 @@ const PrintableReport = ({ scenario, results }) => {
                 <img src="https://ablewealth.com/AWM%20Logo%203.png" alt="Able Wealth Management Logo" className="print-logo" />
                 <div className="print-title">
                     <h1>Tax Optimization Analysis</h1>
-                    <p className="print-date">For: {scenario.clientData.clientName} | Scenario: {scenario.name} | Date: {today}</p>
+                    <p className="print-date">For: {clientData.clientName} | Scenario: {scenario.name} | Date: {today}</p>
                 </div>
             </div>
             <table className="print-table summary-table">
                 <thead>
-                    <tr><th colSpan="2">Cumulative Summary over {results.length} Years</th></tr>
+                    <tr><th colSpan="2">Cumulative Summary over {projections.length} Years</th></tr>
                 </thead>
                 <tbody>
-                    <tr><th>Baseline Tax Liability</th><td>{formatCurrency(totalBaselineTax)}</td></tr>
-                    <tr><th>Optimized Tax Liability</th><td>{formatCurrency(totalOptimizedTax)}</td></tr>
-                    <tr className="highlight"><th>Total Potential Savings</th><td>{formatCurrency(totalSavings)}</td></tr>
+                    <tr><th>Baseline Tax Liability</th><td>{formatCurrency(cumulative.baselineTax)}</td></tr>
+                    <tr><th>Optimized Tax Liability</th><td>{formatCurrency(cumulative.optimizedTax)}</td></tr>
+                    <tr className="highlight"><th>Total Potential Savings</th><td>{formatCurrency(cumulative.totalSavings)}</td></tr>
+                    <tr><th>Total Capital Committed</th><td>{formatCurrency(cumulative.capitalAllocated)}</td></tr>
                 </tbody>
             </table>
             
             <div className="print-chart">
                  <h3 className="text-lg font-semibold mb-2">Annual Tax Liability</h3>
                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={results}>
+                    <BarChart data={projections}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="year" />
                         <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
                         <RechartsTooltip formatter={(value) => formatCurrency(value)} />
-                        <Bar dataKey="totalTax" fill="#4f46e5" name="Total Tax" />
+                        <Bar dataKey="baseline.totalTax" fill="#ef4444" name="Baseline Tax" />
+                        <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
@@ -359,31 +433,26 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => (
 );
 
 const ResultsDashboard = ({ results }) => {
-    if (!results || results.length === 0) return null;
-    
-    const currentYear = results[0];
-    const totalSavings = results.reduce((sum, year) => sum + year.taxSavings, 0);
-    
+    if (!results || !results.cumulative) return null;
+    const { cumulative } = results;
+    const { baselineTax, optimizedTax, totalSavings, capitalAllocated } = cumulative;
+
+    const MetricCard = ({ label, value, change, highlight = false }) => (
+        <div className={`p-4 rounded-lg text-center ${highlight ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>
+            <p className={`text-sm font-medium ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{label}</p>
+            <p className={`text-3xl font-bold mt-1 ${highlight ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(value)}</p>
+            {change && <p className={`text-xs mt-1 ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>{change}</p>}
+        </div>
+    );
+
     return (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">Tax Analysis Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{formatCurrency(currentYear.totalIncome)}</div>
-                    <div className="text-sm text-gray-600">Total Income (Year 1)</div>
-                </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{formatCurrency(currentYear.totalTax)}</div>
-                    <div className="text-sm text-gray-600">Total Tax (Year 1)</div>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{formatCurrency(totalSavings)}</div>
-                    <div className="text-sm text-gray-600">Total Tax Savings</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{(currentYear.effectiveRate * 100).toFixed(1)}%</div>
-                    <div className="text-sm text-gray-600">Effective Tax Rate</div>
-                </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg mt-8">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">Cumulative Projection Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard label="Total Baseline Tax" value={baselineTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Optimized Tax" value={optimizedTax} change={`Over ${results.projections.length} years`} />
+                <MetricCard label="Total Tax Savings" value={totalSavings} change="Cumulative" highlight={true} />
+                <MetricCard label="Capital Committed" value={capitalAllocated} change="For Year 1 Strategies" />
             </div>
         </div>
     );
@@ -398,24 +467,25 @@ const ChartsSection = ({ results }) => {
                 <div>
                     <h4 className="text-md font-medium mb-2">Annual Tax Liability</h4>
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={results}>
+                        <BarChart data={results.projections}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="year" />
                             <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
                             <RechartsTooltip formatter={(value) => formatCurrency(value)} />
-                            <Bar dataKey="totalTax" fill="#ef4444" />
+                            <Bar dataKey="baseline.totalTax" fill="#ef4444" name="Baseline Tax" />
+                            <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
                 <div>
                     <h4 className="text-md font-medium mb-2">After-Tax Income Trend</h4>
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={results}>
+                        <LineChart data={results.projections}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="year" />
                             <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
                             <RechartsTooltip formatter={(value) => formatCurrency(value)} />
-                            <Line type="monotone" dataKey="afterTaxIncome" stroke="#10b981" strokeWidth={2} />
+                            <Line type="monotone" dataKey="withStrategies.afterTaxIncome" stroke="#10b981" strokeWidth={2} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
@@ -441,21 +511,21 @@ const ComparisonView = ({ allScenarioResults, projectionYears }) => (
                     {/* Cumulative Summary */}
                     <tr className="bg-gray-100"><td className="px-6 py-3 text-sm font-bold text-gray-800" colSpan={allScenarioResults.length + 1}>Cumulative Summary</td></tr>
                     {[
-                        { label: 'Total Tax Savings', key: 'taxSavings' },
-                        { label: 'Total Tax Paid', key: 'totalTax' }
+                        { label: 'Total Tax Savings', key: 'totalSavings' },
+                        { label: 'Total Tax Paid', key: 'optimizedTax' },
+                        { label: 'Capital Committed', key: 'capitalAllocated' }
                     ].map(metric => (
                          <tr key={metric.label}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{metric.label}</td>
                             {allScenarioResults.map(({ scenario, results }) => {
-                                const total = results.reduce((sum, year) => sum + year[metric.key], 0);
                                 return (
-                                    <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{formatCurrency(total)}</td>
+                                    <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">{formatCurrency(results.cumulative[metric.key])}</td>
                                 );
                             })}
                         </tr>
                     ))}
                     {/* Year-by-Year Breakdown */}
-                    {Array.from({ length: projectionYears }, (_, i) => i + 1).map(year => (
+                    {Array.from({ length: projectionYears === 0 ? 1 : projectionYears }, (_, i) => i + 1).map(year => (
                         <React.Fragment key={year}>
                             <tr className="bg-gray-100">
                                 <td className="px-6 py-3 text-sm font-bold text-gray-800" colSpan={allScenarioResults.length + 1}>Year {year}</td>
@@ -463,9 +533,9 @@ const ComparisonView = ({ allScenarioResults, projectionYears }) => (
                             <tr>
                                 <td className="pl-8 pr-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Annual Tax Savings</td>
                                 {allScenarioResults.map(({ scenario, results }) => {
-                                    const yearData = results[year - 1];
+                                    const yearData = results.projections[year - 1];
                                     return (
-                                        <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right">{formatCurrency(yearData?.taxSavings)}</td>
+                                        <td key={scenario.id} className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right">{formatCurrency(yearData?.baseline.totalTax - yearData?.withStrategies.totalTax)}</td>
                                     );
                                 })}
                             </tr>
