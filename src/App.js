@@ -99,21 +99,50 @@ const performTaxCalculations = (scenario) => {
 };
 
 // --- NEW PROFESSIONAL UI COMPONENTS ---
-const Header = ({ onPrint }) => (
-    <div className="bg-background-primary border-b border-border-primary px-8 h-20 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-navy to-primary-blue rounded-md flex items-center justify-center text-white font-bold text-lg">AWM</div>
-            <div>
-                <h1 className="font-serif text-xl font-semibold text-text-primary">Advanced Tax Strategy Optimizer</h1>
-                <p className="text-xs text-text-muted uppercase tracking-wider">Able Wealth Management</p>
+const Header = ({ onPrint, clientName }) => (
+    <div className="bg-background-primary border-b border-border-primary px-8 py-6 sticky top-0 z-50">
+        <div className="flex items-center justify-between">
+            {/* Logo and Company Info */}
+            <div className="flex items-center gap-6">
+                <img 
+                    src="/AWM Logo 3.png" 
+                    alt="Able Wealth Management" 
+                    className="h-16 w-auto"
+                />
+                <div className="border-l border-border-secondary pl-6">
+                    <h1 className="font-serif text-2xl font-bold text-text-primary leading-tight">
+                        Advanced Tax Strategy Optimizer
+                    </h1>
+                    <p className="font-serif text-sm text-text-secondary mt-1">
+                        Able Wealth Management
+                    </p>
+                </div>
             </div>
-        </div>
-        <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-background-tertiary px-4 py-2 rounded-md text-xs font-medium text-text-secondary"><div className="w-2 h-2 bg-success rounded-full"></div>Analysis Active</div>
-            <button onClick={onPrint} className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                Print Report
-            </button>
+
+            {/* Client Analysis Info and Actions */}
+            <div className="flex items-center gap-6">
+                <div className="text-right">
+                    <p className="font-serif text-sm text-text-muted">Analysis for:</p>
+                    <p className="font-serif text-lg font-semibold text-text-primary">{clientName}</p>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 bg-background-tertiary px-4 py-2 rounded-md text-xs font-medium text-text-secondary">
+                        <div className="w-2 h-2 bg-success rounded-full"></div>
+                        Analysis Active
+                    </div>
+                    <button 
+                        onClick={onPrint} 
+                        className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all shadow-md"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Print Report
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 );
@@ -426,7 +455,7 @@ export default function App() {
 
     return (
         <div className="bg-background-secondary min-h-screen">
-            <Header onPrint={handlePrint} />
+            <Header onPrint={handlePrint} clientName={scenario.clientData.clientName} />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
                 <ClientInputSection scenario={scenario} updateClientData={handleUpdateClientData} />
                 <StrategiesSection scenario={scenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
