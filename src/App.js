@@ -294,42 +294,97 @@ const InsightsSection = ({ insights }) => (
 );
 
 const ChartsSection = ({ results }) => {
-    if (!results || !results.projections || results.projections.length === 0 || results.projections.length < 2) return null;
+    if (!results || !results.projections || results.projections.length === 0) return null;
+    
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
-            return (<div className="bg-primary-navy/90 p-4 rounded-lg border border-primary-blue shadow-lg text-white"><p className="label font-semibold">{`Year ${label}`}</p>{payload.map((p, i) => (<p key={i} style={{ color: p.color }}>{`${p.name}: ${formatCurrency(p.value)}`}</p>))}</div>);
+            return (<div className="bg-primary-navy/90 p-4 rounded-lg border border-primary-blue shadow-lg text-white"><p className="label font-semibold">{`${label}`}</p>{payload.map((p, i) => (<p key={i} style={{ color: p.color }}>{`${p.name}: ${formatCurrency(p.value)}`}</p>))}</div>);
         }
         return null;
     };
+
+    // Prepare data for the tax breakdown chart
+    const firstProjection = results.projections[0];
+    const taxBreakdownData = [
+        {
+            scenario: 'Baseline Scenario',
+            federalTax: firstProjection.baseline.fedTax,
+            stateTax: firstProjection.baseline.stateTax
+        },
+        {
+            scenario: 'Optimized Strategy',
+            federalTax: firstProjection.withStrategies.fedTax,
+            stateTax: firstProjection.withStrategies.stateTax
+        }
+    ];
+
     return (
         <Section title="📈 Visual Projections" description="Multi-year analysis of tax liabilities and cumulative savings.">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                    <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability Comparison</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
-                            <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
-                            <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
-                            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 64, 175, 0.1)' }} />
-                            <Bar dataKey="baseline.totalTax" fill="var(--text-muted)" name="Baseline Tax" />
-                            <Bar dataKey="withStrategies.totalTax" fill="var(--primary-blue)" name="Optimized Tax" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-                <div>
-                    <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings Over Time</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
-                            <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
-                            <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
-                            <RechartsTooltip content={<CustomTooltip />} />
-                            <Line type="monotone" dataKey="cumulativeSavings" stroke="var(--accent-gold)" strokeWidth={3} name="Savings" dot={{ r: 4 }} activeDot={{ r: 6 }}/>
-                        </LineChart>
-                    </ResponsiveContainer>
+            {/* Tax Liability Breakdown Chart */}
+            <div className="mb-8">
+                <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
+                <p className="text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
+                <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
+                        <XAxis 
+                            dataKey="scenario" 
+                            tick={{ fill: 'var(--text-muted)', fontSize: 12 }} 
+                            interval={0}
+                            angle={0}
+                            textAnchor="middle"
+                        />
+                        <YAxis 
+                            tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} 
+                            tick={{ fill: 'var(--text-muted)' }} 
+                        />
+                        <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 64, 175, 0.1)' }} />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="var(--primary-blue)" name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="var(--accent-gold)" name="State Tax" />
+                    </BarChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center items-center gap-6 mt-4">
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--primary-blue)' }}></div>
+                        <span className="text-sm text-text-secondary">Federal Tax</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                        <span className="text-sm text-text-secondary">State Tax</span>
+                    </div>
                 </div>
             </div>
+
+            {/* Multi-year projections - only show if more than 1 year */}
+            {results.projections.length > 1 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability Comparison</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
+                                <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
+                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
+                                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 64, 175, 0.1)' }} />
+                                <Bar dataKey="baseline.totalTax" fill="var(--text-muted)" name="Baseline Tax" />
+                                <Bar dataKey="withStrategies.totalTax" fill="var(--primary-blue)" name="Optimized Tax" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div>
+                        <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings Over Time</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
+                                <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
+                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Line type="monotone" dataKey="cumulativeSavings" stroke="var(--accent-gold)" strokeWidth={3} name="Savings" dot={{ r: 4 }} activeDot={{ r: 6 }}/>
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
         </Section>
     )
 };
