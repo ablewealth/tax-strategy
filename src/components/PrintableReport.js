@@ -25,7 +25,7 @@ const styles = {
         marginBottom: '2rem',
     },
     logo: {
-        height: '50px',
+        height: '25px',
     },
     headerText: {
         textAlign: 'right',
