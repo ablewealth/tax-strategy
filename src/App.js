@@ -56,19 +56,32 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
         let deductions = STANDARD_DEDUCTION;
         let taxSavings = 0;
         
+        // This is a simplified model. For a real-world scenario, you'd need a much more complex engine.
+        // The tax savings are approximated here for illustrative purposes.
         if (enabledStrategies['EQUIP_S179_01'] && clientData.equipmentCost > 0) {
             deductions += clientData.equipmentCost;
-            taxSavings += clientData.equipmentCost * 0.35; // Approximate tax savings
+            taxSavings += clientData.equipmentCost * 0.37; // Approximate marginal rate
         }
         
         if (enabledStrategies['CHAR_CLAT_01'] && clientData.charitableIntent > 0) {
             deductions += clientData.charitableIntent;
-            taxSavings += clientData.charitableIntent * 0.35;
+            taxSavings += clientData.charitableIntent * 0.37;
+        }
+
+        if (enabledStrategies['OG_USENERGY_01'] && clientData.ogInvestment > 0) {
+            const deductionAmount = clientData.ogInvestment * 0.70;
+            deductions += deductionAmount;
+            taxSavings += deductionAmount * 0.37;
+        }
+
+        if (enabledStrategies['FILM_SEC181_01'] && clientData.filmInvestment > 0) {
+            deductions += clientData.filmInvestment;
+            taxSavings += clientData.filmInvestment * 0.37;
         }
         
         if (enabledStrategies['SOLO401K_EMPLOYEE_01'] && clientData.solo401kEmployee > 0) {
             deductions += clientData.solo401kEmployee;
-            taxSavings += clientData.solo401kEmployee * 0.35;
+            taxSavings += clientData.solo401kEmployee * 0.37;
         }
         
         if (enabledStrategies['QUANT_DEALS_01'] && clientData.investmentAmount > 0) {
@@ -93,7 +106,7 @@ const performTaxCalculations = (scenario, projectionYears, growthRate) => {
             taxSavings,
             totalTax,
             afterTaxIncome,
-            effectiveRate: totalTax / totalIncome
+            effectiveRate: totalTax > 0 ? totalTax / totalIncome : 0
         });
     }
     
