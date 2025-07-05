@@ -9,7 +9,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
+  background-color: #f8fafc; /* A lighter, cleaner gray */
 }
 
 /* --- Default Styles --- */
@@ -18,7 +18,6 @@ body {
     display: none;
 }
 
-
 /* --- Print-specific styles --- */
 @media print {
   body {
@@ -26,7 +25,7 @@ body {
   }
   
   /* Hide the main interactive app when printing */
-  #app-root {
+  .print-hide {
     display: none !important;
   }
   
