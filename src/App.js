@@ -348,7 +348,7 @@ const ChartsSection = ({ results }) => {
     ];
 
     return (
-        <Section title="📈 Visual Projections" description="Multi-year analysis of tax liabilities and cumulative savings.">
+        <Section title="📈 Visual Projections" description="Analysis of tax liabilities and cumulative savings.">
             {/* Tax Liability Breakdown Chart */}
             <div className="mb-8">
                 <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
