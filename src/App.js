@@ -172,33 +172,51 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
     )
 };
 
-const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
-    const StrategyCard = ({ strategy, children }) => {
-        const isActive = scenario.enabledStrategies[strategy.id];
-        return (
-            <div className={`border rounded-lg p-6 transition-all relative ${isActive ? 'border-accent-gold bg-gradient-to-br from-white to-amber-50' : 'border-border-primary bg-background-primary hover:border-primary-blue'}`}>
-                {isActive && <div className="absolute top-0 left-0 w-1.5 h-full bg-accent-gold rounded-l-lg"></div>}
-                <div className="flex items-start gap-4">
-                    <input type="checkbox" checked={isActive} onChange={() => toggleStrategy(strategy.id)} className="mt-1 h-5 w-5 rounded accent-accent-gold"/>
-                    <div className="flex-1">
-                        <h3 className="font-semibold text-base text-text-primary">{strategy.name}</h3>
-                        <p className="text-xs text-text-muted uppercase tracking-wider mt-1">{strategy.category}</p>
-                        <p className="text-sm text-text-secondary mt-2">{strategy.description}</p>
-                    </div>
+// FIXED: Move StrategyCard component outside of StrategiesSection to prevent re-renders
+const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, children }) => {
+    const isActive = scenario.enabledStrategies[strategy.id];
+    return (
+        <div className={`border rounded-lg p-6 transition-all relative ${isActive ? 'border-accent-gold bg-gradient-to-br from-white to-amber-50' : 'border-border-primary bg-background-primary hover:border-primary-blue'}`}>
+            {isActive && <div className="absolute top-0 left-0 w-1.5 h-full bg-accent-gold rounded-l-lg"></div>}
+            <div className="flex items-start gap-4">
+                <input type="checkbox" checked={isActive} onChange={() => toggleStrategy(strategy.id)} className="mt-1 h-5 w-5 rounded accent-accent-gold"/>
+                <div className="flex-1">
+                    <h3 className="font-semibold text-base text-text-primary">{strategy.name}</h3>
+                    <p className="text-xs text-text-muted uppercase tracking-wider mt-1">{strategy.category}</p>
+                    <p className="text-sm text-text-secondary mt-2">{strategy.description}</p>
                 </div>
-                {isActive && children && <div className="mt-4 pl-9">{children}</div>}
             </div>
-        )
-    }
+            {isActive && children && <div className="mt-4 pl-9">{children}</div>}
+        </div>
+    )
+};
+
+const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
     return (
         <Section title="💼 Strategic Tax Optimization Portfolio" description="Select advanced tax strategies and input corresponding investment or contribution amounts.">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {STRATEGY_LIBRARY.map(strategy => (
-                    <StrategyCard key={strategy.id} strategy={strategy}>
-                        <InputField label="Investment Amount" type="number" value={scenario.clientData[strategy.inputRequired]} onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} placeholder="Enter amount"/>
+                    <StrategyCard 
+                        key={strategy.id} 
+                        strategy={strategy}
+                        scenario={scenario}
+                        toggleStrategy={toggleStrategy}
+                        updateClientData={updateClientData}
+                    >
+                        <InputField 
+                            label="Investment Amount" 
+                            type="number" 
+                            value={scenario.clientData[strategy.inputRequired]} 
+                            onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
+                            placeholder="Enter amount"
+                        />
                         {strategy.id === 'QUANT_DEALS_01' && (
                             <div className="mt-4">
-                                <SelectField label="DEALS Exposure Level" value={scenario.clientData.dealsExposure} onChange={e => updateClientData('dealsExposure', e.target.value)}>
+                                <SelectField 
+                                    label="DEALS Exposure Level" 
+                                    value={scenario.clientData.dealsExposure} 
+                                    onChange={e => updateClientData('dealsExposure', e.target.value)}
+                                >
                                     {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (
                                         <option key={key} value={key}>{value.description}</option>
                                     ))}
@@ -208,8 +226,20 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                     </StrategyCard>
                 ))}
                 {RETIREMENT_STRATEGIES.map(strategy => (
-                    <StrategyCard key={strategy.id} strategy={strategy}>
-                        <InputField label="Contribution Amount" type="number" value={scenario.clientData[strategy.inputRequired]} onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} placeholder="Enter amount"/>
+                    <StrategyCard 
+                        key={strategy.id} 
+                        strategy={strategy}
+                        scenario={scenario}
+                        toggleStrategy={toggleStrategy}
+                        updateClientData={updateClientData}
+                    >
+                        <InputField 
+                            label="Contribution Amount" 
+                            type="number" 
+                            value={scenario.clientData[strategy.inputRequired]} 
+                            onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
+                            placeholder="Enter amount"
+                        />
                     </StrategyCard>
                 ))}
             </div>
@@ -306,7 +336,7 @@ const ChartsSection = ({ results }) => {
 
 const AppFooter = () => (
     <footer className="max-w-7xl mx-auto px-8 py-8 mt-8 border-t border-border-primary text-xs text-text-muted text-justify">
-        <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC (“AWM”) for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.</p>
+        <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.</p>
     </footer>
 );
 
