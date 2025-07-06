@@ -1,32 +1,9 @@
 import React, { forwardRef } from 'react';
-import { BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 
 // --- Helper Functions ---
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
-
-// Data validation helper
-const validateChartData = (data) => {
-    if (!data || !Array.isArray(data) || data.length === 0) {
-        console.warn('Chart data is empty or invalid:', data);
-        return false;
-    }
-    
-    // Check if all required properties exist and are numbers
-    return data.every(item => {
-        const hasValidData = item && 
-            typeof item.federalTax === 'number' && 
-            typeof item.stateTax === 'number' &&
-            !isNaN(item.federalTax) && 
-            !isNaN(item.stateTax);
-            
-        if (!hasValidData) {
-            console.warn('Invalid data item:', item);
-        }
-        return hasValidData;
-    });
-};
 
 // --- Style Definitions for a Professional UHNW Report ---
 const styles = {
@@ -159,41 +136,6 @@ const styles = {
         color: '#444',
         paddingLeft: '1.75rem',
     },
-    chartContainer: {
-        marginBottom: '2.5rem',
-        height: '400px',
-        width: '100%',
-        border: '1px solid #ddd',
-        backgroundColor: '#ffffff',
-        position: 'relative',
-    },
-    chartTitle: {
-        textAlign: 'center',
-        fontFamily: "'Lato', sans-serif",
-        fontWeight: '700',
-        fontSize: '11pt',
-        marginBottom: '1rem',
-        color: '#333',
-    },
-    chartLegend: {
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '30px',
-        marginTop: '15px',
-        fontSize: '10pt',
-        fontWeight: '600',
-    },
-    legendItem: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-    },
-    legendColor: {
-        width: '20px',
-        height: '15px',
-        border: '1px solid #333',
-        display: 'inline-block',
-    },
     footer: {
         marginTop: '2.5rem',
         paddingTop: '1rem',
@@ -202,35 +144,26 @@ const styles = {
         color: '#777',
         lineHeight: 1.4,
         pageBreakBefore: 'always',
-    },
-    errorMessage: {
-        color: '#d97706',
-        fontStyle: 'italic',
-        textAlign: 'center',
-        padding: '2rem',
-        backgroundColor: '#fef3c7',
-        border: '1px solid #f59e0b',
-        borderRadius: '4px',
     }
 };
 
-// Enhanced data table with better error handling
+// Simple data table - always works
 const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#083038' }) => {
-    if (!validateChartData(data)) {
+    if (!data || data.length === 0) {
         return (
             <div style={{ marginBottom: '2rem' }}>
-                <h3 style={styles.chartTitle}>{title}</h3>
-                <div style={styles.errorMessage}>
-                    Chart data is unavailable. Please ensure all strategies are properly configured.
-                </div>
+                <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h3>
+                <p style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>
+                    No data available for analysis.
+                </p>
             </div>
         );
     }
 
     return (
         <div style={{ marginBottom: '2rem' }}>
-            <h3 style={styles.chartTitle}>{title}</h3>
-            <table style={{ ...styles.table, marginTop: '1rem' }}>
+            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h3>
+            <table style={styles.table}>
                 <thead>
                     <tr>
                         <th style={styles.th}>Scenario</th>
@@ -244,185 +177,18 @@ const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#08303
                         <tr key={index}>
                             <td style={styles.td}>{item.scenario}</td>
                             <td style={{ ...styles.tdRight, color: federalColor, fontWeight: 'bold' }}>
-                                {formatCurrency(item.federalTax)}
+                                {formatCurrency(item.federalTax || 0)}
                             </td>
                             <td style={{ ...styles.tdRight, color: stateColor, fontWeight: 'bold' }}>
-                                {formatCurrency(item.stateTax)}
+                                {formatCurrency(item.stateTax || 0)}
                             </td>
                             <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
-                                {formatCurrency(item.federalTax + item.stateTax)}
+                                {formatCurrency((item.federalTax || 0) + (item.stateTax || 0))}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            {/* Legend */}
-            <div style={styles.chartLegend}>
-                <div style={styles.legendItem}>
-                    <div style={{ ...styles.legendColor, backgroundColor: federalColor }}></div>
-                    <span>Federal Tax</span>
-                </div>
-                <div style={styles.legendItem}>
-                    <div style={{ ...styles.legendColor, backgroundColor: stateColor }}></div>
-                    <span>State Tax</span>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// Enhanced chart component with better error handling and fallback
-const PrintChart = ({ data, title, type = 'bar' }) => {
-    // Validate data before rendering
-    if (!data || data.length === 0) {
-        return (
-            <div style={styles.chartContainer}>
-                <h3 style={styles.chartTitle}>{title}</h3>
-                <div style={styles.errorMessage}>
-                    No data available for chart visualization.
-                </div>
-            </div>
-        );
-    }
-
-    // Additional validation for bar chart data
-    if (type === 'bar' && !validateChartData(data)) {
-        return (
-            <div style={styles.chartContainer}>
-                <h3 style={styles.chartTitle}>{title}</h3>
-                <div style={styles.errorMessage}>
-                    Invalid chart data format detected.
-                </div>
-            </div>
-        );
-    }
-
-    // Additional validation for line chart data
-    if (type === 'line') {
-        const hasValidLineData = data.every(item => 
-            item && 
-            typeof item.year === 'number' && 
-            typeof item.cumulativeSavings === 'number' && 
-            !isNaN(item.cumulativeSavings)
-        );
-        
-        if (!hasValidLineData) {
-            return (
-                <div style={styles.chartContainer}>
-                    <h3 style={styles.chartTitle}>{title}</h3>
-                    <div style={styles.errorMessage}>
-                        Invalid projection data format detected.
-                    </div>
-                </div>
-            );
-        }
-    }
-
-    const chartProps = {
-        width: 600,
-        height: 350,
-        data: data,
-        margin: { top: 20, right: 30, left: 40, bottom: 60 }
-    };
-
-    return (
-        <div style={styles.chartContainer}>
-            <h3 style={styles.chartTitle}>{title}</h3>
-            <div style={{ 
-                width: '100%', 
-                height: '350px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: '#ffffff'
-            }}>
-                {type === 'bar' ? (
-                    <BarChart {...chartProps}>
-                        <CartesianGrid 
-                            strokeDasharray="3 3" 
-                            stroke="#333333" 
-                            strokeWidth={1}
-                        />
-                        <XAxis 
-                            dataKey="scenario" 
-                            tick={{ 
-                                fill: '#000000', 
-                                fontSize: 12, 
-                                fontWeight: 'bold'
-                            }}
-                            stroke="#000000"
-                            strokeWidth={2}
-                        />
-                        <YAxis 
-                            tickFormatter={(value) => `$${(value / 1000)}K`} 
-                            tick={{ 
-                                fill: '#000000', 
-                                fontSize: 11,
-                                fontWeight: 'bold'
-                            }}
-                            stroke="#000000"
-                            strokeWidth={2}
-                        />
-                        <Bar 
-                            dataKey="federalTax" 
-                            stackId="taxes" 
-                            fill="#041D5B" 
-                            stroke="#000000" 
-                            strokeWidth={2}
-                            name="Federal Tax" 
-                        />
-                        <Bar 
-                            dataKey="stateTax" 
-                            stackId="taxes" 
-                            fill="#083038" 
-                            stroke="#000000" 
-                            strokeWidth={2}
-                            name="State Tax" 
-                        />
-                    </BarChart>
-                ) : (
-                    <LineChart {...chartProps}>
-                        <CartesianGrid 
-                            strokeDasharray="3 3" 
-                            stroke="#333333" 
-                            strokeWidth={1}
-                        />
-                        <XAxis 
-                            dataKey="year" 
-                            tick={{ 
-                                fill: '#000000', 
-                                fontSize: 12,
-                                fontWeight: 'bold'
-                            }}
-                            stroke="#000000"
-                            strokeWidth={2}
-                        />
-                        <YAxis 
-                            tickFormatter={(value) => `$${(value / 1000)}K`} 
-                            tick={{ 
-                                fill: '#000000', 
-                                fontSize: 11,
-                                fontWeight: 'bold'
-                            }}
-                            stroke="#000000"
-                            strokeWidth={2}
-                        />
-                        <Line 
-                            type="monotone" 
-                            dataKey="cumulativeSavings" 
-                            stroke="#f59e0b" 
-                            strokeWidth={4} 
-                            name="Cumulative Savings"
-                            dot={{ 
-                                r: 6, 
-                                fill: '#f59e0b', 
-                                stroke: '#000000', 
-                                strokeWidth: 2 
-                            }}
-                        />
-                    </LineChart>
-                )}
-            </div>
         </div>
     );
 };
@@ -430,78 +196,55 @@ const PrintChart = ({ data, title, type = 'bar' }) => {
 // --- Main Report Component ---
 const PrintableReport = forwardRef(
   ({ scenario, results, years }, ref) => {
-    // Enhanced validation
+    // Basic fallback content if no data
     if (!results || !scenario) {
-        console.error('PrintableReport: Missing required props', { results, scenario });
         return (
             <div ref={ref} style={styles.page}>
-                <div style={styles.errorMessage}>
-                    Report data is unavailable. Please ensure all calculations are complete before printing.
-                </div>
+                <h1>Tax Optimization Report</h1>
+                <p>Report data is being prepared. Please try printing again in a moment.</p>
             </div>
         );
     }
 
     const { cumulative, projections, withStrategies } = results;
     
-    // Validate critical data
-    if (!cumulative || !projections || projections.length === 0) {
-        console.error('PrintableReport: Invalid results structure', { cumulative, projections });
-        return (
-            <div ref={ref} style={styles.page}>
-                <div style={styles.errorMessage}>
-                    Calculation results are incomplete. Please review your inputs and try again.
-                </div>
-            </div>
-        );
-    }
+    // Use fallback values if data is missing
+    const safeResults = {
+        baselineTax: cumulative?.baselineTax || 0,
+        optimizedTax: cumulative?.optimizedTax || 0,
+        totalSavings: cumulative?.totalSavings || 0,
+        capitalAllocated: cumulative?.capitalAllocated || 0
+    };
 
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const savingsPercentage = cumulative.baselineTax > 0 ? cumulative.totalSavings / cumulative.baselineTax : 0;
+    const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
     
     const enabledStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].filter(
-        strategy => scenario.enabledStrategies[strategy.id] && scenario.clientData[strategy.inputRequired] > 0
+        strategy => scenario.enabledStrategies && scenario.enabledStrategies[strategy.id] && 
+        scenario.clientData && scenario.clientData[strategy.inputRequired] > 0
     );
 
     const benefits = withStrategies?.insights?.filter(i => i.type === 'success') || [];
     const considerations = withStrategies?.insights?.filter(i => i.type === 'warning') || [];
 
-    // Enhanced data preparation with validation
-    const taxBreakdownData = [];
-    
-    try {
-        if (projections[0] && projections[0].baseline && projections[0].withStrategies) {
-            const baselineData = projections[0].baseline;
-            const optimizedData = projections[0].withStrategies;
-            
-            // Validate the data exists and is numeric
-            if (typeof baselineData.fedTax === 'number' && 
-                typeof baselineData.stateTax === 'number' &&
-                typeof optimizedData.fedTax === 'number' && 
-                typeof optimizedData.stateTax === 'number') {
-                
-                taxBreakdownData.push(
-                    {
-                        scenario: 'Baseline',
-                        federalTax: baselineData.fedTax,
-                        stateTax: baselineData.stateTax
-                    },
-                    {
-                        scenario: 'Optimized',
-                        federalTax: optimizedData.fedTax,
-                        stateTax: optimizedData.stateTax
-                    }
-                );
-                
-                console.log('Tax breakdown data prepared:', taxBreakdownData);
-            } else {
-                console.error('Invalid tax data types:', { baselineData, optimizedData });
+    // Prepare chart data safely
+    let taxBreakdownData = [];
+    if (projections && projections.length > 0 && projections[0]) {
+        const baseline = projections[0].baseline || {};
+        const optimized = projections[0].withStrategies || {};
+        
+        taxBreakdownData = [
+            {
+                scenario: 'Baseline',
+                federalTax: baseline.fedTax || 0,
+                stateTax: baseline.stateTax || 0
+            },
+            {
+                scenario: 'Optimized',
+                federalTax: optimized.fedTax || 0,
+                stateTax: optimized.stateTax || 0
             }
-        } else {
-            console.error('Missing projection data structure:', projections[0]);
-        }
-    } catch (error) {
-        console.error('Error preparing tax breakdown data:', error);
+        ];
     }
 
     return (
@@ -512,7 +255,7 @@ const PrintableReport = forwardRef(
           <div style={styles.headerText}>
             <h1 style={styles.reportTitle}>Tax Optimization Analysis</h1>
             <p style={styles.clientInfo}>
-              Prepared for: <strong>{scenario.clientData.clientName}</strong><br />
+              Prepared for: <strong>{scenario.clientData?.clientName || 'Client'}</strong><br />
               Date of Analysis: {today}
             </p>
           </div>
@@ -523,15 +266,15 @@ const PrintableReport = forwardRef(
           <div style={styles.summaryGrid}>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Baseline Tax Liability</div>
-              <div style={styles.metricValue}>{formatCurrency(cumulative.baselineTax)}</div>
+              <div style={styles.metricValue}>{formatCurrency(safeResults.baselineTax)}</div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Optimized Tax Liability</div>
-              <div style={styles.metricValue}>{formatCurrency(cumulative.optimizedTax)}</div>
+              <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
             </div>
             <div style={{...styles.metric, ...styles.highlightMetric}}>
               <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Potential Tax Savings</div>
-              <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(cumulative.totalSavings)}</div>
+              <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(safeResults.totalSavings)}</div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Effective Tax Rate Reduction</div>
@@ -554,7 +297,7 @@ const PrintableReport = forwardRef(
                         {enabledStrategies.map((strategy) => (
                             <tr key={strategy.id}>
                                 <td style={styles.td}>{strategy.name}</td>
-                                <td style={styles.tdRight}>{formatCurrency(scenario.clientData[strategy.inputRequired])}</td>
+                                <td style={styles.tdRight}>{formatCurrency(scenario.clientData[strategy.inputRequired] || 0)}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -562,7 +305,7 @@ const PrintableReport = forwardRef(
             </section>
         )}
 
-        {withStrategies?.insights && withStrategies.insights.length > 0 && (
+        {(benefits.length > 0 || considerations.length > 0) && (
             <section style={styles.section}>
                 <h2 style={styles.sectionTitle}>Strategic Implementation Insights</h2>
                 <div style={styles.insightContainer}>
@@ -590,11 +333,9 @@ const PrintableReport = forwardRef(
             </section>
         )}
 
-        {/* Tax Liability Analysis - Both Chart and Table */}
+        {/* Tax Liability Analysis - Data Table Only */}
         <section style={styles.section}>
             <h2 style={styles.sectionTitle}>Tax Liability Analysis</h2>
-            
-            {/* Data Table - Always prints reliably */}
             <DataTable 
                 data={taxBreakdownData}
                 title="Federal vs State Tax Breakdown"
@@ -609,8 +350,8 @@ const PrintableReport = forwardRef(
                 
                 {/* Annual Tax Comparison Table */}
                 <div style={{ marginBottom: '3rem' }}>
-                    <h3 style={styles.chartTitle}>Annual Tax Liability Comparison</h3>
-                    <table style={{ ...styles.table, marginTop: '1rem' }}>
+                    <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Annual Tax Liability Comparison</h3>
+                    <table style={styles.table}>
                         <thead>
                             <tr>
                                 <th style={styles.th}>Year</th>
@@ -624,13 +365,13 @@ const PrintableReport = forwardRef(
                                 <tr key={index}>
                                     <td style={styles.td}>Year {proj.year}</td>
                                     <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
-                                        {formatCurrency(proj.baseline.totalTax)}
+                                        {formatCurrency(proj.baseline?.totalTax || 0)}
                                     </td>
                                     <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
-                                        {formatCurrency(proj.withStrategies.totalTax)}
+                                        {formatCurrency(proj.withStrategies?.totalTax || 0)}
                                     </td>
                                     <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
-                                        {formatCurrency(proj.baseline.totalTax - proj.withStrategies.totalTax)}
+                                        {formatCurrency((proj.baseline?.totalTax || 0) - (proj.withStrategies?.totalTax || 0))}
                                     </td>
                                 </tr>
                             ))}
@@ -640,8 +381,8 @@ const PrintableReport = forwardRef(
 
                 {/* Cumulative Savings Table */}
                 <div style={{ marginBottom: '3rem' }}>
-                    <h3 style={styles.chartTitle}>Cumulative Savings Over Time</h3>
-                    <table style={{ ...styles.table, marginTop: '1rem' }}>
+                    <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Cumulative Savings Over Time</h3>
+                    <table style={styles.table}>
                         <thead>
                             <tr>
                                 <th style={styles.th}>Year</th>
@@ -651,13 +392,14 @@ const PrintableReport = forwardRef(
                         </thead>
                         <tbody>
                             {projections.map((proj, index) => {
-                                const savingsRate = proj.baseline.totalTax > 0 ? 
-                                    (proj.baseline.totalTax - proj.withStrategies.totalTax) / proj.baseline.totalTax : 0;
+                                const baselineTax = proj.baseline?.totalTax || 0;
+                                const optimizedTax = proj.withStrategies?.totalTax || 0;
+                                const savingsRate = baselineTax > 0 ? (baselineTax - optimizedTax) / baselineTax : 0;
                                 return (
                                     <tr key={index}>
                                         <td style={styles.td}>Year {proj.year}</td>
                                         <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
-                                            {formatCurrency(proj.cumulativeSavings)}
+                                            {formatCurrency(proj.cumulativeSavings || 0)}
                                         </td>
                                         <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
                                             {formatPercentage(savingsRate)}
