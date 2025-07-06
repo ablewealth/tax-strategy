@@ -349,7 +349,7 @@ const PrintableReport = forwardRef(
                         <div style={{ 
                             width: '15px', 
                             height: '15px', 
-                            backgroundColor: '#059669',
+                            backgroundColor: '#041D5B',
                             border: '1px solid #000'
                         }}></div>
                         <span>Federal Tax</span>
@@ -358,7 +358,7 @@ const PrintableReport = forwardRef(
                         <div style={{ 
                             width: '15px', 
                             height: '15px', 
-                            backgroundColor: '#dc2626',
+                            backgroundColor: '#292A2D',
                             border: '1px solid #000'
                         }}></div>
                         <span>State Tax</span>
