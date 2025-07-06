@@ -383,8 +383,8 @@ const ChartsSection = ({ results }) => {
                             tick={{ fill: '#64748b' }} 
                         />
                         <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="#059669" name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#dc2626" name="State Tax" />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#292A2D" name="State Tax" />
                     </BarChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center items-center gap-6 mt-4">
