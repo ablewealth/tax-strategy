@@ -329,7 +329,20 @@ const ChartsSection = ({ results }) => {
     
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
-            return (<div className="bg-primary-navy/90 p-4 rounded-lg border border-primary-blue shadow-lg text-white"><p className="label font-semibold">{`${label}`}</p>{payload.map((p, i) => (<p key={i} style={{ color: p.color }}>{`${p.name}: ${formatCurrency(p.value)}`}</p>))}</div>);
+            return (
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-xl">
+                    <p className="label font-semibold text-black mb-2">{`${label}`}</p>
+                    {payload.map((p, i) => (
+                        <p key={i} className="text-black font-medium">
+                            <span 
+                                className="inline-block w-3 h-3 rounded mr-2" 
+                                style={{ backgroundColor: p.color }}
+                            ></span>
+                            {`${p.name}: ${formatCurrency(p.value)}`}
+                        </p>
+                    ))}
+                </div>
+            );
         }
         return null;
     };
@@ -357,30 +370,30 @@ const ChartsSection = ({ results }) => {
                 <p className="text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
                 <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                         <XAxis 
                             dataKey="scenario" 
-                            tick={{ fill: 'var(--text-muted)', fontSize: 12 }} 
+                            tick={{ fill: '#64748b', fontSize: 12 }} 
                             interval={0}
                             angle={0}
                             textAnchor="middle"
                         />
                         <YAxis 
                             tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} 
-                            tick={{ fill: 'var(--text-muted)' }} 
+                            tick={{ fill: '#64748b' }} 
                         />
-                        <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 64, 175, 0.1)' }} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="var(--primary-blue)" name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="var(--accent-gold)" name="State Tax" />
+                        <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="#059669" name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#dc2626" name="State Tax" />
                     </BarChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center items-center gap-6 mt-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--primary-blue)' }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#059669' }}></div>
                         <span className="text-sm text-text-secondary">Federal Tax</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--accent-gold)' }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dc2626' }}></div>
                         <span className="text-sm text-text-secondary">State Tax</span>
                     </div>
                 </div>
@@ -393,12 +406,12 @@ const ChartsSection = ({ results }) => {
                         <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability Comparison</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
-                                <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
-                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
-                                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 64, 175, 0.1)' }} />
-                                <Bar dataKey="baseline.totalTax" fill="var(--text-muted)" name="Baseline Tax" />
-                                <Bar dataKey="withStrategies.totalTax" fill="var(--primary-blue)" name="Optimized Tax" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                <XAxis dataKey="year" tick={{ fill: '#64748b' }} />
+                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b' }} />
+                                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
+                                <Bar dataKey="baseline.totalTax" fill="#9ca3af" name="Baseline Tax" />
+                                <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -406,11 +419,11 @@ const ChartsSection = ({ results }) => {
                         <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings Over Time</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
-                                <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)' }} />
-                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: 'var(--text-muted)' }} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                <XAxis dataKey="year" tick={{ fill: '#64748b' }} />
+                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b' }} />
                                 <RechartsTooltip content={<CustomTooltip />} />
-                                <Line type="monotone" dataKey="cumulativeSavings" stroke="var(--accent-gold)" strokeWidth={3} name="Savings" dot={{ r: 4 }} activeDot={{ r: 6 }}/>
+                                <Line type="monotone" dataKey="cumulativeSavings" stroke="#f59e0b" strokeWidth={3} name="Savings" dot={{ r: 4 }} activeDot={{ r: 6 }}/>
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
