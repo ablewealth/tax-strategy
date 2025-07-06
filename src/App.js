@@ -15,7 +15,7 @@ import {
 } from './constants';
 import PrintableReport from './components/PrintableReport';
 
-// --- Helper & Calculation Functions (Logic is preserved) ---
+// --- Helper & Calculation Functions (Logic preserved) ---
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
 const calculateTax = (income, brackets) => {
@@ -103,39 +103,39 @@ const performTaxCalculations = (scenario) => {
     return { projections, cumulative: { baselineTax: cumulativeBaselineTax, optimizedTax: cumulativeOptimizedTax, totalSavings: cumulativeSavings, capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0, }, withStrategies: projections[0]?.withStrategies };
 };
 
-// --- NEW PROFESSIONAL UI COMPONENTS ---
+// --- MOBILE-OPTIMIZED UI COMPONENTS ---
 const Header = ({ onPrint, clientName }) => (
-    <div className="bg-background-primary border-b border-border-primary px-8 py-6 sticky top-0 z-50">
-        <div className="flex items-center justify-between">
+    <div className="bg-background-primary border-b border-border-primary px-4 sm:px-6 lg:px-8 py-4 lg:py-6 sticky top-0 z-50">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
             {/* Logo and Company Info */}
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
                 <img 
                     src="https://ablewealth.com/AWM%20Logo%203.png" 
                     alt="Able Wealth Management" 
-                    className="h-8 w-auto"
+                    className="h-6 sm:h-8 w-auto"
                 />
-                <div className="border-l border-border-secondary pl-6">
-                    <h1 className="font-serif text-2xl font-bold text-text-primary leading-tight">
+                <div className="lg:border-l lg:border-border-secondary lg:pl-6">
+                    <h1 className="font-serif text-xl sm:text-2xl font-bold text-text-primary leading-tight">
                         Advanced Tax Strategy Optimizer
                     </h1>
                 </div>
             </div>
 
             {/* Client Analysis Info and Actions */}
-            <div className="flex items-center gap-6">
-                <div className="text-right">
-                    <p className="font-serif text-sm text-text-muted">Analysis for:</p>
-                    <p className="font-serif text-lg font-semibold text-text-primary">{clientName}</p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
+                <div className="text-left sm:text-right">
+                    <p className="font-serif text-xs sm:text-sm text-text-muted">Analysis for:</p>
+                    <p className="font-serif text-base sm:text-lg font-semibold text-text-primary">{clientName}</p>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-background-tertiary px-4 py-2 rounded-md text-xs font-medium text-text-secondary">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 bg-background-tertiary px-3 py-2 rounded-md text-xs font-medium text-text-secondary">
                         <div className="w-2 h-2 bg-success rounded-full"></div>
                         Analysis Active
                     </div>
                     <button 
                         onClick={onPrint} 
-                        className="flex items-center gap-2 bg-primary-blue text-white px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all shadow-md"
+                        className="flex items-center justify-center gap-2 bg-primary-blue text-white px-4 sm:px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all shadow-md w-full sm:w-auto min-h-[44px]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
@@ -151,11 +151,11 @@ const Header = ({ onPrint, clientName }) => (
 
 const Section = ({ title, description, children }) => (
     <div className="bg-background-primary rounded-lg shadow-md border border-border-primary overflow-hidden">
-        <div className="px-8 py-6 border-b border-border-primary bg-background-secondary">
-            <h2 className="font-serif text-xl font-semibold text-text-primary flex items-center gap-3">{title}</h2>
-            <p className="text-sm text-text-secondary mt-1">{description}</p>
+        <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6 border-b border-border-primary bg-background-secondary">
+            <h2 className="font-serif text-lg sm:text-xl font-semibold text-text-primary flex items-center gap-3">{title}</h2>
+            <p className="text-xs sm:text-sm text-text-secondary mt-1">{description}</p>
         </div>
-        <div className="p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
     </div>
 );
 
@@ -167,7 +167,7 @@ const InputField = ({ label, type = 'text', value, onChange, placeholder }) => (
             value={value || ''}
             onChange={onChange}
             placeholder={placeholder}
-            className="h-12 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
+            className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
         />
     </div>
 );
@@ -175,7 +175,11 @@ const InputField = ({ label, type = 'text', value, onChange, placeholder }) => (
 const SelectField = ({ label, value, onChange, children }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
-        <select value={value} onChange={onChange} className="h-12 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent">
+        <select 
+            value={value} 
+            onChange={onChange} 
+            className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
+        >
             {children}
         </select>
     </div>
@@ -184,7 +188,7 @@ const SelectField = ({ label, value, onChange, children }) => (
 const ClientInputSection = ({ scenario, updateClientData }) => {
     return (
         <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
                 <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
                     <option value="NJ">New Jersey</option>
@@ -203,21 +207,26 @@ const ClientInputSection = ({ scenario, updateClientData }) => {
     )
 };
 
-// FIXED: Move StrategyCard component outside of StrategiesSection to prevent re-renders
+// MOBILE-OPTIMIZED StrategyCard component
 const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, children }) => {
     const isActive = scenario.enabledStrategies[strategy.id];
     return (
-        <div className={`border rounded-lg p-6 transition-all relative ${isActive ? 'border-accent-gold bg-gradient-to-br from-white to-amber-50' : 'border-border-primary bg-background-primary hover:border-primary-blue'}`}>
+        <div className={`border rounded-lg p-4 sm:p-6 transition-all relative ${isActive ? 'border-accent-gold bg-gradient-to-br from-white to-amber-50' : 'border-border-primary bg-background-primary hover:border-primary-blue'}`}>
             {isActive && <div className="absolute top-0 left-0 w-1.5 h-full bg-accent-gold rounded-l-lg"></div>}
             <div className="flex items-start gap-4">
-                <input type="checkbox" checked={isActive} onChange={() => toggleStrategy(strategy.id)} className="mt-1 h-5 w-5 rounded accent-accent-gold"/>
-                <div className="flex-1">
-                    <h3 className="font-semibold text-base text-text-primary">{strategy.name}</h3>
+                <input 
+                    type="checkbox" 
+                    checked={isActive} 
+                    onChange={() => toggleStrategy(strategy.id)} 
+                    className="mt-1 h-5 w-5 sm:h-6 sm:w-6 rounded accent-accent-gold touch-manipulation"
+                />
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-text-primary leading-tight">{strategy.name}</h3>
                     <p className="text-xs text-text-muted uppercase tracking-wider mt-1">{strategy.category}</p>
-                    <p className="text-sm text-text-secondary mt-2">{strategy.description}</p>
+                    <p className="text-xs sm:text-sm text-text-secondary mt-2 leading-relaxed">{strategy.description}</p>
                 </div>
             </div>
-            {isActive && children && <div className="mt-4 pl-9">{children}</div>}
+            {isActive && children && <div className="mt-4 pl-0 sm:pl-9">{children}</div>}
         </div>
     )
 };
@@ -225,7 +234,7 @@ const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, ch
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
     return (
         <Section title="💼 Strategic Tax Optimization Portfolio" description="Select advanced tax strategies and input corresponding investment or contribution amounts.">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
                 {STRATEGY_LIBRARY.map(strategy => (
                     <StrategyCard 
                         key={strategy.id} 
@@ -234,15 +243,15 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                         toggleStrategy={toggleStrategy}
                         updateClientData={updateClientData}
                     >
-                        <InputField 
-                            label="Investment Amount" 
-                            type="number" 
-                            value={scenario.clientData[strategy.inputRequired]} 
-                            onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
-                            placeholder="Enter amount"
-                        />
-                        {strategy.id === 'QUANT_DEALS_01' && (
-                            <div className="mt-4">
+                        <div className="space-y-4">
+                            <InputField 
+                                label="Investment Amount" 
+                                type="number" 
+                                value={scenario.clientData[strategy.inputRequired]} 
+                                onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
+                                placeholder="Enter amount"
+                            />
+                            {strategy.id === 'QUANT_DEALS_01' && (
                                 <SelectField 
                                     label="DEALS Exposure Level" 
                                     value={scenario.clientData.dealsExposure} 
@@ -252,8 +261,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                                         <option key={key} value={key}>{value.description}</option>
                                     ))}
                                 </SelectField>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </StrategyCard>
                 ))}
                 {RETIREMENT_STRATEGIES.map(strategy => (
@@ -284,19 +293,20 @@ const ResultsDashboard = ({ results }) => {
     const savingsPercentage = baselineTax > 0 ? totalSavings / baselineTax : 0;
 
     const MetricCard = ({ label, value, subtext, isHighlighted = false }) => (
-        <div className={`p-6 rounded-lg text-center transition-all ${isHighlighted ? 'bg-white/20' : 'bg-white/10'}`}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider opacity-80">{label}</h3>
-            <p className={`text-4xl font-bold my-2 ${isHighlighted ? 'text-accent-gold-light' : 'text-white'}`}>{value}</p>
-            <p className="text-sm opacity-90">{subtext}</p>
+        <div className={`p-4 sm:p-6 rounded-lg text-center transition-all ${isHighlighted ? 'bg-white/20' : 'bg-white/10'}`}>
+            <h3 className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-2">{label}</h3>
+            <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 ${isHighlighted ? 'text-accent-gold-light' : 'text-white'} leading-tight`}>{value}</p>
+            <p className="text-xs sm:text-sm opacity-90 leading-relaxed">{subtext}</p>
         </div>
     );
+    
     return (
-        <div className="bg-gradient-to-br from-primary-navy to-primary-blue rounded-xl p-10 text-white shadow-xl">
-            <div className="text-center mb-8">
-                <h2 className="font-serif text-3xl font-bold">Executive Tax Optimization Analysis</h2>
-                <p className="text-base opacity-80 mt-2">Comprehensive strategic tax planning results and optimization metrics.</p>
+        <div className="bg-gradient-to-br from-primary-navy to-primary-blue rounded-xl p-6 sm:p-8 lg:p-10 text-white shadow-xl">
+            <div className="text-center mb-6 sm:mb-8">
+                <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Executive Tax Optimization Analysis</h2>
+                <p className="text-sm sm:text-base opacity-80 mt-2">Comprehensive strategic tax planning results and optimization metrics.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                 <MetricCard label="Baseline Tax Liability" value={formatCurrency(baselineTax)} subtext="Pre-optimization scenario" />
                 <MetricCard label="Optimized Tax Liability" value={formatCurrency(optimizedTax)} subtext="Post-strategy implementation" />
                 <MetricCard label="Total Tax Optimization" value={formatCurrency(totalSavings)} subtext={`${formatPercentage(savingsPercentage)} effective reduction`} isHighlighted />
@@ -309,13 +319,19 @@ const ResultsDashboard = ({ results }) => {
 const InsightsSection = ({ insights }) => (
     <Section title="💡 Strategic Implementation Insights" description="Tax strategy analysis and optimization recommendations.">
         <div className="space-y-4">
-            {!insights || insights.length === 0 ? (<p className="text-text-muted">Enable strategies to see personalized recommendations and considerations.</p>) : (
+            {!insights || insights.length === 0 ? (
+                <p className="text-text-muted text-center py-8">Enable strategies to see personalized recommendations and considerations.</p>
+            ) : (
                 insights.map((insight, index) => (
                     <div key={index} className={`p-4 rounded-lg flex items-start gap-4 border-l-4 ${insight.type === 'success' ? 'bg-green-50 border-success' : 'bg-amber-50 border-warning'}`}>
-                        <div className={`text-xl ${insight.type === 'success' ? 'text-success' : 'text-warning'}`}>{insight.type === 'success' ? '✅' : '⚠️'}</div>
-                        <div>
-                            <h4 className={`font-semibold ${insight.type === 'success' ? 'text-success' : 'text-warning'}`}>{insight.type === 'success' ? 'Strategic Benefit' : 'Implementation Consideration'}</h4>
-                            <p className="text-text-secondary">{insight.text}</p>
+                        <div className={`text-lg sm:text-xl flex-shrink-0 ${insight.type === 'success' ? 'text-success' : 'text-warning'}`}>
+                            {insight.type === 'success' ? '✅' : '⚠️'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h4 className={`font-semibold text-sm sm:text-base ${insight.type === 'success' ? 'text-success' : 'text-warning'} leading-tight`}>
+                                {insight.type === 'success' ? 'Strategic Benefit' : 'Implementation Consideration'}
+                            </h4>
+                            <p className="text-xs sm:text-sm text-text-secondary mt-1 leading-relaxed">{insight.text}</p>
                         </div>
                     </div>
                 ))
@@ -330,10 +346,10 @@ const ChartsSection = ({ results }) => {
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-xl">
-                    <p className="label font-semibold text-black mb-2">{`${label}`}</p>
+                <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-gray-300 shadow-xl max-w-xs">
+                    <p className="label font-semibold text-black mb-2 text-sm sm:text-base">{`${label}`}</p>
                     {payload.map((p, i) => (
-                        <p key={i} className="text-black font-medium">
+                        <p key={i} className="text-black font-medium text-xs sm:text-sm">
                             <span 
                                 className="inline-block w-3 h-3 rounded mr-2" 
                                 style={{ backgroundColor: p.color }}
@@ -351,12 +367,12 @@ const ChartsSection = ({ results }) => {
     const firstProjection = results.projections[0];
     const taxBreakdownData = [
         {
-            scenario: 'Baseline Scenario',
+            scenario: 'Baseline',
             federalTax: firstProjection.baseline.fedTax,
             stateTax: firstProjection.baseline.stateTax
         },
         {
-            scenario: 'Optimized Strategy',
+            scenario: 'Optimized',
             federalTax: firstProjection.withStrategies.fedTax,
             stateTax: firstProjection.withStrategies.stateTax
         }
@@ -366,66 +382,73 @@ const ChartsSection = ({ results }) => {
         <Section title="📈 Visual Projections" description="Analysis of tax liabilities and cumulative savings.">
             {/* Tax Liability Breakdown Chart */}
             <div className="mb-8">
-                <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
-                <p className="text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
-                <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis 
-                            dataKey="scenario" 
-                            tick={{ fill: '#64748b', fontSize: 12 }} 
-                            interval={0}
-                            angle={0}
-                            textAnchor="middle"
-                        />
-                        <YAxis 
-                            tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} 
-                            tick={{ fill: '#64748b' }} 
-                        />
-                        <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#083038" name="State Tax" />
-                    </BarChart>
-                </ResponsiveContainer>
-                <div className="flex justify-center items-center gap-6 mt-4">
+                <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
+                <p className="text-xs sm:text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
+                <div className="w-full" style={{ height: '300px', minHeight: '300px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={taxBreakdownData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                            <XAxis 
+                                dataKey="scenario" 
+                                tick={{ fill: '#64748b', fontSize: 11 }} 
+                                interval={0}
+                                angle={0}
+                                textAnchor="middle"
+                            />
+                            <YAxis 
+                                tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} 
+                                tick={{ fill: '#64748b', fontSize: 10 }} 
+                                width={60}
+                            />
+                            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
+                            <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" name="Federal Tax" />
+                            <Bar dataKey="stateTax" stackId="taxes" fill="#083038" name="State Tax" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center items-center gap-4 sm:gap-6 mt-4">
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded" style={{ backgroundColor: '#041D5B' }}></div>
-                        <span className="text-sm text-text-secondary">Federal Tax</span>
+                        <span className="text-xs sm:text-sm text-text-secondary">Federal Tax</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded" style={{ backgroundColor: '#083038' }}></div>
-                        <span className="text-sm text-text-secondary">State Tax</span>
+                        <span className="text-xs sm:text-sm text-text-secondary">State Tax</span>
                     </div>
                 </div>
             </div>
 
             {/* Multi-year projections - only show if more than 1 year */}
             {results.projections.length > 1 && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
                     <div>
-                        <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability Comparison</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                <XAxis dataKey="year" tick={{ fill: '#64748b' }} />
-                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b' }} />
-                                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
-                                <Bar dataKey="baseline.totalTax" fill="#9ca3af" name="Baseline Tax" />
-                                <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability</h3>
+                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
+                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
+                                    <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
+                                    <Bar dataKey="baseline.totalTax" fill="#9ca3af" name="Baseline Tax" />
+                                    <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings Over Time</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                <XAxis dataKey="year" tick={{ fill: '#64748b' }} />
-                                <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b' }} />
-                                <RechartsTooltip content={<CustomTooltip />} />
-                                <Line type="monotone" dataKey="cumulativeSavings" stroke="#f59e0b" strokeWidth={3} name="Savings" dot={{ r: 4 }} activeDot={{ r: 6 }}/>
-                            </LineChart>
-                        </ResponsiveContainer>
+                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings</h3>
+                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
+                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
+                                    <RechartsTooltip content={<CustomTooltip />} />
+                                    <Line type="monotone" dataKey="cumulativeSavings" stroke="#f59e0b" strokeWidth={3} name="Savings" dot={{ r: 3 }} activeDot={{ r: 5 }}/>
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
             )}
@@ -434,7 +457,7 @@ const ChartsSection = ({ results }) => {
 };
 
 const AppFooter = () => (
-    <footer className="max-w-7xl mx-auto px-8 py-8 mt-8 border-t border-border-primary text-xs text-text-muted text-justify">
+    <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-8 border-t border-border-primary text-xs text-text-muted text-justify leading-relaxed">
         <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.</p>
     </footer>
 );
@@ -471,7 +494,7 @@ export default function App() {
     return (
         <div className="bg-background-secondary min-h-screen">
             <Header onPrint={handlePrint} clientName={scenario.clientData.clientName} />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8">
                 <ClientInputSection scenario={scenario} updateClientData={handleUpdateClientData} />
                 <StrategiesSection scenario={scenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
                 <ResultsDashboard results={calculationResults} />
