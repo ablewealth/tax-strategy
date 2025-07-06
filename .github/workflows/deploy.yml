@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          # Remove cache until we have a lock file
           
       - name: Clean npm Cache
         run: npm cache clean --force
@@ -46,7 +45,6 @@ jobs:
           echo "Checking for index.html:"
           if [ -f "./build/index.html" ]; then
             echo "✅ index.html found"
-            echo "File size: $(wc -c < ./build/index.html) bytes"
           else
             echo "❌ index.html missing"
             exit 1
