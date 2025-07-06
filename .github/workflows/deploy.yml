@@ -1,4 +1,4 @@
-# Simple workflow for deploying static content to GitHub Pages
+# Optimized workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -40,8 +40,8 @@ jobs:
         run: |
           echo "Build directory contents:"
           ls -la ./build
-          echo "Build size:"
-          du -sh ./build
+          echo "Index.html exists:"
+          test -f ./build/index.html && echo "✅ index.html found" || echo "❌ index.html missing"
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
