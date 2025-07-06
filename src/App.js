@@ -389,11 +389,11 @@ const ChartsSection = ({ results }) => {
                 </ResponsiveContainer>
                 <div className="flex justify-center items-center gap-6 mt-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#059669' }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#041D5B' }}></div>
                         <span className="text-sm text-text-secondary">Federal Tax</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#dc2626' }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#292A2D' }}></div>
                         <span className="text-sm text-text-secondary">State Tax</span>
                     </div>
                 </div>
