@@ -484,12 +484,76 @@ export default function App() {
         return performTaxCalculations(scenario);
     }, [scenario]);
 
-    const handlePrint = () => {
-        const printContainer = document.getElementById('print-mount');
-        if (printContainer && scenario && calculationResults) {
-            ReactDOM.render(<PrintableReport scenario={scenario} results={calculationResults} years={scenario.clientData.projectionYears} />, printContainer, () => { window.print(); });
-        }
-    };
+// Updated handlePrint function for App.js
+// Replace the existing handlePrint function with this enhanced version
+
+const handlePrint = () => {
+    // Validate that we have complete calculation results
+    if (!calculationResults) {
+        alert('Calculation results are not available. Please check your inputs and try again.');
+        console.error('Print failed: calculationResults is null or undefined');
+        return;
+    }
+
+    if (!calculationResults.projections || calculationResults.projections.length === 0) {
+        alert('Tax projections are not available. Please ensure at least one strategy is enabled.');
+        console.error('Print failed: No projections available', calculationResults);
+        return;
+    }
+
+    if (!calculationResults.cumulative) {
+        alert('Summary calculations are not available. Please check your inputs.');
+        console.error('Print failed: No cumulative data available', calculationResults);
+        return;
+    }
+
+    // Validate scenario data
+    if (!scenario || !scenario.clientData) {
+        alert('Client data is not available. Please enter client information before printing.');
+        console.error('Print failed: No scenario data available', scenario);
+        return;
+    }
+
+    // Log data for debugging
+    console.log('Printing with data:', {
+        scenario: scenario,
+        results: calculationResults,
+        projections: calculationResults.projections,
+        cumulative: calculationResults.cumulative
+    });
+
+    const printContainer = document.getElementById('print-mount');
+    if (!printContainer) {
+        alert('Print container not found. Please refresh the page and try again.');
+        console.error('Print failed: print-mount element not found');
+        return;
+    }
+
+    try {
+        // Clear any existing content
+        printContainer.innerHTML = '';
+        
+        // Render the report with a small delay to ensure DOM is ready
+        ReactDOM.render(
+            <PrintableReport 
+                scenario={scenario} 
+                results={calculationResults} 
+                years={scenario.clientData.projectionYears} 
+            />, 
+            printContainer, 
+            () => {
+                // Add a small delay before printing to ensure everything is rendered
+                setTimeout(() => {
+                    console.log('Initiating print...');
+                    window.print();
+                }, 500);
+            }
+        );
+    } catch (error) {
+        console.error('Error rendering print report:', error);
+        alert('There was an error preparing the report for printing. Please check the console for details.');
+    }
+};
 
     return (
         <div className="bg-background-secondary min-h-screen">
