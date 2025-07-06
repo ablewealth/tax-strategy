@@ -1,93 +1,29 @@
-# Dependencies
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
 /node_modules
 /.pnp
 .pnp.js
-/.yarn/cache
-/.yarn/unplugged
-/.yarn/build-state.yml
-/.yarn/install-state.gz
-.pnp.*
 
-# Testing
+# testing
 /coverage
-*.lcov
 
-# Production
+# production
 /build
-/dist
 
-# Environment variables
-.env
+# misc
+.DS_Store
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Prettier cache
-.prettierignore
-
-# IDEs and editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary folders
-tmp/
-temp/
-
-# Package manager locks (keep package-lock.json, ignore others)
+# Optional: exclude other package managers' lock files
 yarn.lock
 pnpm-lock.yaml
 
-# Build artifacts
-*.tgz
-*.tar.gz
-
-# Storybook build outputs
-storybook-static
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.coverage
-
-# Mac bundle stuff
-*.dmg
-*.app
-
-# Windows stuff
-*.msi
-*.exe
-
-# Linux stuff
-*.deb
-*.rpm
+# DO NOT exclude package-lock.json - it should be committed!
