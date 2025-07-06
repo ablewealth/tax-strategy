@@ -1,4 +1,4 @@
-# Optimized workflow for deploying static content to GitHub Pages
+# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -26,10 +26,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          # Remove cache until we have a lock file
           
+      - name: Clean npm Cache
+        run: npm cache clean --force
+        
       - name: Install dependencies
-        run: npm ci
+        run: npm install
         
       - name: Build
         run: npm run build
@@ -40,8 +43,14 @@ jobs:
         run: |
           echo "Build directory contents:"
           ls -la ./build
-          echo "Index.html exists:"
-          test -f ./build/index.html && echo "✅ index.html found" || echo "❌ index.html missing"
+          echo "Checking for index.html:"
+          if [ -f "./build/index.html" ]; then
+            echo "✅ index.html found"
+            echo "File size: $(wc -c < ./build/index.html) bytes"
+          else
+            echo "❌ index.html missing"
+            exit 1
+          fi
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
