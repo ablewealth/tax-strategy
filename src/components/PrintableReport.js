@@ -139,6 +139,10 @@ const styles = {
     },
     chartContainer: {
         marginBottom: '2.5rem',
+        height: '300px',
+        width: '100%',
+        printColorAdjust: 'exact',
+        WebkitPrintColorAdjust: 'exact',
     },
     chartTitle: {
         textAlign: 'center',
@@ -157,6 +161,41 @@ const styles = {
         lineHeight: 1.4,
         pageBreakBefore: 'always',
     }
+};
+
+// Custom tooltip for print-friendly styling
+const PrintTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div style={{
+                backgroundColor: 'white',
+                border: '2px solid #333',
+                borderRadius: '4px',
+                padding: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}>
+                <p style={{ margin: 0, fontWeight: 'bold', color: '#000', marginBottom: '4px' }}>
+                    {label}
+                </p>
+                {payload.map((p, i) => (
+                    <p key={i} style={{ margin: 0, color: '#000', fontSize: '10pt' }}>
+                        <span 
+                            style={{
+                                display: 'inline-block',
+                                width: '12px',
+                                height: '12px',
+                                backgroundColor: p.color,
+                                marginRight: '6px',
+                                border: '1px solid #333'
+                            }}
+                        ></span>
+                        {`${p.name}: ${formatCurrency(p.value)}`}
+                    </p>
+                ))}
+            </div>
+        );
+    }
+    return null;
 };
 
 // --- Main Report Component ---
@@ -266,7 +305,7 @@ const PrintableReport = forwardRef(
             <h2 style={styles.sectionTitle}>Tax Liability Analysis</h2>
             <div style={styles.chartContainer}>
                 <h3 style={styles.chartTitle}>Federal vs State Tax Breakdown</h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
                         data={[
                             {
@@ -280,16 +319,51 @@ const PrintableReport = forwardRef(
                                 stateTax: projections[0].withStrategies.stateTax
                             }
                         ]} 
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="scenario" />
-                        <YAxis tickFormatter={(value) => `$${(value / 1000)}K`} />
-                        <Tooltip formatter={(value) => formatCurrency(value)} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="#1e40af" name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#d4af37" name="State Tax" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
+                        <XAxis 
+                            dataKey="scenario" 
+                            tick={{ fill: '#000000', fontSize: 11 }}
+                            stroke="#000000"
+                        />
+                        <YAxis 
+                            tickFormatter={(value) => `$${(value / 1000)}K`} 
+                            tick={{ fill: '#000000', fontSize: 10 }}
+                            stroke="#000000"
+                        />
+                        <Tooltip content={<PrintTooltip />} />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="#059669" stroke="#000000" strokeWidth={1} name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#dc2626" stroke="#000000" strokeWidth={1} name="State Tax" />
                     </BarChart>
                 </ResponsiveContainer>
+                {/* Legend for print */}
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: '20px', 
+                    marginTop: '10px',
+                    fontSize: '10pt' 
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div style={{ 
+                            width: '15px', 
+                            height: '15px', 
+                            backgroundColor: '#059669',
+                            border: '1px solid #000'
+                        }}></div>
+                        <span>Federal Tax</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div style={{ 
+                            width: '15px', 
+                            height: '15px', 
+                            backgroundColor: '#dc2626',
+                            border: '1px solid #000'
+                        }}></div>
+                        <span>State Tax</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -298,26 +372,52 @@ const PrintableReport = forwardRef(
                 <h2 style={styles.sectionTitle}>Multi-Year Projections</h2>
                 <div style={styles.chartContainer}>
                     <h3 style={styles.chartTitle}>Annual Tax Liability Comparison</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                            <YAxis tickFormatter={(value) => `$${(value / 1000)}K`} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} />
-                            <Bar dataKey="baseline.totalTax" fill="#8884d8" name="Baseline Tax" />
-                            <Bar dataKey="withStrategies.totalTax" fill="#82ca9d" name="Optimized Tax" />
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
+                            <XAxis 
+                                dataKey="year" 
+                                tick={{ fill: '#000000', fontSize: 11 }}
+                                stroke="#000000"
+                                label={{ value: 'Year', position: 'insideBottom', offset: -10, style: { textAnchor: 'middle', fill: '#000000' } }}
+                            />
+                            <YAxis 
+                                tickFormatter={(value) => `$${(value / 1000)}K`} 
+                                tick={{ fill: '#000000', fontSize: 10 }}
+                                stroke="#000000"
+                            />
+                            <Tooltip content={<PrintTooltip />} />
+                            <Bar dataKey="baseline.totalTax" fill="#9ca3af" stroke="#000000" strokeWidth={1} name="Baseline Tax" />
+                            <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" stroke="#000000" strokeWidth={1} name="Optimized Tax" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div style={styles.chartContainer}>
+                <div style={{...styles.chartContainer, marginTop: '40px'}}>
                     <h3 style={styles.chartTitle}>Cumulative Savings Over Time</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                            <YAxis tickFormatter={(value) => `$${(value / 1000)}K`} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} />
-                            <Line type="monotone" dataKey="cumulativeSavings" stroke="#2e7d32" strokeWidth={2} name="Savings" />
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
+                            <XAxis 
+                                dataKey="year" 
+                                tick={{ fill: '#000000', fontSize: 11 }}
+                                stroke="#000000"
+                                label={{ value: 'Year', position: 'insideBottom', offset: -10, style: { textAnchor: 'middle', fill: '#000000' } }}
+                            />
+                            <YAxis 
+                                tickFormatter={(value) => `$${(value / 1000)}K`} 
+                                tick={{ fill: '#000000', fontSize: 10 }}
+                                stroke="#000000"
+                            />
+                            <Tooltip content={<PrintTooltip />} />
+                            <Line 
+                                type="monotone" 
+                                dataKey="cumulativeSavings" 
+                                stroke="#f59e0b" 
+                                strokeWidth={3} 
+                                name="Savings" 
+                                dot={{ r: 4, fill: '#f59e0b', stroke: '#000000', strokeWidth: 1 }} 
+                                activeDot={{ r: 6, fill: '#f59e0b', stroke: '#000000', strokeWidth: 2 }}
+                            />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
