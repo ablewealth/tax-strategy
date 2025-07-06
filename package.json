@@ -4,28 +4,67 @@
   "private": true,
   "homepage": "https://ablewealth.github.io/tax-strategy",
   "description": "Advanced Tax Strategy Optimizer with multi-year projections and scenario comparison",
-  "keywords": ["tax", "optimization", "wealth-management", "financial-planning", "react"],
+  "keywords": [
+    "tax",
+    "optimization", 
+    "wealth-management",
+    "financial-planning",
+    "react",
+    "tax-planning",
+    "financial-advisor",
+    "wealth-advisor"
+  ],
+  "author": {
+    "name": "Able Wealth Management",
+    "url": "https://ablewealth.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ablewealth/tax-strategy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ablewealth/tax-strategy/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "chart.js": "^4.4.4",
     "react": "^18.3.1",
-    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
-    "recharts": "^2.8.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^3.5.0"
+    "recharts": "^2.12.7",
+    "web-vitals": "^4.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.9",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1", 
+    "@testing-library/user-event": "^14.5.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "gh-pages": "^6.2.0",
+    "postcss": "^8.4.49",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.14"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx --max-warnings 0",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,md,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css,md,json}\"",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "lint": "eslint src/**/*.{js,jsx}",
-    "lint:fix": "eslint src/**/*.{js,jsx} --fix"
+    "clean": "rm -rf build node_modules package-lock.json",
+    "reinstall": "npm run clean && npm install",
+    "analyze": "npm run build && npx serve -s build",
+    "security": "npm audit --audit-level moderate"
   },
   "eslintConfig": {
     "extends": [
@@ -34,40 +73,56 @@
     ],
     "rules": {
       "no-unused-vars": "warn",
-      "no-console": "warn"
+      "no-console": "warn",
+      "prefer-const": "error",
+      "no-var": "error",
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off"
+    },
+    "overrides": [
+      {
+        "files": ["**/*.test.js", "**/*.test.jsx"],
+        "env": {
+          "jest": true
+        }
+      }
+    ]
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
     }
   },
   "browserslist": {
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not op_mini all",
+      "not ie <= 11"
     ],
     "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
+      "last 2 chrome version",
+      "last 2 firefox version",
+      "last 2 safari version",
+      "last 2 edge version"
     ]
-  },
-  "devDependencies": {
-    "gh-pages": "^6.1.1",
-    "tailwindcss": "^3.4.4",
-    "@tailwindcss/forms": "^0.5.7",
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "eslint": "^8.57.0"
-  },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ablewealth/tax-strategy.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ablewealth/tax-strategy/issues"
-  },
-  "author": "Able Wealth Management",
-  "license": "MIT"
+  }
 }
