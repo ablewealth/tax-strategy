@@ -333,8 +333,8 @@ const PrintableReport = forwardRef(
                             stroke="#000000"
                         />
                         <Tooltip content={<PrintTooltip />} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="#059669" stroke="#000000" strokeWidth={1} name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#dc2626" stroke="#000000" strokeWidth={1} name="State Tax" />
+                        <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" stroke="#000000" strokeWidth={1} name="Federal Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#292A2D" stroke="#000000" strokeWidth={1} name="State Tax" />
                     </BarChart>
                 </ResponsiveContainer>
                 {/* Legend for print */}
