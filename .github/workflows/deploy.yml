@@ -1,3 +1,4 @@
+# Enhanced workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -28,27 +29,63 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
+      - name: Verify package.json
+        run: |
+          echo "Checking package.json..."
+          cat package.json | head -20
+          
       - name: Clean npm cache
         run: npm cache clean --force
         
+      - name: Remove existing lock file if corrupted
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "Checking package-lock.json format..."
+            if grep -q "npm install" package-lock.json; then
+              echo "⚠️ Corrupted package-lock.json detected, removing..."
+              rm package-lock.json
+            fi
+          fi
+        
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "Installing dependencies..."
+          npm install
+          echo "✅ Dependencies installed successfully"
         
       - name: Build application
-        run: npm run build
+        run: |
+          echo "Building application..."
+          npm run build
+          echo "✅ Build completed successfully"
         env:
           CI: false
+          NODE_OPTIONS: "--max-old-space-size=4096"
           
       - name: Verify build output
         run: |
           echo "Build directory contents:"
           ls -la ./build
+          echo ""
+          echo "Checking for required files:"
           if [ -f "./build/index.html" ]; then
             echo "✅ index.html found"
           else
             echo "❌ index.html missing"
             exit 1
           fi
+          
+          if [ -d "./build/static" ]; then
+            echo "✅ static directory found"
+            echo "Static files:"
+            ls -la ./build/static/
+          else
+            echo "⚠️ No static directory found"
+          fi
+          
+          echo ""
+          echo "Build size:"
+          du -sh ./build
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
