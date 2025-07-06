@@ -25,18 +25,170 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base styles with mobile-first approach */
 body {
   font-family: 'Inter', sans-serif;
   background: var(--background-secondary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px; /* Prevent iOS zoom on form inputs */
 }
 
+/* Enhanced touch targets for mobile */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Better button styles for mobile */
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px; /* iOS recommended minimum touch target */
+  min-width: 44px;
+}
+
+/* Enhanced form inputs for mobile */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+select {
+  font-size: 16px; /* Prevent iOS zoom */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+}
+
+/* Better checkbox styling for mobile */
+input[type="checkbox"] {
+  min-width: 20px;
+  min-height: 20px;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  input[type="checkbox"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* Hide number input spinners for cleaner mobile look */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Mobile-optimized scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Responsive chart containers */
+.recharts-responsive-container {
+  min-height: 250px;
+}
+
+@media (min-width: 640px) {
+  .recharts-responsive-container {
+    min-height: 300px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .recharts-responsive-container {
+    min-height: 350px;
+  }
+}
+
+/* Better focus states for accessibility and mobile */
+input:focus,
+select:focus,
+button:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Mobile-specific spacing utilities */
+.mobile-spacing {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mobile-spacing {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-spacing {
+    padding: 2rem;
+  }
+}
+
+/* Improved text legibility on mobile */
+@media (max-width: 639px) {
+  h1 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  
+  h2 {
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+  
+  p, div {
+    line-height: 1.5;
+  }
+}
+
+/* Mobile-optimized card layouts */
+@media (max-width: 639px) {
+  .mobile-card {
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+}
+
+/* Print mount styles */
 #print-mount {
   display: none;
 }
 
+/* Enhanced print styles */
 @media print {
   body > #root {
     display: none;
@@ -114,7 +266,7 @@ body {
     print-color-adjust: exact !important;
   }
   
-  /* Ensure specific chart colors print - UPDATED COLORS */
+  /* Ensure specific chart colors print */
   rect[fill="#041D5B"] {
     fill: #041D5B !important;
     stroke: #000000 !important;
@@ -161,12 +313,63 @@ body {
   }
 }
 
-/* Hide number input spinners for a cleaner look */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+/* Mobile navigation and layout improvements */
+@media (max-width: 639px) {
+  /* Reduce excessive whitespace on mobile */
+  .space-y-8 > * + * {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Better mobile grid layouts */
+  .grid-cols-1 {
+    gap: 1rem;
+  }
+  
+  /* Improved card padding on mobile */
+  .mobile-card-padding {
+    padding: 1rem;
+  }
 }
-input[type=number] {
-  -moz-appearance: textfield;
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Tablet-specific optimizations */
+  .space-y-8 > * + * {
+    margin-top: 2rem !important;
+  }
+}
+
+/* Better responsive text sizing */
+.responsive-text-xl {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-text-xl {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-text-xl {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile-optimized shadows */
+@media (max-width: 639px) {
+  .shadow-md {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+  
+  .shadow-xl {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+}
+
+/* Safe area insets for devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
 }
