@@ -6,6 +6,28 @@ import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
 
+// Data validation helper
+const validateChartData = (data) => {
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('Chart data is empty or invalid:', data);
+        return false;
+    }
+    
+    // Check if all required properties exist and are numbers
+    return data.every(item => {
+        const hasValidData = item && 
+            typeof item.federalTax === 'number' && 
+            typeof item.stateTax === 'number' &&
+            !isNaN(item.federalTax) && 
+            !isNaN(item.stateTax);
+            
+        if (!hasValidData) {
+            console.warn('Invalid data item:', item);
+        }
+        return hasValidData;
+    });
+};
+
 // --- Style Definitions for a Professional UHNW Report ---
 const styles = {
     page: {
@@ -143,6 +165,7 @@ const styles = {
         width: '100%',
         border: '1px solid #ddd',
         backgroundColor: '#ffffff',
+        position: 'relative',
     },
     chartTitle: {
         textAlign: 'center',
@@ -179,55 +202,122 @@ const styles = {
         color: '#777',
         lineHeight: 1.4,
         pageBreakBefore: 'always',
+    },
+    errorMessage: {
+        color: '#d97706',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        padding: '2rem',
+        backgroundColor: '#fef3c7',
+        border: '1px solid #f59e0b',
+        borderRadius: '4px',
     }
 };
 
-// Simple data table alternative for when charts don't print
-const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#083038' }) => (
-    <div style={{ marginBottom: '2rem' }}>
-        <h3 style={styles.chartTitle}>{title}</h3>
-        <table style={{ ...styles.table, marginTop: '1rem' }}>
-            <thead>
-                <tr>
-                    <th style={styles.th}>Scenario</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>Federal Tax</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>State Tax</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>Total Tax</th>
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((item, index) => (
-                    <tr key={index}>
-                        <td style={styles.td}>{item.scenario}</td>
-                        <td style={{ ...styles.tdRight, color: federalColor, fontWeight: 'bold' }}>
-                            {formatCurrency(item.federalTax)}
-                        </td>
-                        <td style={{ ...styles.tdRight, color: stateColor, fontWeight: 'bold' }}>
-                            {formatCurrency(item.stateTax)}
-                        </td>
-                        <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
-                            {formatCurrency(item.federalTax + item.stateTax)}
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-        {/* Legend */}
-        <div style={styles.chartLegend}>
-            <div style={styles.legendItem}>
-                <div style={{ ...styles.legendColor, backgroundColor: federalColor }}></div>
-                <span>Federal Tax</span>
+// Enhanced data table with better error handling
+const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#083038' }) => {
+    if (!validateChartData(data)) {
+        return (
+            <div style={{ marginBottom: '2rem' }}>
+                <h3 style={styles.chartTitle}>{title}</h3>
+                <div style={styles.errorMessage}>
+                    Chart data is unavailable. Please ensure all strategies are properly configured.
+                </div>
             </div>
-            <div style={styles.legendItem}>
-                <div style={{ ...styles.legendColor, backgroundColor: stateColor }}></div>
-                <span>State Tax</span>
+        );
+    }
+
+    return (
+        <div style={{ marginBottom: '2rem' }}>
+            <h3 style={styles.chartTitle}>{title}</h3>
+            <table style={{ ...styles.table, marginTop: '1rem' }}>
+                <thead>
+                    <tr>
+                        <th style={styles.th}>Scenario</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>Federal Tax</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>State Tax</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>Total Tax</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map((item, index) => (
+                        <tr key={index}>
+                            <td style={styles.td}>{item.scenario}</td>
+                            <td style={{ ...styles.tdRight, color: federalColor, fontWeight: 'bold' }}>
+                                {formatCurrency(item.federalTax)}
+                            </td>
+                            <td style={{ ...styles.tdRight, color: stateColor, fontWeight: 'bold' }}>
+                                {formatCurrency(item.stateTax)}
+                            </td>
+                            <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                                {formatCurrency(item.federalTax + item.stateTax)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            {/* Legend */}
+            <div style={styles.chartLegend}>
+                <div style={styles.legendItem}>
+                    <div style={{ ...styles.legendColor, backgroundColor: federalColor }}></div>
+                    <span>Federal Tax</span>
+                </div>
+                <div style={styles.legendItem}>
+                    <div style={{ ...styles.legendColor, backgroundColor: stateColor }}></div>
+                    <span>State Tax</span>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
-// Custom print-friendly chart with explicit styling
+// Enhanced chart component with better error handling and fallback
 const PrintChart = ({ data, title, type = 'bar' }) => {
+    // Validate data before rendering
+    if (!data || data.length === 0) {
+        return (
+            <div style={styles.chartContainer}>
+                <h3 style={styles.chartTitle}>{title}</h3>
+                <div style={styles.errorMessage}>
+                    No data available for chart visualization.
+                </div>
+            </div>
+        );
+    }
+
+    // Additional validation for bar chart data
+    if (type === 'bar' && !validateChartData(data)) {
+        return (
+            <div style={styles.chartContainer}>
+                <h3 style={styles.chartTitle}>{title}</h3>
+                <div style={styles.errorMessage}>
+                    Invalid chart data format detected.
+                </div>
+            </div>
+        );
+    }
+
+    // Additional validation for line chart data
+    if (type === 'line') {
+        const hasValidLineData = data.every(item => 
+            item && 
+            typeof item.year === 'number' && 
+            typeof item.cumulativeSavings === 'number' && 
+            !isNaN(item.cumulativeSavings)
+        );
+        
+        if (!hasValidLineData) {
+            return (
+                <div style={styles.chartContainer}>
+                    <h3 style={styles.chartTitle}>{title}</h3>
+                    <div style={styles.errorMessage}>
+                        Invalid projection data format detected.
+                    </div>
+                </div>
+            );
+        }
+    }
+
     const chartProps = {
         width: 600,
         height: 350,
@@ -340,8 +430,31 @@ const PrintChart = ({ data, title, type = 'bar' }) => {
 // --- Main Report Component ---
 const PrintableReport = forwardRef(
   ({ scenario, results, years }, ref) => {
-    if (!results || !scenario) return null;
+    // Enhanced validation
+    if (!results || !scenario) {
+        console.error('PrintableReport: Missing required props', { results, scenario });
+        return (
+            <div ref={ref} style={styles.page}>
+                <div style={styles.errorMessage}>
+                    Report data is unavailable. Please ensure all calculations are complete before printing.
+                </div>
+            </div>
+        );
+    }
+
     const { cumulative, projections, withStrategies } = results;
+    
+    // Validate critical data
+    if (!cumulative || !projections || projections.length === 0) {
+        console.error('PrintableReport: Invalid results structure', { cumulative, projections });
+        return (
+            <div ref={ref} style={styles.page}>
+                <div style={styles.errorMessage}>
+                    Calculation results are incomplete. Please review your inputs and try again.
+                </div>
+            </div>
+        );
+    }
 
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const savingsPercentage = cumulative.baselineTax > 0 ? cumulative.totalSavings / cumulative.baselineTax : 0;
@@ -353,19 +466,43 @@ const PrintableReport = forwardRef(
     const benefits = withStrategies?.insights?.filter(i => i.type === 'success') || [];
     const considerations = withStrategies?.insights?.filter(i => i.type === 'warning') || [];
 
-    // Prepare chart data
-    const taxBreakdownData = [
-        {
-            scenario: 'Baseline',
-            federalTax: projections[0].baseline.fedTax,
-            stateTax: projections[0].baseline.stateTax
-        },
-        {
-            scenario: 'Optimized',
-            federalTax: projections[0].withStrategies.fedTax,
-            stateTax: projections[0].withStrategies.stateTax
+    // Enhanced data preparation with validation
+    const taxBreakdownData = [];
+    
+    try {
+        if (projections[0] && projections[0].baseline && projections[0].withStrategies) {
+            const baselineData = projections[0].baseline;
+            const optimizedData = projections[0].withStrategies;
+            
+            // Validate the data exists and is numeric
+            if (typeof baselineData.fedTax === 'number' && 
+                typeof baselineData.stateTax === 'number' &&
+                typeof optimizedData.fedTax === 'number' && 
+                typeof optimizedData.stateTax === 'number') {
+                
+                taxBreakdownData.push(
+                    {
+                        scenario: 'Baseline',
+                        federalTax: baselineData.fedTax,
+                        stateTax: baselineData.stateTax
+                    },
+                    {
+                        scenario: 'Optimized',
+                        federalTax: optimizedData.fedTax,
+                        stateTax: optimizedData.stateTax
+                    }
+                );
+                
+                console.log('Tax breakdown data prepared:', taxBreakdownData);
+            } else {
+                console.error('Invalid tax data types:', { baselineData, optimizedData });
+            }
+        } else {
+            console.error('Missing projection data structure:', projections[0]);
         }
-    ];
+    } catch (error) {
+        console.error('Error preparing tax breakdown data:', error);
+    }
 
     return (
       <div ref={ref} style={styles.page}>
@@ -464,13 +601,6 @@ const PrintableReport = forwardRef(
                 federalColor="#041D5B"
                 stateColor="#083038"
             />
-            
-            {/* Chart - May not print in all browsers, but provides visual on screen */}
-            <PrintChart 
-                data={taxBreakdownData}
-                title="Federal vs State Tax Breakdown (Visual)"
-                type="bar"
-            />
         </section>
 
         {projections && projections.length > 1 && (
@@ -538,13 +668,6 @@ const PrintableReport = forwardRef(
                         </tbody>
                     </table>
                 </div>
-
-                {/* Visual Charts for screen/digital viewing */}
-                <PrintChart 
-                    data={projections}
-                    title="Cumulative Savings Growth (Visual)"
-                    type="line"
-                />
             </section>
         )}
 
