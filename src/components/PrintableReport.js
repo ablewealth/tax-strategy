@@ -139,10 +139,10 @@ const styles = {
     },
     chartContainer: {
         marginBottom: '2.5rem',
-        height: '300px',
+        height: '400px',
         width: '100%',
-        printColorAdjust: 'exact',
-        WebkitPrintColorAdjust: 'exact',
+        border: '1px solid #ddd',
+        backgroundColor: '#ffffff',
     },
     chartTitle: {
         textAlign: 'center',
@@ -151,6 +151,25 @@ const styles = {
         fontSize: '11pt',
         marginBottom: '1rem',
         color: '#333',
+    },
+    chartLegend: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '30px',
+        marginTop: '15px',
+        fontSize: '10pt',
+        fontWeight: '600',
+    },
+    legendItem: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+    legendColor: {
+        width: '20px',
+        height: '15px',
+        border: '1px solid #333',
+        display: 'inline-block',
     },
     footer: {
         marginTop: '2.5rem',
@@ -163,39 +182,159 @@ const styles = {
     }
 };
 
-// Custom tooltip for print-friendly styling
-const PrintTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-        return (
-            <div style={{
-                backgroundColor: 'white',
-                border: '2px solid #333',
-                borderRadius: '4px',
-                padding: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-            }}>
-                <p style={{ margin: 0, fontWeight: 'bold', color: '#000', marginBottom: '4px' }}>
-                    {label}
-                </p>
-                {payload.map((p, i) => (
-                    <p key={i} style={{ margin: 0, color: '#000', fontSize: '10pt' }}>
-                        <span 
-                            style={{
-                                display: 'inline-block',
-                                width: '12px',
-                                height: '12px',
-                                backgroundColor: p.color,
-                                marginRight: '6px',
-                                border: '1px solid #333'
-                            }}
-                        ></span>
-                        {`${p.name}: ${formatCurrency(p.value)}`}
-                    </p>
+// Simple data table alternative for when charts don't print
+const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#083038' }) => (
+    <div style={{ marginBottom: '2rem' }}>
+        <h3 style={styles.chartTitle}>{title}</h3>
+        <table style={{ ...styles.table, marginTop: '1rem' }}>
+            <thead>
+                <tr>
+                    <th style={styles.th}>Scenario</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Federal Tax</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>State Tax</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Total Tax</th>
+                </tr>
+            </thead>
+            <tbody>
+                {data.map((item, index) => (
+                    <tr key={index}>
+                        <td style={styles.td}>{item.scenario}</td>
+                        <td style={{ ...styles.tdRight, color: federalColor, fontWeight: 'bold' }}>
+                            {formatCurrency(item.federalTax)}
+                        </td>
+                        <td style={{ ...styles.tdRight, color: stateColor, fontWeight: 'bold' }}>
+                            {formatCurrency(item.stateTax)}
+                        </td>
+                        <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                            {formatCurrency(item.federalTax + item.stateTax)}
+                        </td>
+                    </tr>
                 ))}
+            </tbody>
+        </table>
+        {/* Legend */}
+        <div style={styles.chartLegend}>
+            <div style={styles.legendItem}>
+                <div style={{ ...styles.legendColor, backgroundColor: federalColor }}></div>
+                <span>Federal Tax</span>
             </div>
-        );
-    }
-    return null;
+            <div style={styles.legendItem}>
+                <div style={{ ...styles.legendColor, backgroundColor: stateColor }}></div>
+                <span>State Tax</span>
+            </div>
+        </div>
+    </div>
+);
+
+// Custom print-friendly chart with explicit styling
+const PrintChart = ({ data, title, type = 'bar' }) => {
+    const chartProps = {
+        width: 600,
+        height: 350,
+        data: data,
+        margin: { top: 20, right: 30, left: 40, bottom: 60 }
+    };
+
+    return (
+        <div style={styles.chartContainer}>
+            <h3 style={styles.chartTitle}>{title}</h3>
+            <div style={{ 
+                width: '100%', 
+                height: '350px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#ffffff'
+            }}>
+                {type === 'bar' ? (
+                    <BarChart {...chartProps}>
+                        <CartesianGrid 
+                            strokeDasharray="3 3" 
+                            stroke="#333333" 
+                            strokeWidth={1}
+                        />
+                        <XAxis 
+                            dataKey="scenario" 
+                            tick={{ 
+                                fill: '#000000', 
+                                fontSize: 12, 
+                                fontWeight: 'bold'
+                            }}
+                            stroke="#000000"
+                            strokeWidth={2}
+                        />
+                        <YAxis 
+                            tickFormatter={(value) => `$${(value / 1000)}K`} 
+                            tick={{ 
+                                fill: '#000000', 
+                                fontSize: 11,
+                                fontWeight: 'bold'
+                            }}
+                            stroke="#000000"
+                            strokeWidth={2}
+                        />
+                        <Bar 
+                            dataKey="federalTax" 
+                            stackId="taxes" 
+                            fill="#041D5B" 
+                            stroke="#000000" 
+                            strokeWidth={2}
+                            name="Federal Tax" 
+                        />
+                        <Bar 
+                            dataKey="stateTax" 
+                            stackId="taxes" 
+                            fill="#083038" 
+                            stroke="#000000" 
+                            strokeWidth={2}
+                            name="State Tax" 
+                        />
+                    </BarChart>
+                ) : (
+                    <LineChart {...chartProps}>
+                        <CartesianGrid 
+                            strokeDasharray="3 3" 
+                            stroke="#333333" 
+                            strokeWidth={1}
+                        />
+                        <XAxis 
+                            dataKey="year" 
+                            tick={{ 
+                                fill: '#000000', 
+                                fontSize: 12,
+                                fontWeight: 'bold'
+                            }}
+                            stroke="#000000"
+                            strokeWidth={2}
+                        />
+                        <YAxis 
+                            tickFormatter={(value) => `$${(value / 1000)}K`} 
+                            tick={{ 
+                                fill: '#000000', 
+                                fontSize: 11,
+                                fontWeight: 'bold'
+                            }}
+                            stroke="#000000"
+                            strokeWidth={2}
+                        />
+                        <Line 
+                            type="monotone" 
+                            dataKey="cumulativeSavings" 
+                            stroke="#f59e0b" 
+                            strokeWidth={4} 
+                            name="Cumulative Savings"
+                            dot={{ 
+                                r: 6, 
+                                fill: '#f59e0b', 
+                                stroke: '#000000', 
+                                strokeWidth: 2 
+                            }}
+                        />
+                    </LineChart>
+                )}
+            </div>
+        </div>
+    );
 };
 
 // --- Main Report Component ---
@@ -213,6 +352,20 @@ const PrintableReport = forwardRef(
 
     const benefits = withStrategies?.insights?.filter(i => i.type === 'success') || [];
     const considerations = withStrategies?.insights?.filter(i => i.type === 'warning') || [];
+
+    // Prepare chart data
+    const taxBreakdownData = [
+        {
+            scenario: 'Baseline',
+            federalTax: projections[0].baseline.fedTax,
+            stateTax: projections[0].baseline.stateTax
+        },
+        {
+            scenario: 'Optimized',
+            federalTax: projections[0].withStrategies.fedTax,
+            stateTax: projections[0].withStrategies.stateTax
+        }
+    ];
 
     return (
       <div ref={ref} style={styles.page}>
@@ -300,127 +453,98 @@ const PrintableReport = forwardRef(
             </section>
         )}
 
-        {/* Tax Liability Breakdown Chart - Always show for current year */}
+        {/* Tax Liability Analysis - Both Chart and Table */}
         <section style={styles.section}>
             <h2 style={styles.sectionTitle}>Tax Liability Analysis</h2>
-            <div style={styles.chartContainer}>
-                <h3 style={styles.chartTitle}>Federal vs State Tax Breakdown</h3>
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                        data={[
-                            {
-                                scenario: 'Baseline',
-                                federalTax: projections[0].baseline.fedTax,
-                                stateTax: projections[0].baseline.stateTax
-                            },
-                            {
-                                scenario: 'Optimized',
-                                federalTax: projections[0].withStrategies.fedTax,
-                                stateTax: projections[0].withStrategies.stateTax
-                            }
-                        ]} 
-                        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
-                        <XAxis 
-                            dataKey="scenario" 
-                            tick={{ fill: '#000000', fontSize: 11 }}
-                            stroke="#000000"
-                        />
-                        <YAxis 
-                            tickFormatter={(value) => `$${(value / 1000)}K`} 
-                            tick={{ fill: '#000000', fontSize: 10 }}
-                            stroke="#000000"
-                        />
-                        <Tooltip content={<PrintTooltip />} />
-                        <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" stroke="#000000" strokeWidth={1} name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#292A2D" stroke="#000000" strokeWidth={1} name="State Tax" />
-                    </BarChart>
-                </ResponsiveContainer>
-                {/* Legend for print */}
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: '20px', 
-                    marginTop: '10px',
-                    fontSize: '10pt' 
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <div style={{ 
-                            width: '15px', 
-                            height: '15px', 
-                            backgroundColor: '#041D5B',
-                            border: '1px solid #000'
-                        }}></div>
-                        <span>Federal Tax</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <div style={{ 
-                            width: '15px', 
-                            height: '15px', 
-                            backgroundColor: '#292A2D',
-                            border: '1px solid #000'
-                        }}></div>
-                        <span>State Tax</span>
-                    </div>
-                </div>
-            </div>
+            
+            {/* Data Table - Always prints reliably */}
+            <DataTable 
+                data={taxBreakdownData}
+                title="Federal vs State Tax Breakdown"
+                federalColor="#041D5B"
+                stateColor="#083038"
+            />
+            
+            {/* Chart - May not print in all browsers, but provides visual on screen */}
+            <PrintChart 
+                data={taxBreakdownData}
+                title="Federal vs State Tax Breakdown (Visual)"
+                type="bar"
+            />
         </section>
 
         {projections && projections.length > 1 && (
             <section style={{...styles.section, pageBreakBefore: 'always'}}>
                 <h2 style={styles.sectionTitle}>Multi-Year Projections</h2>
-                <div style={styles.chartContainer}>
+                
+                {/* Annual Tax Comparison Table */}
+                <div style={{ marginBottom: '3rem' }}>
                     <h3 style={styles.chartTitle}>Annual Tax Liability Comparison</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
-                            <XAxis 
-                                dataKey="year" 
-                                tick={{ fill: '#000000', fontSize: 11 }}
-                                stroke="#000000"
-                                label={{ value: 'Year', position: 'insideBottom', offset: -10, style: { textAnchor: 'middle', fill: '#000000' } }}
-                            />
-                            <YAxis 
-                                tickFormatter={(value) => `$${(value / 1000)}K`} 
-                                tick={{ fill: '#000000', fontSize: 10 }}
-                                stroke="#000000"
-                            />
-                            <Tooltip content={<PrintTooltip />} />
-                            <Bar dataKey="baseline.totalTax" fill="#9ca3af" stroke="#000000" strokeWidth={1} name="Baseline Tax" />
-                            <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" stroke="#000000" strokeWidth={1} name="Optimized Tax" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <table style={{ ...styles.table, marginTop: '1rem' }}>
+                        <thead>
+                            <tr>
+                                <th style={styles.th}>Year</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Baseline Tax</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Optimized Tax</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Annual Savings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {projections.map((proj, index) => (
+                                <tr key={index}>
+                                    <td style={styles.td}>Year {proj.year}</td>
+                                    <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
+                                        {formatCurrency(proj.baseline.totalTax)}
+                                    </td>
+                                    <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
+                                        {formatCurrency(proj.withStrategies.totalTax)}
+                                    </td>
+                                    <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
+                                        {formatCurrency(proj.baseline.totalTax - proj.withStrategies.totalTax)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-                <div style={{...styles.chartContainer, marginTop: '40px'}}>
+
+                {/* Cumulative Savings Table */}
+                <div style={{ marginBottom: '3rem' }}>
                     <h3 style={styles.chartTitle}>Cumulative Savings Over Time</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={projections} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
-                            <XAxis 
-                                dataKey="year" 
-                                tick={{ fill: '#000000', fontSize: 11 }}
-                                stroke="#000000"
-                                label={{ value: 'Year', position: 'insideBottom', offset: -10, style: { textAnchor: 'middle', fill: '#000000' } }}
-                            />
-                            <YAxis 
-                                tickFormatter={(value) => `$${(value / 1000)}K`} 
-                                tick={{ fill: '#000000', fontSize: 10 }}
-                                stroke="#000000"
-                            />
-                            <Tooltip content={<PrintTooltip />} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="cumulativeSavings" 
-                                stroke="#f59e0b" 
-                                strokeWidth={3} 
-                                name="Savings" 
-                                dot={{ r: 4, fill: '#f59e0b', stroke: '#000000', strokeWidth: 1 }} 
-                                activeDot={{ r: 6, fill: '#f59e0b', stroke: '#000000', strokeWidth: 2 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <table style={{ ...styles.table, marginTop: '1rem' }}>
+                        <thead>
+                            <tr>
+                                <th style={styles.th}>Year</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Cumulative Savings</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Savings Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {projections.map((proj, index) => {
+                                const savingsRate = proj.baseline.totalTax > 0 ? 
+                                    (proj.baseline.totalTax - proj.withStrategies.totalTax) / proj.baseline.totalTax : 0;
+                                return (
+                                    <tr key={index}>
+                                        <td style={styles.td}>Year {proj.year}</td>
+                                        <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
+                                            {formatCurrency(proj.cumulativeSavings)}
+                                        </td>
+                                        <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                                            {formatPercentage(savingsRate)}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
+
+                {/* Visual Charts for screen/digital viewing */}
+                <PrintChart 
+                    data={projections}
+                    title="Cumulative Savings Growth (Visual)"
+                    type="line"
+                />
             </section>
         )}
 
