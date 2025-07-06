@@ -1,6 +1,6 @@
 # Advanced Tax Strategy Optimizer
 
-### A Sophisticated Tax Planning & Modeling Tool for Wealth Management Professionals
+### A Sophisticated Tax Planning & Modeling Tool for Able Wealth Management Professionals
 
 [![Deploy to GitHub Pages](https://github.com/ablewealth/tax-strategy/actions/workflows/deploy.yml/badge.svg)](https://github.com/ablewealth/tax-strategy/actions/workflows/deploy.yml)
 
