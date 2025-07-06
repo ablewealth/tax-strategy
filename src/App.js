@@ -49,7 +49,9 @@ const performTaxCalculations = (scenario) => {
         const currentYearData = { ...clientData, w2Income: clientData.w2Income * growthFactor, businessIncome: clientData.businessIncome * growthFactor, longTermGains: clientData.longTermGains * growthFactor, shortTermGains: clientData.shortTermGains * growthFactor };
 
         const getTaxesForYear = (yearData, strategies) => {
-            let fedDeductions = { aboveAGI: 0, belowAGI: 0 }, stateDeductions = { total: 0 }, njAddBack = 0, qbiBaseIncome = yearData.businessIncome || 0, currentLtGains = yearData.longTermGains || 0, currentStGains = yearData.shortTermGains || 0, totalCapitalAllocated = 0, insights = [];
+        const fedDeductions = { aboveAGI: 0, belowAGI: 0 }, stateDeductions = { total: 0 }; 
+        let njAddBack = 0, qbiBaseIncome = yearData.businessIncome || 0, currentLtGains = yearData.longTermGains || 0, currentStGains = yearData.shortTermGains || 0, totalCapitalAllocated = 0; 
+        const insights = [];
             const stateBrackets = yearData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
 
@@ -72,7 +74,7 @@ const performTaxCalculations = (scenario) => {
 
             const ordinaryIncome = yearData.w2Income + yearData.businessIncome + currentStGains;
             const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
-            let amti = fedAGI; const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25); const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount); const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);
+            const amti = fedAGI; const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25);            
             const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
             let qbiDeduction = 0;
             if (strategies['QBI_FINAL_01'] && qbiBaseIncome > 0) { if (fedTaxableForQBI <= 383900) { qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20); insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} successfully applied.` }); } else { insights.push({ type: 'warning', text: `Client's taxable income exceeds the threshold for the QBI deduction.` }); } }
