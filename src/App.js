@@ -74,7 +74,10 @@ const performTaxCalculations = (scenario) => {
 
             const ordinaryIncome = yearData.w2Income + yearData.businessIncome + currentStGains;
             const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
-            const amti = fedAGI; const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25);            
+            const amti = fedAGI; 
+            const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25); 
+            const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount); 
+            const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);           
             const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
             let qbiDeduction = 0;
             if (strategies['QBI_FINAL_01'] && qbiBaseIncome > 0) { if (fedTaxableForQBI <= 383900) { qbiDeduction = Math.min(qbiBaseIncome * 0.20, fedTaxableForQBI * 0.20); insights.push({ type: 'success', text: `QBI deduction of ${formatCurrency(qbiDeduction)} successfully applied.` }); } else { insights.push({ type: 'warning', text: `Client's taxable income exceeds the threshold for the QBI deduction.` }); } }
