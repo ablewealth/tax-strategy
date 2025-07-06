@@ -41,8 +41,49 @@ body {
   body > #root {
     display: none;
   }
+  
   #print-mount {
     display: block;
+  }
+  
+  /* Ensure charts render properly in print */
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Force chart elements to be visible in print */
+  .recharts-cartesian-grid line,
+  .recharts-cartesian-axis line,
+  .recharts-cartesian-axis-tick line {
+    stroke: #000000 !important;
+    stroke-width: 1px !important;
+  }
+  
+  .recharts-text {
+    fill: #000000 !important;
+  }
+  
+  /* Ensure bars and lines print with colors */
+  .recharts-bar,
+  .recharts-line {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  /* Print page breaks */
+  .print-page-break {
+    page-break-before: always;
+  }
+  
+  /* Ensure all backgrounds print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 
