@@ -384,7 +384,7 @@ const ChartsSection = ({ results }) => {
                         />
                         <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
                         <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" name="Federal Tax" />
-                        <Bar dataKey="stateTax" stackId="taxes" fill="#292A2D" name="State Tax" />
+                        <Bar dataKey="stateTax" stackId="taxes" fill="#083038" name="State Tax" />
                     </BarChart>
                 </ResponsiveContainer>
                 <div className="flex justify-center items-center gap-6 mt-4">
@@ -393,7 +393,7 @@ const ChartsSection = ({ results }) => {
                         <span className="text-sm text-text-secondary">Federal Tax</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#292A2D' }}></div>
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#083038' }}></div>
                         <span className="text-sm text-text-secondary">State Tax</span>
                     </div>
                 </div>
