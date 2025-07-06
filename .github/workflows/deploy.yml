@@ -1,4 +1,3 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -18,31 +17,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Set up Node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
           
-      - name: Clean npm Cache
+      - name: Clean npm cache
         run: npm cache clean --force
         
       - name: Install dependencies
         run: npm install
         
-      - name: Build
+      - name: Build application
         run: npm run build
         env:
           CI: false
           
-      - name: Verify Build Output
+      - name: Verify build output
         run: |
           echo "Build directory contents:"
           ls -la ./build
-          echo "Checking for index.html:"
           if [ -f "./build/index.html" ]; then
             echo "✅ index.html found"
           else
@@ -64,6 +64,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
