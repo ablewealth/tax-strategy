@@ -484,76 +484,61 @@ export default function App() {
         return performTaxCalculations(scenario);
     }, [scenario]);
 
-// Updated handlePrint function for App.js
-// Replace the existing handlePrint function with this enhanced version
+    const handlePrint = () => {
+        console.log('Print button clicked');
+        console.log('Scenario:', scenario);
+        console.log('Results:', calculationResults);
+        
+        const printContainer = document.getElementById('print-mount');
+        if (!printContainer) {
+            console.error('Print container not found');
+            return;
+        }
 
-const handlePrint = () => {
-    // Validate that we have complete calculation results
-    if (!calculationResults) {
-        alert('Calculation results are not available. Please check your inputs and try again.');
-        console.error('Print failed: calculationResults is null or undefined');
-        return;
-    }
-
-    if (!calculationResults.projections || calculationResults.projections.length === 0) {
-        alert('Tax projections are not available. Please ensure at least one strategy is enabled.');
-        console.error('Print failed: No projections available', calculationResults);
-        return;
-    }
-
-    if (!calculationResults.cumulative) {
-        alert('Summary calculations are not available. Please check your inputs.');
-        console.error('Print failed: No cumulative data available', calculationResults);
-        return;
-    }
-
-    // Validate scenario data
-    if (!scenario || !scenario.clientData) {
-        alert('Client data is not available. Please enter client information before printing.');
-        console.error('Print failed: No scenario data available', scenario);
-        return;
-    }
-
-    // Log data for debugging
-    console.log('Printing with data:', {
-        scenario: scenario,
-        results: calculationResults,
-        projections: calculationResults.projections,
-        cumulative: calculationResults.cumulative
-    });
-
-    const printContainer = document.getElementById('print-mount');
-    if (!printContainer) {
-        alert('Print container not found. Please refresh the page and try again.');
-        console.error('Print failed: print-mount element not found');
-        return;
-    }
-
-    try {
-        // Clear any existing content
+        // Clear existing content
         printContainer.innerHTML = '';
         
-        // Render the report with a small delay to ensure DOM is ready
-        ReactDOM.render(
-            <PrintableReport 
-                scenario={scenario} 
-                results={calculationResults} 
-                years={scenario.clientData.projectionYears} 
-            />, 
-            printContainer, 
-            () => {
-                // Add a small delay before printing to ensure everything is rendered
-                setTimeout(() => {
-                    console.log('Initiating print...');
-                    window.print();
-                }, 500);
-            }
-        );
-    } catch (error) {
-        console.error('Error rendering print report:', error);
-        alert('There was an error preparing the report for printing. Please check the console for details.');
-    }
-};
+        try {
+            ReactDOM.render(
+                <PrintableReport 
+                    scenario={scenario} 
+                    results={calculationResults} 
+                    years={scenario.clientData.projectionYears} 
+                />, 
+                printContainer, 
+                () => {
+                    console.log('Print component rendered, starting print...');
+                    setTimeout(() => {
+                        window.print();
+                    }, 100);
+                }
+            );
+        } catch (error) {
+            console.error('Print rendering error:', error);
+            
+            // Fallback: create a simple HTML report
+            printContainer.innerHTML = `
+                <div style="padding: 2cm; font-family: Arial, sans-serif;">
+                    <h1>Tax Optimization Report</h1>
+                    <p><strong>Client:</strong> ${scenario.clientData.clientName}</p>
+                    <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                    
+                    <h2>Summary</h2>
+                    <p>Baseline Tax: ${formatCurrency(calculationResults?.cumulative?.baselineTax || 0)}</p>
+                    <p>Optimized Tax: ${formatCurrency(calculationResults?.cumulative?.optimizedTax || 0)}</p>
+                    <p>Total Savings: ${formatCurrency(calculationResults?.cumulative?.totalSavings || 0)}</p>
+                    
+                    <p style="margin-top: 2rem; font-size: 0.8rem; color: #666;">
+                        This is a simplified report. For full details, please ensure all data is properly loaded.
+                    </p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+    };
 
     return (
         <div className="bg-background-secondary min-h-screen">
