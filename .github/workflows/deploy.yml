@@ -1,4 +1,4 @@
-name: Deploy static content to Pages
+name: Deploy React App to GitHub Pages
 
 on:
   push:
@@ -22,33 +22,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Fetch all history for all branches and tags. This is often necessary for tools that inspect Git history.
-          # The default depth is 1, which can cause issues in some build scenarios.
           fetch-depth: 0 
-          # Ensure the GITHUB_TOKEN is used for authentication, which has the necessary permissions.
-          token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm' # This will now correctly look for package-lock.json in the root
+          cache: 'npm'
           
-      - name: Install frontend dependencies and build
-        # No 'working-directory' is needed here because your frontend project (with its package.json) is in the root.
+      - name: Verify Node.js and npm versions
         run: |
-          echo "Installing frontend dependencies..."
-          # npm ci requires a package-lock.json file to be present in the current directory.
-          # Make sure you have committed your package-lock.json to your repository's root.
-          npm ci 
-          echo "✅ Frontend dependencies installed successfully"
+          node --version
+          npm --version
           
-          echo "Building frontend application..."
-          npm run build
-          echo "✅ Frontend build completed successfully"
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm ci 
+          echo "✅ Dependencies installed successfully"
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-          CI: false # Important for Create React App builds to prevent warnings from being treated as errors
+          
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          npm test -- --coverage --watchAll=false
+          echo "✅ Tests completed successfully"
+        env:
+          CI: true
+          
+      - name: Build application
+        run: |
+          echo "Building application..."
+          npm run build
+          echo "✅ Build completed successfully"
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          CI: false
           
       - name: Verify build output
         run: |
@@ -81,7 +91,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './build' # This path is correct for a Create React App build in the root
+          path: './build'
 
   deploy:
     environment:
