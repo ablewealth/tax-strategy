@@ -70,3 +70,23 @@ export const createNewScenario = (name) => ({
     },
     enabledStrategies: [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].reduce((acc, s) => ({ ...acc, [s.id]: false }), {})
 });
+
+// Add these two new helper functions
+export const formatCurrencyForDisplay = (value) => {
+    if (value === null || value === undefined || isNaN(value)) {
+        return '';
+    }
+    // Use Intl.NumberFormat for locale-aware formatting with commas
+    // Ensure it's treated as a plain number for input display, not currency symbol here.
+    return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
+};
+
+export const parseCurrencyInput = (stringValue) => {
+    if (typeof stringValue !== 'string' || stringValue.trim() === '') {
+        return 0;
+    }
+    // Remove all non-digit characters except for a leading minus sign and the decimal point
+    const cleanedString = stringValue.replace(/[^0-9.-]+/g, '');
+    const parsedValue = parseFloat(cleanedString);
+    return isNaN(parsedValue) ? 0 : parsedValue;
+};

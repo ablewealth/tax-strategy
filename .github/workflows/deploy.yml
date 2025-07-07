@@ -53,6 +53,20 @@ jobs:
           npm install
           echo "✅ Dependencies installed successfully"
         
+      - name: Run ESLint and Prettier checks
+        run: |
+          echo "Running ESLint checks..."
+          npm run lint
+          echo "Running Prettier format check..."
+          npm run format:check
+        env:
+          CI: true # Ensures linting warnings are treated as errors in CI
+
+      - name: Run security audit
+        run: npm audit --audit-level moderate
+        # Consider making this step fail the build if high/critical vulnerabilities are found
+        # by adjusting --audit-level or using `|| exit 1` if you want stricter enforcement.
+          
       - name: Build application
         run: |
           echo "Building application..."
@@ -61,7 +75,7 @@ jobs:
         env:
           CI: false
           NODE_OPTIONS: "--max-old-space-size=4096"
-          
+
       - name: Verify build output
         run: |
           echo "Build directory contents:"
@@ -86,15 +100,14 @@ jobs:
           echo ""
           echo "Build size:"
           du -sh ./build
-          
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './build'
-
   deploy:
     environment:
       name: github-pages

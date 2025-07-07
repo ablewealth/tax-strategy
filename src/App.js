@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, Bar, LineChart, Line } from 'recharts';
 import {
@@ -11,7 +11,10 @@ import {
     NJ_TAX_BRACKETS,
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
-    createNewScenario
+    createNewScenario,
+    // Import new helper functions
+    formatCurrencyForDisplay,
+    parseCurrencyInput
 } from './constants';
 import PrintableReport from './components/PrintableReport';
 
@@ -57,7 +60,12 @@ const performTaxCalculations = (scenario) => {
 
             allStrategies.forEach(strategy => {
                 if (strategies[strategy.id]) {
-                    if (strategy.type !== 'qbi' && yearData[strategy.inputRequired] > 0) totalCapitalAllocated += yearData[strategy.inputRequired];
+                    // Ensure the inputRequired value is a number for this check
+                    const strategyInputAmount = yearData[strategy.inputRequired] || 0;
+                    if (strategy.type !== 'qbi' && strategyInputAmount > 0) {
+                        totalCapitalAllocated += strategyInputAmount;
+                    }
+                    
                     switch (strategy.id) {
                         case 'QUANT_DEALS_01': { const exposure = DEALS_EXPOSURE_LEVELS[yearData.dealsExposure], stLoss = (yearData.investmentAmount || 0) * exposure.shortTermLossRate, ltGainFromDeals = (yearData.investmentAmount || 0) * exposure.longTermGainRate, stOffset = Math.min(currentStGains, stLoss); currentStGains -= stOffset; const remainingLoss = stLoss - stOffset, ltOffset = Math.min(currentLtGains, remainingLoss); currentLtGains -= ltOffset; const remainingLoss2 = remainingLoss - ltOffset, ordinaryOffset = Math.min(3000, remainingLoss2); fedDeductions.belowAGI += ordinaryOffset; stateDeductions.total += ordinaryOffset; currentLtGains += ltGainFromDeals; insights.push({ type: 'success', text: `DEALS strategy generated ${formatCurrency(stOffset + ltOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.` }); break; }
                         case 'EQUIP_S179_01': { const s179Ded = Math.min(yearData.equipmentCost, qbiBaseIncome, 1220000); qbiBaseIncome -= s179Ded; fedDeductions.aboveAGI += s179Ded; insights.push({ type: 'success', text: `Section 179 provides a ${formatCurrency(s179Ded)} federal deduction.` }); if (yearData.state === 'NY') { stateDeductions.total += s179Ded; } else { const njDed = Math.min(yearData.equipmentCost, 25000); stateDeductions.total += njDed; const addBack = Math.max(0, s179Ded - njDed); if (addBack > 0) { njAddBack += addBack; insights.push({ type: 'warning', text: `New Jersey requires a ${formatCurrency(addBack)} depreciation add-back for Section 179.` }); } } break; }
@@ -139,7 +147,7 @@ const Header = ({ onPrint, clientName }) => (
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zm4 7a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
                         </svg>
                         Print Report
                     </button>
@@ -159,19 +167,67 @@ const Section = ({ title, description, children }) => (
     </div>
 );
 
-const InputField = ({ label, type = 'text', value, onChange, placeholder }) => (
-    <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
-        <input
-            type={type}
-            value={value || ''}
-            onChange={onChange}
-            placeholder={placeholder}
-            className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
-        />
-    </div>
-);
+// Modified InputField component
+const InputField = ({ label, value, onChange, placeholder }) => {
+    // Internal state for the displayed value (string with commas)
+    const [displayValue, setDisplayValue] = useState(value ? formatCurrencyForDisplay(value) : '');
 
+    // Update displayValue when the 'value' prop changes (e.g., when scenario updates)
+    useEffect(() => {
+        setDisplayValue(value ? formatCurrencyForDisplay(value) : '');
+    }, [value]);
+
+    const handleInputChange = (e) => {
+        // Update local display state immediately
+        setDisplayValue(e.target.value);
+        // Parse and pass the numerical value to the parent's onChange handler
+        onChange(parseCurrencyInput(e.target.value));
+    };
+
+    const handleBlur = (e) => {
+        // On blur, re-format the input value for consistent display
+        const parsedValue = parseCurrencyInput(e.target.value);
+        setDisplayValue(formatCurrencyForDisplay(parsedValue));
+    };
+
+    return (
+        <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
+            <input
+                type="text" // Changed from "number" to "text" to allow custom formatting (commas)
+                value={displayValue}
+                onChange={handleInputChange}
+                onBlur={handleBlur} // Apply formatting on blur
+                placeholder={placeholder}
+                className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
+            />
+        </div>
+    );
+};
+
+const ClientInputSection = ({ scenario, updateClientData }) => {
+    return (
+        <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
+                <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
+                    <option value="NJ">New Jersey</option>
+                    <option value="NY">New York</option>
+                </SelectField>
+                <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={value => updateClientData('w2Income', value)} placeholder="$ 500,000" />
+                <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={value => updateClientData('businessIncome', value)} placeholder="$ 2,000,000" />
+                <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={value => updateClientData('shortTermGains', value)} placeholder="$ 150,000" />
+                <InputField label="Long Term Gains" value={scenario.clientData.longTermGains} onChange={value => updateClientData('longTermGains', value)} placeholder="$ 850,000" />
+                <SelectField label="Projection Years" value={scenario.clientData.projectionYears} onChange={e => updateClientData('projectionYears', parseInt(e.target.value))}>
+                     <option value={0}>Current Year Only</option><option value={3}>3 Years</option><option value={5}>5 Years</option><option value={10}>10 Years</option>
+                </SelectField>
+                <InputField label="Income Growth Rate (%)" value={scenario.clientData.growthRate} onChange={value => updateClientData('growthRate', value)} placeholder="e.g., 3" />
+            </div>
+        </Section>
+    )
+};
+
+// No changes needed for SelectField
 const SelectField = ({ label, value, onChange, children }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
@@ -185,27 +241,6 @@ const SelectField = ({ label, value, onChange, children }) => (
     </div>
 );
 
-const ClientInputSection = ({ scenario, updateClientData }) => {
-    return (
-        <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
-                <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
-                    <option value="NJ">New Jersey</option>
-                    <option value="NY">New York</option>
-                </SelectField>
-                <InputField label="W-2 Income" type="number" value={scenario.clientData.w2Income} onChange={e => updateClientData('w2Income', Number(e.target.value) || 0)} placeholder="$ 500,000" />
-                <InputField label="Business Income" type="number" value={scenario.clientData.businessIncome} onChange={e => updateClientData('businessIncome', Number(e.target.value) || 0)} placeholder="$ 2,000,000" />
-                <InputField label="Short Term Gains" type="number" value={scenario.clientData.shortTermGains} onChange={e => updateClientData('shortTermGains', Number(e.target.value) || 0)} placeholder="$ 150,000" />
-                <InputField label="Long Term Gains" type="number" value={scenario.clientData.longTermGains} onChange={e => updateClientData('longTermGains', Number(e.target.value) || 0)} placeholder="$ 850,000" />
-                <SelectField label="Projection Years" value={scenario.clientData.projectionYears} onChange={e => updateClientData('projectionYears', parseInt(e.target.value))}>
-                     <option value={0}>Current Year Only</option><option value={3}>3 Years</option><option value={5}>5 Years</option><option value={10}>10 Years</option>
-                </SelectField>
-                <InputField label="Income Growth Rate (%)" type="number" value={scenario.clientData.growthRate} onChange={e => updateClientData('growthRate', Number(e.target.value) || 0)} placeholder="e.g., 3" />
-            </div>
-        </Section>
-    )
-};
 
 // MOBILE-OPTIMIZED StrategyCard component
 const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, children }) => {
@@ -246,9 +281,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                         <div className="space-y-4">
                             <InputField 
                                 label="Investment Amount" 
-                                type="number" 
-                                value={scenario.clientData[strategy.inputRequired]} 
-                                onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
+                                value={scenario.clientData[strategy.inputRequired]} // This will now be a number
+                                onChange={value => updateClientData(strategy.inputRequired, value)} // onChange receives a number
                                 placeholder="Enter amount"
                             />
                             {strategy.id === 'QUANT_DEALS_01' && (
@@ -275,9 +309,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                     >
                         <InputField 
                             label="Contribution Amount" 
-                            type="number" 
-                            value={scenario.clientData[strategy.inputRequired]} 
-                            onChange={e => updateClientData(strategy.inputRequired, Number(e.target.value) || 0)} 
+                            value={scenario.clientData[strategy.inputRequired]} // This will now be a number
+                            onChange={value => updateClientData(strategy.inputRequired, value)} // onChange receives a number
                             placeholder="Enter amount"
                         />
                     </StrategyCard>
@@ -324,7 +357,7 @@ const InsightsSection = ({ insights }) => (
             ) : (
                 insights.map((insight, index) => (
                     <div key={index} className={`p-4 rounded-lg flex items-start gap-4 border-l-4 ${insight.type === 'success' ? 'bg-green-50 border-success' : 'bg-amber-50 border-warning'}`}>
-                        <div className={`text-lg sm:text-xl flex-shrink-0 ${insight.type === 'success' ? 'text-success' : 'text-warning'}`}>
+                        <div className={`text-lg sm:text-xl flex-shrink-0 ${insight.type === 'success' ? '✅' : '⚠️'}`}>
                             {insight.type === 'success' ? '✅' : '⚠️'}
                         </div>
                         <div className="min-w-0 flex-1">
