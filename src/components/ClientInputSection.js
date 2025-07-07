@@ -6,7 +6,7 @@ import SelectField from './SelectField';
 const ClientInputSection = ({ scenario, updateClientData }) => {
     return (
         <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3"> {/* Reduced gap here */}
                 {/* No change needed here, the fix is in InputField.js */}
                 <InputField label="Client Name" value={scenario.clientData.clientName} onChange={value => updateClientData('clientName', value)} placeholder="John & Jane Doe" />
                 <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>

@@ -8,7 +8,7 @@ import { DEALS_EXPOSURE_LEVELS, STRATEGY_LIBRARY, RETIREMENT_STRATEGIES } from '
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
     return (
         <Section title="💼 Strategic Tax Optimization Portfolio" description="Select advanced tax strategies and input corresponding investment or contribution amounts.">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 sm:gap-3"> {/* Reduced gap here */}
                 {STRATEGY_LIBRARY.map(strategy => (
                     <StrategyCard 
                         key={strategy.id} 

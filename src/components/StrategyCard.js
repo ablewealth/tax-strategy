@@ -18,7 +18,8 @@ const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, ch
                     <p className="text-xs sm:text-sm text-text-secondary mt-2 leading-relaxed">{strategy.description}</p>
                 </div>
             </div>
-            {isActive && children && <div className="mt-4 pl-0 sm:pl-9">{children}</div>}
+            {/* Always render children (inputs) regardless of isActive status */}
+            {children && <div className="mt-4 pl-0 sm:pl-9">{children}</div>} 
         </div>
     )
 };

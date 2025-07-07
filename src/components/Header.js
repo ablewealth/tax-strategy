@@ -25,10 +25,7 @@ const Header = ({ onPrint, clientName }) => (
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                    <div className="flex items-center gap-2 bg-background-tertiary px-3 py-2 rounded-md text-xs font-medium text-text-secondary">
-                        <div className="w-2 h-2 bg-success rounded-full"></div>
-                        Analysis Active
-                    </div>
+                    {/* Removed "Analysis Active" div */}
                     <button 
                         onClick={onPrint} 
                         className="flex items-center justify-center gap-2 bg-primary-blue text-white px-4 sm:px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all shadow-md w-full sm:w-auto min-h-[44px]"
