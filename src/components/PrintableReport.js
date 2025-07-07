@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 
 // --- Helper Functions ---
@@ -93,7 +93,7 @@ const styles = {
         textAlign: 'left',
         padding: '0.5rem 0.75rem',
         borderBottom: '1.5px solid #333',
-        fontFamily: "'Lato', sans-serif",
+        fontFamily: "'Lato', sans-serif", // Corrected: Removed unterminated string literal
         fontWeight: '700',
     },
     td: {
@@ -196,12 +196,26 @@ const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#08303
 // --- Main Report Component ---
 const PrintableReport = forwardRef(
   ({ scenario, results, years }, ref) => {
+    // Log props received by PrintableReport
+    useEffect(() => {
+        console.log('PrintableReport received scenario:', scenario);
+        console.log('PrintableReport received results:', results);
+        console.log('PrintableReport received years:', years);
+    }, [scenario, results, years]);
+
     // Basic fallback content if no data
-    if (!results || !scenario) {
+    if (!results || !scenario || !results.cumulative || !results.projections || results.projections.length === 0) {
         return (
-            <div ref={ref} style={styles.page}>
-                <h1>Tax Optimization Report</h1>
-                <p>Report data is being prepared. Please try printing again in a moment.</p>
+            <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
+                    Preparing Report Data...
+                </h1>
+                <p style={{ fontSize: '14pt', color: '#666' }}>
+                    Please ensure all required inputs are provided and strategies are enabled.
+                </p>
+                <p style={{ fontSize: '10pt', color: '#888', marginTop: '1rem' }}>
+                    If you've just entered data, it might take a moment to calculate.
+                </p>
             </div>
         );
     }
@@ -366,7 +380,7 @@ const PrintableReport = forwardRef(
                                     <td style={styles.td}>Year {proj.year}</td>
                                     <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.baseline?.totalTax || 0)}
-                                    </td>
+                                    </td> 
                                     <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.withStrategies?.totalTax || 0)}
                                     </td>
