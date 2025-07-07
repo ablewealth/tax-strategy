@@ -12,7 +12,6 @@ import {
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario,
-    // Import new helper functions
     formatCurrencyForDisplay,
     parseCurrencyInput
 } from './constants';
@@ -59,7 +58,7 @@ const performTaxCalculations = (scenario) => {
             const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
 
             allStrategies.forEach(strategy => {
-                if (strategies[strategy.id]) {
+                if (strategies[strategy.id]) { // Check if strategy is enabled
                     // Ensure the inputRequired value is a number for this check
                     const strategyInputAmount = yearData[strategy.inputRequired] || 0;
                     if (strategy.type !== 'qbi' && strategyInputAmount > 0) {
@@ -167,7 +166,6 @@ const Section = ({ title, description, children }) => (
     </div>
 );
 
-// Modified InputField component
 const InputField = ({ label, value, onChange, placeholder }) => {
     // Internal state for the displayed value (string with commas)
     const [displayValue, setDisplayValue] = useState(value ? formatCurrencyForDisplay(value) : '');
@@ -205,29 +203,6 @@ const InputField = ({ label, value, onChange, placeholder }) => {
     );
 };
 
-const ClientInputSection = ({ scenario, updateClientData }) => {
-    return (
-        <Section title="📋 Client Profile & Projections" description="Configure client financial parameters and multi-year projection settings.">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                <InputField label="Client Name" type="text" value={scenario.clientData.clientName} onChange={e => updateClientData('clientName', e.target.value)} />
-                <SelectField label="State of Residence" value={scenario.clientData.state} onChange={e => updateClientData('state', e.target.value)}>
-                    <option value="NJ">New Jersey</option>
-                    <option value="NY">New York</option>
-                </SelectField>
-                <InputField label="W-2 Income" value={scenario.clientData.w2Income} onChange={value => updateClientData('w2Income', value)} placeholder="$ 500,000" />
-                <InputField label="Business Income" value={scenario.clientData.businessIncome} onChange={value => updateClientData('businessIncome', value)} placeholder="$ 2,000,000" />
-                <InputField label="Short Term Gains" value={scenario.clientData.shortTermGains} onChange={value => updateClientData('shortTermGains', value)} placeholder="$ 150,000" />
-                <InputField label="Long Term Gains" value={scenario.clientData.longTermGains} onChange={value => updateClientData('longTermGains', value)} placeholder="$ 850,000" />
-                <SelectField label="Projection Years" value={scenario.clientData.projectionYears} onChange={e => updateClientData('projectionYears', parseInt(e.target.value))}>
-                     <option value={0}>Current Year Only</option><option value={3}>3 Years</option><option value={5}>5 Years</option><option value={10}>10 Years</option>
-                </SelectField>
-                <InputField label="Income Growth Rate (%)" value={scenario.clientData.growthRate} onChange={value => updateClientData('growthRate', value)} placeholder="e.g., 3" />
-            </div>
-        </Section>
-    )
-};
-
-// No changes needed for SelectField
 const SelectField = ({ label, value, onChange, children }) => (
     <div className="flex flex-col gap-2">
         <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
@@ -241,8 +216,6 @@ const SelectField = ({ label, value, onChange, children }) => (
     </div>
 );
 
-
-// MOBILE-OPTIMIZED StrategyCard component
 const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, children }) => {
     const isActive = scenario.enabledStrategies[strategy.id];
     return (
@@ -281,8 +254,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                         <div className="space-y-4">
                             <InputField 
                                 label="Investment Amount" 
-                                value={scenario.clientData[strategy.inputRequired]} // This will now be a number
-                                onChange={value => updateClientData(strategy.inputRequired, value)} // onChange receives a number
+                                value={scenario.clientData[strategy.inputRequired]}
+                                onChange={value => updateClientData(strategy.inputRequired, value)}
                                 placeholder="Enter amount"
                             />
                             {strategy.id === 'QUANT_DEALS_01' && (
@@ -309,8 +282,8 @@ const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
                     >
                         <InputField 
                             label="Contribution Amount" 
-                            value={scenario.clientData[strategy.inputRequired]} // This will now be a number
-                            onChange={value => updateClientData(strategy.inputRequired, value)} // onChange receives a number
+                            value={scenario.clientData[strategy.inputRequired]}
+                            onChange={value => updateClientData(strategy.inputRequired, value)}
                             placeholder="Enter amount"
                         />
                     </StrategyCard>
@@ -499,12 +472,33 @@ const AppFooter = () => (
 export default function App() {
     const [scenario, setScenario] = useState(() => createNewScenario('Default Scenario'));
 
-    const handleUpdateClientData = useCallback((field, value) => {
-        setScenario(prev => ({
-            ...prev,
-            clientData: { ...prev.clientData, [field]: value }
-        }));
+    // Create a map from inputRequired field name to strategy ID for efficient lookup
+    const strategyInputToIdMap = useMemo(() => {
+        const map = {};
+        [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].forEach(strategy => {
+            map[strategy.inputRequired] = strategy.id;
+        });
+        return map;
     }, []);
+
+    const handleUpdateClientData = useCallback((field, value) => {
+        setScenario(prev => {
+            const newClientData = { ...prev.clientData, [field]: value };
+            const newEnabledStrategies = { ...prev.enabledStrategies };
+
+            // Automatically enable/disable strategy based on input value
+            const strategyId = strategyInputToIdMap[field];
+            if (strategyId) {
+                newEnabledStrategies[strategyId] = (value > 0);
+            }
+
+            return {
+                ...prev,
+                clientData: newClientData,
+                enabledStrategies: newEnabledStrategies
+            };
+        });
+    }, [strategyInputToIdMap]); // Depend on strategyInputToIdMap
 
     const handleToggleStrategy = useCallback((strategyId) => {
         setScenario(prev => ({
@@ -518,13 +512,14 @@ export default function App() {
     }, [scenario]);
 
     const handlePrint = () => {
+        // Commented out console statements for cleaner production builds
         // console.log('Print button clicked');
         // console.log('Scenario:', scenario);
         // console.log('Results:', calculationResults);
         
         const printContainer = document.getElementById('print-mount');
         if (!printContainer) {
-            // console.error('Print container not found');
+            // console.error('Print container not found'); // Commented out
             return;
         }
 
@@ -540,14 +535,14 @@ export default function App() {
                 />, 
                 printContainer, 
                 () => {
-                    // console.log('Print component rendered, starting print...');
+                    // console.log('Print component rendered, starting print...'); // Commented out
                     setTimeout(() => {
                         window.print();
                     }, 100);
                 }
             );
         } catch (error) {
-           // console.error('Print rendering error:', error);
+            // console.error('Print rendering error:', error); // Commented out
             
             // Fallback: create a simple HTML report
             printContainer.innerHTML = `
