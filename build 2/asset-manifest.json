@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/tax-strategy/static/css/main.4d684ab3.css",
+    "main.js": "/tax-strategy/static/js/main.48bde1db.js",
+    "index.html": "/tax-strategy/index.html",
+    "main.4d684ab3.css.map": "/tax-strategy/static/css/main.4d684ab3.css.map",
+    "main.48bde1db.js.map": "/tax-strategy/static/js/main.48bde1db.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4d684ab3.css",
+    "static/js/main.48bde1db.js"
+  ]
+}

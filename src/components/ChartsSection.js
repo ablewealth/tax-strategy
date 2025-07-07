@@ -3,7 +3,8 @@ import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, Resp
 import Section from './Section';
 import { formatCurrency, formatPercentage } from '../constants'; // Ensure formatCurrency and formatPercentage are imported
 
-const ChartsSection = ({ results, styles }) => { // styles passed as a prop
+// Removed 'styles' from props, as it's not needed for the main UI component
+const ChartsSection = ({ results }) => { 
     if (!results || !results.projections || results.projections.length === 0) return null;
     
     const CustomTooltip = ({ active, payload, label }) => {
@@ -44,7 +45,7 @@ const ChartsSection = ({ results, styles }) => { // styles passed as a prop
     return (
         <Section title="📈 Visual Projections" description="Analysis of tax liabilities and cumulative savings.">
             {/* Tax Liability Breakdown Chart */}
-            <div style={styles.section}> {/* Apply section style */}
+            <div className="mb-8"> {/* Removed style={styles.section} */}
                 <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
                 <p className="text-xs sm:text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
                 <div className="w-full" style={{ height: '300px', minHeight: '300px' }}>
@@ -83,70 +84,40 @@ const ChartsSection = ({ results, styles }) => { // styles passed as a prop
 
             {/* Multi-year projections - only show if more than 1 year */}
             {results.projections.length > 1 && (
-                <div style={{...styles.section, pageBreakBefore: 'always'}}> {/* Apply section style */}
-                    <h2 style={styles.sectionTitle}>Multi-Year Projections</h2> {/* Apply sectionTitle style */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8"> {/* Removed style={...styles.section, pageBreakBefore: 'always'} */}
+                    <h2 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Multi-Year Projections</h2> {/* Removed style={styles.sectionTitle} */}
                     
                     {/* Annual Tax Comparison Table */}
-                    <div style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Annual Tax Liability Comparison</h3>
-                        <table style={styles.table}> {/* Apply table style */}
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Year</th> {/* Apply th style */}
-                                    <th style={{ ...styles.th, textAlign: 'right' }}>Baseline Tax</th>
-                                    <th style={{ ...styles.th, textAlign: 'right' }}>Optimized Tax</th>
-                                    <th style={{ ...styles.th, textAlign: 'right' }}>Annual Savings</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {results.projections.map((proj, index) => ( // Use results.projections directly
-                                    <tr key={index}>
-                                        <td style={styles.td}>Year {proj.year}</td> {/* Apply td style */}
-                                        <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}> {/* Apply tdRight style */}
-                                            {formatCurrency(proj.baseline?.totalTax || 0)}
-                                        </td>
-                                        <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
-                                            {formatCurrency(proj.withStrategies?.totalTax || 0)}
-                                        </td>
-                                        <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
-                                            {formatCurrency((proj.baseline?.totalTax || 0) - (proj.withStrategies?.totalTax || 0))}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="mb-8"> {/* Changed to mb-8 from mb-3rem for consistency with Tailwind */}
+                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability Comparison</h3>
+                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
+                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
+                                    <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
+                                    <Bar dataKey="baseline.totalTax" fill="#9ca3af" name="Baseline Tax" />
+                                    <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
 
                     {/* Cumulative Savings Table */}
-                    <div style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Cumulative Savings Over Time</h3>
-                        <table style={styles.table}> {/* Apply table style */}
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>Year</th> {/* Apply th style */}
-                                    <th style={{ ...styles.th, textAlign: 'right' }}>Cumulative Savings</th>
-                                    <th style={{ ...styles.th, textAlign: 'right' }}>Savings Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {results.projections.map((proj, index) => { // Use results.projections directly
-                                    const baselineTax = proj.baseline?.totalTax || 0;
-                                    const optimizedTax = proj.withStrategies?.totalTax || 0;
-                                    const savingsRate = baselineTax > 0 ? (baselineTax - optimizedTax) / baselineTax : 0;
-                                    return (
-                                        <tr key={index}>
-                                            <td style={styles.td}>Year {proj.year}</td> {/* Apply td style */}
-                                            <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
-                                                {formatCurrency(proj.cumulativeSavings || 0)}
-                                            </td>
-                                            <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
-                                                {formatPercentage(savingsRate)}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                    <div className="mb-8"> {/* Changed to mb-8 from mb-3rem for consistency with Tailwind */}
+                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings Over Time</h3>
+                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
+                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
+                                    <RechartsTooltip content={<CustomTooltip />} />
+                                    <Line type="monotone" dataKey="cumulativeSavings" stroke="#f59e0b" strokeWidth={3} name="Savings" dot={{ r: 3 }} activeDot={{ r: 5 }}/>
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
             )}
