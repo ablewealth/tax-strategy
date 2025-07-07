@@ -39,26 +39,12 @@ jobs:
           echo "Checking package.json..."
           cat package.json | head -20
           
-      - name: Clean npm cache
-        run: npm cache clean --force
-          
-      - name: Remove existing lock file if corrupted
-        run: |
-          if [ -f "package-lock.json" ]; then
-            echo "Checking package-lock.json format..."
-            if grep -q "npm install" package-lock.json; then
-              echo "⚠️ Corrupted package-lock.json detected, removing..."
-              rm package-lock.json
-            fi
-          fi
-        
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
-          npm install
+          npm ci
           echo "✅ Dependencies installed successfully"
         env:
-          CI: false
           NODE_OPTIONS: "--max-old-space-size=4096"
           
       - name: Build application
