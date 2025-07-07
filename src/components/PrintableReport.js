@@ -7,7 +7,7 @@ const styles = {
         fontFamily: "'Roboto', sans-serif",
         padding: '2cm',
         color: '#333',
-        lineHeight: 1.4,
+        lineHeight: 1.4, // Good for readability in print
         fontSize: '10pt',
         backgroundColor: '#fff',
     },
@@ -39,7 +39,7 @@ const styles = {
     },
     section: {
         marginBottom: '2rem',
-        pageBreakInside: 'avoid',
+        pageBreakInside: 'avoid', // Prevents sections from breaking across pages
     },
     sectionTitle: {
         fontFamily: "'Lato', sans-serif",
@@ -56,7 +56,7 @@ const styles = {
         gap: '1rem 1.5rem',
     },
     metric: {
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#f9f9f9', // Light background for metrics
         border: '1px solid #eee',
         padding: '1rem',
         borderRadius: '4px',
@@ -73,12 +73,13 @@ const styles = {
         fontWeight: '700',
         color: '#111',
     },
+    // Simplified highlight metric for print
     highlightMetric: {
-        backgroundColor: '#e8f5e9',
-        borderColor: '#a5d6a7',
+        backgroundColor: '#f0fdf0', // Very light green for subtle highlight
+        borderColor: '#d0e0d0',
     },
     highlightValue: {
-        color: '#2e7d32',
+        color: '#2e7d32', // Darker green for value
     },
     table: {
         width: '100%',
@@ -112,11 +113,12 @@ const styles = {
         flexDirection: 'column',
         gap: '1rem',
     },
+    // Simplified insight card for print
     insightCard: {
         border: '1px solid #eee',
         borderRadius: '4px',
         padding: '1rem',
-        backgroundColor: '#fdfdfd',
+        backgroundColor: '#fefefe', // Almost white for general insights
     },
     insightTitle: {
         fontFamily: "'Lato', sans-serif",
@@ -130,7 +132,12 @@ const styles = {
     insightText: {
         fontSize: '10pt',
         color: '#444',
-        paddingLeft: '1.75rem',
+        paddingLeft: '1.75rem', // Aligns text with bullet/icon
+    },
+    // Specific style for warning insights
+    warningInsightCard: {
+        backgroundColor: '#fffdf0', // Very light yellow for warning
+        borderColor: '#f0e0c0',
     },
     footer: {
         marginTop: '2.5rem',
@@ -139,7 +146,7 @@ const styles = {
         fontSize: '7.5pt',
         color: '#777',
         lineHeight: 1.4,
-        pageBreakBefore: 'always',
+        pageBreakBefore: 'always', // Ensures footer starts on a new page if content is long
     },
     chartPlaceholder: {
         backgroundColor: '#f8f9fa',
@@ -285,17 +292,13 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
         
-        // Safe strategy filtering
-        const enabledStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].filter(strategy => {
-            try {
-                const isEnabled = scenario.enabledStrategies?.[strategy.id];
-                const hasInput = scenario.clientData?.[strategy.inputRequired] > 0;
-                console.log(`Strategy ${strategy.id}: enabled=${isEnabled}, hasInput=${hasInput}, inputValue=${scenario.clientData?.[strategy.inputRequired]}`);
-                return isEnabled && hasInput;
-            } catch (e) {
-                console.warn('Error filtering strategy:', strategy.id, e);
-                return false;
-            }
+        // Safe strategy filtering: Only show strategies that are enabled AND have a value > 0
+        const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+        const enabledStrategies = allStrategies.filter(strategy => {
+            const isEnabled = scenario.enabledStrategies?.[strategy.id];
+            const inputValue = scenario.clientData?.[strategy.inputRequired];
+            // Check if strategy is enabled and if its required input has a numeric value greater than 0
+            return isEnabled && typeof inputValue === 'number' && inputValue > 0;
         });
 
         console.log('Enabled strategies for report:', enabledStrategies.map(s => s.id));
@@ -378,7 +381,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                             <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
                         </div>
                         <div style={{...styles.metric, ...styles.highlightMetric}}>
-                            <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Potential Tax Savings</div>
+                            <div style={{...styles.metricLabel, color: styles.highlightValue.color}}>Total Potential Tax Savings</div>
                             <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(safeResults.totalSavings)}</div>
                         </div>
                         <div style={styles.metric}>
@@ -426,7 +429,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                             </div>
                             <div style={styles.insightColumn}>
                                 {considerations.slice(0, 10).map((insight, index) => (
-                                    <div key={`c-${index}`} style={{...styles.insightCard, backgroundColor: '#fffbe6', borderColor: '#fcd34d'}}>
+                                    <div key={`c-${index}`} style={{...styles.insightCard, ...styles.warningInsightCard}}>
                                         <div style={{...styles.insightTitle, color: '#d97706'}}>
                                             <span style={{fontSize: '1.2rem'}}>⚠️</span> Implementation Consideration
                                         </div>
