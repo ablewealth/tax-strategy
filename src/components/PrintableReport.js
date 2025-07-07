@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants';
 
 // --- Style Definitions for a Professional UHNW Report ---
@@ -160,6 +160,38 @@ const styles = {
         fontSize: '12pt',
         color: '#6c757d',
         fontStyle: 'italic',
+    },
+    // New styles for detailed strategy explanations
+    strategyDetail: {
+        marginBottom: '1.5rem',
+        pageBreakInside: 'avoid',
+    },
+    strategyDetailTitle: {
+        fontFamily: "'Lato', sans-serif",
+        fontSize: '12pt',
+        fontWeight: '700',
+        color: '#111',
+        marginBottom: '0.5rem',
+    },
+    strategyDetailDescription: {
+        fontSize: '10pt',
+        color: '#444',
+        lineHeight: 1.5,
+    },
+    // New styles for interactions section
+    interactionText: {
+        fontSize: '10pt',
+        color: '#444',
+        lineHeight: 1.5,
+        backgroundColor: '#f8f8f8',
+        border: '1px solid #eee',
+        padding: '1rem',
+        borderRadius: '4px',
+    },
+    loadingText: {
+        fontSize: '10pt',
+        color: '#666',
+        fontStyle: 'italic',
     }
 };
 
@@ -222,6 +254,10 @@ const ChartPlaceholder = ({ title, description }) => (
 
 // --- Main Report Component ---
 const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
+    const [interactionExplanation, setInteractionExplanation] = useState('');
+    const [loadingInteraction, setLoadingInteraction] = useState(false);
+    const [interactionError, setInteractionError] = useState('');
+
     // Add error boundary logging
     useEffect(() => {
         console.log('PrintableReport rendering with:', {
@@ -235,6 +271,58 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             results: results
         });
     }, [scenario, results, years]);
+
+    const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+    const enabledStrategies = allStrategies.filter(strategy => {
+        const isEnabled = scenario.enabledStrategies?.[strategy.id];
+        const inputValue = scenario.clientData?.[strategy.inputRequired];
+        return isEnabled && typeof inputValue === 'number' && inputValue > 0;
+    });
+
+    useEffect(() => {
+        const fetchInteractionExplanation = async () => {
+            if (enabledStrategies.length > 1) {
+                setLoadingInteraction(true);
+                setInteractionError('');
+                try {
+                    const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
+                    const prompt = `Explain how the following tax strategies might interact with each other and their combined impact on tax optimization. Focus on potential synergies or conflicts. Strategies:\n${strategyDetails}\n\nProvide a concise explanation.`;
+                    
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // Leave as-is for Canvas
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        setInteractionExplanation(result.candidates[0].content.parts[0].text);
+                    } else {
+                        setInteractionError('Failed to generate interaction explanation.');
+                        console.error('Gemini API response structure unexpected:', result);
+                    }
+                } catch (error) {
+                    setInteractionError(`Error fetching interaction explanation: ${error.message}`);
+                    console.error('Error in Gemini API call:', error);
+                } finally {
+                    setLoadingInteraction(false);
+                }
+            } else {
+                setInteractionExplanation('');
+                setInteractionError('');
+            }
+        };
+
+        fetchInteractionExplanation();
+    }, [enabledStrategies]); // Re-run when enabled strategies change
 
     // Enhanced validation with better error handling
     if (!results || !scenario) {
@@ -292,15 +380,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
         
-        // Safe strategy filtering: Only show strategies that are enabled AND have a value > 0
-        const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
-        const enabledStrategies = allStrategies.filter(strategy => {
-            const isEnabled = scenario.enabledStrategies?.[strategy.id];
-            const inputValue = scenario.clientData?.[strategy.inputRequired];
-            // Check if strategy is enabled and if its required input has a numeric value greater than 0
-            return isEnabled && typeof inputValue === 'number' && inputValue > 0;
-        });
-
         console.log('Enabled strategies for report:', enabledStrategies.map(s => s.id));
 
         // Safe insights extraction with null checks
@@ -410,6 +489,31 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                 ))}
                             </tbody>
                         </table>
+                    </section>
+                )}
+
+                {enabledStrategies.length > 0 && (
+                    <section style={styles.section}>
+                        <h2 style={styles.sectionTitle}>Detailed Strategy Explanations</h2>
+                        {enabledStrategies.map((strategy) => (
+                            <div key={`detail-${strategy.id}`} style={styles.strategyDetail}>
+                                <h3 style={styles.strategyDetailTitle}>{strategy.name}</h3>
+                                <p style={styles.strategyDetailDescription}>{strategy.description}</p>
+                            </div>
+                        ))}
+                    </section>
+                )}
+
+                {enabledStrategies.length > 1 && (
+                    <section style={styles.section}>
+                        <h2 style={styles.sectionTitle}>Strategy Interactions and Combined Impact</h2>
+                        {loadingInteraction ? (
+                            <p style={styles.loadingText}>Generating explanation of strategy interactions...</p>
+                        ) : interactionError ? (
+                            <p style={{...styles.loadingText, color: '#dc2626'}}>Error: {interactionError}</p>
+                        ) : (
+                            <p style={styles.interactionText}>{interactionExplanation || 'No specific interactions to highlight for the selected strategies.'}</p>
+                        )}
                     </section>
                 )}
 
