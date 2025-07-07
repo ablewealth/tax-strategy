@@ -34,28 +34,26 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
-      - name: Verify package.json
+      - name: Install dependencies and build backend
+        # Add a working directory here to specify where to run the commands
+        working-directory: ./backend 
         run: |
           echo "Checking package.json..."
           cat package.json | head -20
           
-      - name: Install dependencies
-        run: |
           echo "Installing dependencies..."
           npm ci
           echo "✅ Dependencies installed successfully"
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
           
-      - name: Build application
-        run: |
           echo "Building application..."
-          npm run build
+          npm run build # Assuming your backend has a build script if needed, otherwise remove or adjust
           echo "✅ Build completed successfully"
         env:
-          CI: false
           NODE_OPTIONS: "--max-old-space-size=4096"
+          CI: false # CI is relevant for frontend builds often, adjust as needed for backend
           
+      # The rest of your workflow steps for frontend build and deployment would follow here.
+      # You would likely need a separate step or job to build your frontend if it's in a different directory.
       - name: Verify build output
         run: |
           echo "Build directory contents:"
@@ -87,7 +85,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './build'
+          path: './build' # Ensure this path points to your *frontend* build output
 
   deploy:
     environment:
