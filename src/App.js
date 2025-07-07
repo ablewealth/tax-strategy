@@ -11,8 +11,8 @@ import {
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario,
-    formatCurrencyForDisplay, // Keep this for InputField in its own file
-    parseCurrencyInput // Keep this for InputField in its own file
+    formatCurrencyForDisplay,
+    parseCurrencyInput
 } from './constants';
 import PrintableReport from './components/PrintableReport';
 
@@ -21,7 +21,7 @@ import Header from './components/Header';
 import ClientInputSection from './components/ClientInputSection';
 import StrategiesSection from './components/StrategiesSection';
 import ResultsDashboard from './components/ResultsDashboard';
-import InsightsSection from './components/InsightsSection'; // CORRECTED PATH
+import InsightsSection from './components/InsightsSection'; // CORRECTED: Removed extra 'components/'
 import ChartsSection from './components/ChartsSection';
 import AppFooter from './components/AppFooter';
 
