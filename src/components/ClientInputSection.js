@@ -1,7 +1,7 @@
 import React from 'react';
-import Section from './Section'; // Import Section component
-import InputField from './InputField'; // Import InputField component
-import SelectField from './SelectField'; // Import SelectField component
+import Section from './Section';
+import InputField from './InputField';
+import SelectField from './SelectField';
 
 const ClientInputSection = ({ scenario, updateClientData }) => {
     return (

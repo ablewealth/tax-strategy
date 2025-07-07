@@ -11,6 +11,8 @@ import {
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario,
+    formatCurrency, // Import formatCurrency
+    formatPercentage, // Import formatPercentage
     formatCurrencyForDisplay,
     parseCurrencyInput
 } from './constants';
@@ -27,8 +29,10 @@ import AppFooter from './components/AppFooter';
 
 
 // --- Helper & Calculation Functions (Logic preserved) ---
-const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
-const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
+// These are now imported from constants.js
+// const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
+// const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
+
 const calculateTax = (income, brackets) => {
     if (income <= 0) return 0;
     let tax = 0;

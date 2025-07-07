@@ -1,9 +1,5 @@
 import React, { forwardRef, useEffect } from 'react';
-import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
-
-// --- Helper Functions ---
-const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
-const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
+import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants'; // Ensure formatCurrency, formatPercentage are imported
 
 // --- Style Definitions for a Professional UHNW Report ---
 const styles = {
@@ -93,8 +89,8 @@ const styles = {
         textAlign: 'left',
         padding: '0.5rem 0.75rem',
         borderBottom: '1.5px solid #333',
-        fontFamily: "'Lato', sans-serif", // Corrected: Removed unterminated string literal
-        fontWeight: '700',
+        fontFamily: "'Lato', sans-serif",
+        fontWeight: '700"',
     },
     td: {
         textAlign: 'left',
@@ -335,7 +331,7 @@ const PrintableReport = forwardRef(
                     </div>
                     <div style={styles.insightColumn}>
                         {considerations.map((insight, index) => (
-                             <div key={`c-${index}`} style={styles.insightCard}>
+                             <div key={`c-${index}`} style={{...styles.insightCard, backgroundColor: '#fffbe6', borderColor: '#fcd34d'}}> {/* Added specific styles for warning card */}
                                 <div style={{...styles.insightTitle, color: '#d97706'}}>
                                     <span style={{fontSize: '1.2rem'}}>⚠️</span> Implementation Consideration
                                 </div>
@@ -380,7 +376,7 @@ const PrintableReport = forwardRef(
                                     <td style={styles.td}>Year {proj.year}</td>
                                     <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.baseline?.totalTax || 0)}
-                                    </td> 
+                                    </td>
                                     <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.withStrategies?.totalTax || 0)}
                                     </td>

@@ -1,8 +1,8 @@
 import React from 'react';
-import Section from './Section'; // Import Section component
-import StrategyCard from './StrategyCard'; // Import StrategyCard component
-import InputField from './InputField'; // Import InputField component
-import SelectField from './SelectField'; // Import SelectField component
+import Section from './Section';
+import StrategyCard from './StrategyCard';
+import InputField from './InputField';
+import SelectField from './SelectField';
 import { DEALS_EXPOSURE_LEVELS, STRATEGY_LIBRARY, RETIREMENT_STRATEGIES } from '../constants';
 
 const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {

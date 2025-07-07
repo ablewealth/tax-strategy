@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrencyForDisplay, parseCurrencyInput } from '../constants'; // Assuming constants are in parent directory
+import { formatCurrencyForDisplay, parseCurrencyInput } from '../constants';
 
 const InputField = ({ label, value, onChange, placeholder }) => {
     const [displayValue, setDisplayValue] = useState(value ? formatCurrencyForDisplay(value) : '');

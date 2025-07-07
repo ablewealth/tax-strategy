@@ -1,5 +1,5 @@
 import React from 'react';
-import Section from './Section'; // Import Section component
+import Section from './Section';
 
 const InsightsSection = ({ insights }) => (
     <Section title="💡 Strategic Implementation Insights" description="Tax strategy analysis and optimization recommendations.">

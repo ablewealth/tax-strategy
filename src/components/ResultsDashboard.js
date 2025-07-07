@@ -1,6 +1,5 @@
 import React from 'react';
-// Import formatCurrency and formatPercentage from constants
-import { formatCurrency, formatPercentage } from '../constants'; 
+import { formatCurrency, formatPercentage } from '../constants';
 
 const ResultsDashboard = ({ results }) => {
     if (!results || !results.cumulative) return null;
