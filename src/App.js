@@ -1,6 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, Bar, LineChart, Line } from 'recharts';
 import {
     DEALS_EXPOSURE_LEVELS,
     STRATEGY_LIBRARY,
@@ -12,10 +11,20 @@ import {
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario,
-    formatCurrencyForDisplay,
-    parseCurrencyInput
+    formatCurrencyForDisplay, // Keep this for InputField in its own file
+    parseCurrencyInput // Keep this for InputField in its own file
 } from './constants';
 import PrintableReport from './components/PrintableReport';
+
+// Import the new component files
+import Header from './components/Header';
+import ClientInputSection from './components/ClientInputSection';
+import StrategiesSection from './components/StrategiesSection';
+import ResultsDashboard from './components/ResultsDashboard';
+import InsightsSection from './components/components/InsightsSection'; // Corrected path
+import ChartsSection from './components/ChartsSection';
+import AppFooter from './components/AppFooter';
+
 
 // --- Helper & Calculation Functions (Logic preserved) ---
 const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
@@ -59,7 +68,6 @@ const performTaxCalculations = (scenario) => {
 
             allStrategies.forEach(strategy => {
                 if (strategies[strategy.id]) { // Check if strategy is enabled
-                    // Ensure the inputRequired value is a number for this check
                     const strategyInputAmount = yearData[strategy.inputRequired] || 0;
                     if (strategy.type !== 'qbi' && strategyInputAmount > 0) {
                         totalCapitalAllocated += strategyInputAmount;
@@ -110,364 +118,6 @@ const performTaxCalculations = (scenario) => {
     return { projections, cumulative: { baselineTax: cumulativeBaselineTax, optimizedTax: cumulativeOptimizedTax, totalSavings: cumulativeSavings, capitalAllocated: projections[0]?.withStrategies.totalCapitalAllocated || 0, }, withStrategies: projections[0]?.withStrategies };
 };
 
-// --- MOBILE-OPTIMIZED UI COMPONENTS ---
-const Header = ({ onPrint, clientName }) => (
-    <div className="bg-background-primary border-b border-border-primary px-4 sm:px-6 lg:px-8 py-4 lg:py-6 sticky top-0 z-50">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
-            {/* Logo and Company Info */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
-                <img 
-                    src="https://ablewealth.com/AWM%20Logo%203.png" 
-                    alt="Able Wealth Management" 
-                    className="h-6 sm:h-8 w-auto"
-                />
-                <div className="lg:border-l lg:border-border-secondary lg:pl-6">
-                    <h1 className="font-serif text-xl sm:text-2xl font-bold text-text-primary leading-tight">
-                        Advanced Tax Strategy Optimizer
-                    </h1>
-                </div>
-            </div>
-
-            {/* Client Analysis Info and Actions */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
-                <div className="text-left sm:text-right">
-                    <p className="font-serif text-xs sm:text-sm text-text-muted">Analysis for:</p>
-                    <p className="font-serif text-base sm:text-lg font-semibold text-text-primary">{clientName}</p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                    <div className="flex items-center gap-2 bg-background-tertiary px-3 py-2 rounded-md text-xs font-medium text-text-secondary">
-                        <div className="w-2 h-2 bg-success rounded-full"></div>
-                        Analysis Active
-                    </div>
-                    <button 
-                        onClick={onPrint} 
-                        className="flex items-center justify-center gap-2 bg-primary-blue text-white px-4 sm:px-5 py-2.5 rounded-md text-sm font-semibold hover:bg-primary-navy transition-all shadow-md w-full sm:w-auto min-h-[44px]"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zm4 7a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
-                        </svg>
-                        Print Report
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-);
-
-const Section = ({ title, description, children }) => (
-    <div className="bg-background-primary rounded-lg shadow-md border border-border-primary overflow-hidden">
-        <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6 border-b border-border-primary bg-background-secondary">
-            <h2 className="font-serif text-lg sm:text-xl font-semibold text-text-primary flex items-center gap-3">{title}</h2>
-            <p className="text-xs sm:text-sm text-text-secondary mt-1">{description}</p>
-        </div>
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
-    </div>
-);
-
-const InputField = ({ label, value, onChange, placeholder }) => {
-    // Internal state for the displayed value (string with commas)
-    const [displayValue, setDisplayValue] = useState(value ? formatCurrencyForDisplay(value) : '');
-
-    // Update displayValue when the 'value' prop changes (e.g., when scenario updates)
-    useEffect(() => {
-        setDisplayValue(value ? formatCurrencyForDisplay(value) : '');
-    }, [value]);
-
-    const handleInputChange = (e) => {
-        // Update local display state immediately
-        setDisplayValue(e.target.value);
-        // Parse and pass the numerical value to the parent's onChange handler
-        onChange(parseCurrencyInput(e.target.value));
-    };
-
-    const handleBlur = (e) => {
-        // On blur, re-format the input value for consistent display
-        const parsedValue = parseCurrencyInput(e.target.value);
-        setDisplayValue(formatCurrencyForDisplay(parsedValue));
-    };
-
-    return (
-        <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
-            <input
-                type="text" // Changed from "number" to "text" to allow custom formatting (commas)
-                value={displayValue}
-                onChange={handleInputChange}
-                onBlur={handleBlur} // Apply formatting on blur
-                placeholder={placeholder}
-                className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
-            />
-        </div>
-    );
-};
-
-const SelectField = ({ label, value, onChange, children }) => (
-    <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">{label}</label>
-        <select 
-            value={value} 
-            onChange={onChange} 
-            className="h-12 sm:h-14 px-4 border border-border-secondary rounded-md text-base bg-background-primary focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent touch-manipulation"
-        >
-            {children}
-        </select>
-    </div>
-);
-
-const StrategyCard = ({ strategy, scenario, toggleStrategy, updateClientData, children }) => {
-    const isActive = scenario.enabledStrategies[strategy.id];
-    return (
-        <div className={`border rounded-lg p-4 sm:p-6 transition-all relative ${isActive ? 'border-accent-gold bg-gradient-to-br from-white to-amber-50' : 'border-border-primary bg-background-primary hover:border-primary-blue'}`}>
-            {isActive && <div className="absolute top-0 left-0 w-1.5 h-full bg-accent-gold rounded-l-lg"></div>}
-            <div className="flex items-start gap-4">
-                <input 
-                    type="checkbox" 
-                    checked={isActive} 
-                    onChange={() => toggleStrategy(strategy.id)} 
-                    className="mt-1 h-5 w-5 sm:h-6 sm:w-6 rounded accent-accent-gold touch-manipulation"
-                />
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base text-text-primary leading-tight">{strategy.name}</h3>
-                    <p className="text-xs text-text-muted uppercase tracking-wider mt-1">{strategy.category}</p>
-                    <p className="text-xs sm:text-sm text-text-secondary mt-2 leading-relaxed">{strategy.description}</p>
-                </div>
-            </div>
-            {isActive && children && <div className="mt-4 pl-0 sm:pl-9">{children}</div>}
-        </div>
-    )
-};
-
-const StrategiesSection = ({ scenario, toggleStrategy, updateClientData }) => {
-    return (
-        <Section title="💼 Strategic Tax Optimization Portfolio" description="Select advanced tax strategies and input corresponding investment or contribution amounts.">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                {STRATEGY_LIBRARY.map(strategy => (
-                    <StrategyCard 
-                        key={strategy.id} 
-                        strategy={strategy}
-                        scenario={scenario}
-                        toggleStrategy={toggleStrategy}
-                        updateClientData={updateClientData}
-                    >
-                        <div className="space-y-4">
-                            <InputField 
-                                label="Investment Amount" 
-                                value={scenario.clientData[strategy.inputRequired]}
-                                onChange={value => updateClientData(strategy.inputRequired, value)}
-                                placeholder="Enter amount"
-                            />
-                            {strategy.id === 'QUANT_DEALS_01' && (
-                                <SelectField 
-                                    label="DEALS Exposure Level" 
-                                    value={scenario.clientData.dealsExposure} 
-                                    onChange={e => updateClientData('dealsExposure', e.target.value)}
-                                >
-                                    {Object.entries(DEALS_EXPOSURE_LEVELS).map(([key, value]) => (
-                                        <option key={key} value={key}>{value.description}</option>
-                                    ))}
-                                </SelectField>
-                            )}
-                        </div>
-                    </StrategyCard>
-                ))}
-                {RETIREMENT_STRATEGIES.map(strategy => (
-                    <StrategyCard 
-                        key={strategy.id} 
-                        strategy={strategy}
-                        scenario={scenario}
-                        toggleStrategy={toggleStrategy}
-                        updateClientData={updateClientData}
-                    >
-                        <InputField 
-                            label="Contribution Amount" 
-                            value={scenario.clientData[strategy.inputRequired]}
-                            onChange={value => updateClientData(strategy.inputRequired, value)}
-                            placeholder="Enter amount"
-                        />
-                    </StrategyCard>
-                ))}
-            </div>
-        </Section>
-    )
-};
-
-const ResultsDashboard = ({ results }) => {
-    if (!results || !results.cumulative) return null;
-    const { baselineTax, optimizedTax, totalSavings, capitalAllocated } = results.cumulative;
-    const savingsPercentage = baselineTax > 0 ? totalSavings / baselineTax : 0;
-
-    const MetricCard = ({ label, value, subtext, isHighlighted = false }) => (
-        <div className={`p-4 sm:p-6 rounded-lg text-center transition-all ${isHighlighted ? 'bg-white/20' : 'bg-white/10'}`}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-2">{label}</h3>
-            <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 ${isHighlighted ? 'text-accent-gold-light' : 'text-white'} leading-tight`}>{value}</p>
-            <p className="text-xs sm:text-sm opacity-90 leading-relaxed">{subtext}</p>
-        </div>
-    );
-    
-    return (
-        <div className="bg-gradient-to-br from-primary-navy to-primary-blue rounded-xl p-6 sm:p-8 lg:p-10 text-white shadow-xl">
-            <div className="text-center mb-6 sm:mb-8">
-                <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Executive Tax Optimization Analysis</h2>
-                <p className="text-sm sm:text-base opacity-80 mt-2">Comprehensive strategic tax planning results and optimization metrics.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-                <MetricCard label="Baseline Tax Liability" value={formatCurrency(baselineTax)} subtext="Pre-optimization scenario" />
-                <MetricCard label="Optimized Tax Liability" value={formatCurrency(optimizedTax)} subtext="Post-strategy implementation" />
-                <MetricCard label="Total Tax Optimization" value={formatCurrency(totalSavings)} subtext={`${formatPercentage(savingsPercentage)} effective reduction`} isHighlighted />
-                <MetricCard label="Total Capital Allocated" value={formatCurrency(capitalAllocated)} subtext="Total investment in strategies" />
-            </div>
-        </div>
-    );
-};
-
-const InsightsSection = ({ insights }) => (
-    <Section title="💡 Strategic Implementation Insights" description="Tax strategy analysis and optimization recommendations.">
-        <div className="space-y-4">
-            {!insights || insights.length === 0 ? (
-                <p className="text-text-muted text-center py-8">Enable strategies to see personalized recommendations and considerations.</p>
-            ) : (
-                insights.map((insight, index) => (
-                    <div key={index} className={`p-4 rounded-lg flex items-start gap-4 border-l-4 ${insight.type === 'success' ? 'bg-green-50 border-success' : 'bg-amber-50 border-warning'}`}>
-                        <div className={`text-lg sm:text-xl flex-shrink-0 ${insight.type === 'success' ? '✅' : '⚠️'}`}>
-                            {insight.type === 'success' ? '✅' : '⚠️'}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <h4 className={`font-semibold text-sm sm:text-base ${insight.type === 'success' ? 'text-success' : 'text-warning'} leading-tight`}>
-                                {insight.type === 'success' ? 'Strategic Benefit' : 'Implementation Consideration'}
-                            </h4>
-                            <p className="text-xs sm:text-sm text-text-secondary mt-1 leading-relaxed">{insight.text}</p>
-                        </div>
-                    </div>
-                ))
-            )}
-        </div>
-    </Section>
-);
-
-const ChartsSection = ({ results }) => {
-    if (!results || !results.projections || results.projections.length === 0) return null;
-    
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-gray-300 shadow-xl max-w-xs">
-                    <p className="label font-semibold text-black mb-2 text-sm sm:text-base">{`${label}`}</p>
-                    {payload.map((p, i) => (
-                        <p key={i} className="text-black font-medium text-xs sm:text-sm">
-                            <span 
-                                className="inline-block w-3 h-3 rounded mr-2" 
-                                style={{ backgroundColor: p.color }}
-                            ></span>
-                            {`${p.name}: ${formatCurrency(p.value)}`}
-                        </p>
-                    ))}
-                </div>
-            );
-        }
-        return null;
-    };
-
-    // Prepare data for the tax breakdown chart
-    const firstProjection = results.projections[0];
-    const taxBreakdownData = [
-        {
-            scenario: 'Baseline',
-            federalTax: firstProjection.baseline.fedTax,
-            stateTax: firstProjection.baseline.stateTax
-        },
-        {
-            scenario: 'Optimized',
-            federalTax: firstProjection.withStrategies.fedTax,
-            stateTax: firstProjection.withStrategies.stateTax
-        }
-    ];
-
-    return (
-        <Section title="📈 Visual Projections" description="Analysis of tax liabilities and cumulative savings.">
-            {/* Tax Liability Breakdown Chart */}
-            <div className="mb-8">
-                <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Tax Liability Comparison Analysis</h3>
-                <p className="text-xs sm:text-sm text-text-muted text-center mb-6">Baseline vs. optimized tax scenarios with federal and state breakdown</p>
-                <div className="w-full" style={{ height: '300px', minHeight: '300px' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={taxBreakdownData} margin={{ top: 20, right: 20, left: 20, bottom: 60 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis 
-                                dataKey="scenario" 
-                                tick={{ fill: '#64748b', fontSize: 11 }} 
-                                interval={0}
-                                angle={0}
-                                textAnchor="middle"
-                            />
-                            <YAxis 
-                                tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} 
-                                tick={{ fill: '#64748b', fontSize: 10 }} 
-                                width={60}
-                            />
-                            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
-                            <Bar dataKey="federalTax" stackId="taxes" fill="#041D5B" name="Federal Tax" />
-                            <Bar dataKey="stateTax" stackId="taxes" fill="#083038" name="State Tax" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="flex justify-center items-center gap-4 sm:gap-6 mt-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#041D5B' }}></div>
-                        <span className="text-xs sm:text-sm text-text-secondary">Federal Tax</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#083038' }}></div>
-                        <span className="text-xs sm:text-sm text-text-secondary">State Tax</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Multi-year projections - only show if more than 1 year */}
-            {results.projections.length > 1 && (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
-                    <div>
-                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Annual Tax Liability</h3>
-                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
-                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
-                                    <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
-                                    <Bar dataKey="baseline.totalTax" fill="#9ca3af" name="Baseline Tax" />
-                                    <Bar dataKey="withStrategies.totalTax" fill="#3b82f6" name="Optimized Tax" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Cumulative Savings</h3>
-                        <div className="w-full" style={{ height: '250px', minHeight: '250px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={results.projections} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                    <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 10 }} />
-                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} tick={{ fill: '#64748b', fontSize: 9 }} width={50} />
-                                    <RechartsTooltip content={<CustomTooltip />} />
-                                    <Line type="monotone" dataKey="cumulativeSavings" stroke="#f59e0b" strokeWidth={3} name="Savings" dot={{ r: 3 }} activeDot={{ r: 5 }}/>
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </Section>
-    )
-};
-
-const AppFooter = () => (
-    <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-8 border-t border-border-primary text-xs text-text-muted text-justify leading-relaxed">
-        <p><strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its advisors and planning professionals. This tool presents hypothetical tax optimization scenarios using inputs provided by the user and applies assumptions and tax rules in effect as of May 2025. The outputs generated are for illustrative purposes only and are intended to demonstrate the potential impact of various tax planning strategies under assumed conditions. The results are not a guarantee of future tax savings. Tax laws are complex and subject to change. AWM does not provide legal or tax advice. Please consult with your qualified professional tax advisor and legal counsel before implementing any strategy.</p>
-    </footer>
-);
-
 // --- MAIN APP COMPONENT ---
 export default function App() {
     const [scenario, setScenario] = useState(() => createNewScenario('Default Scenario'));
@@ -498,7 +148,7 @@ export default function App() {
                 enabledStrategies: newEnabledStrategies
             };
         });
-    }, [strategyInputToIdMap]); // Depend on strategyInputToIdMap
+    }, [strategyInputToIdMap]);
 
     const handleToggleStrategy = useCallback((strategyId) => {
         setScenario(prev => ({
@@ -512,10 +162,9 @@ export default function App() {
     }, [scenario]);
 
     const handlePrint = () => {
-        // Commented out console statements for cleaner production builds
-        // console.log('Print button clicked');
-        // console.log('Scenario:', scenario);
-        // console.log('Results:', calculationResults);
+        // console.log('Print button clicked'); // Commented out
+        // console.log('Scenario:', scenario); // Commented out
+        // console.log('Results:', calculationResults); // Commented out
         
         const printContainer = document.getElementById('print-mount');
         if (!printContainer) {
