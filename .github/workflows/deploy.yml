@@ -50,6 +50,8 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false # Important for Create React App builds to prevent warnings from being treated as errors
           
+      # The rest of your workflow steps for frontend build and deployment would follow here.
+      # You would likely need a separate step or job to build your frontend if it's in a different directory.
       - name: Verify build output
         run: |
           echo "Build directory contents:"
