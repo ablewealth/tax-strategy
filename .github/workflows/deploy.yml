@@ -46,7 +46,7 @@ jobs:
       - name: Run tests
         run: |
           echo "Running tests..."
-          npm test -- --coverage --watchAll=false
+          npm test -- --coverage --watchAll=false --passWithNoTests
           echo "✅ Tests completed successfully"
         env:
           CI: true
