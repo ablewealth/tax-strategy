@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants'; // Ensure formatCurrency, formatPercentage are imported
-
+import ChartsSection from './ChartsSection';
 // --- Style Definitions for a Professional UHNW Report ---
 const styles = {
     page: {
@@ -216,6 +216,11 @@ const PrintableReport = forwardRef(
         );
     }
 
+    // Pass the results object directly to ChartsSection
+    const chartsSectionProps = {
+        results: results
+    };
+
     const { cumulative, projections, withStrategies } = results;
     
     // Use fallback values if data is missing
@@ -354,6 +359,11 @@ const PrintableReport = forwardRef(
             />
         </section>
 
+        {/* Charts Section */}
+        <section style={{...styles.section, pageBreakBefore: 'always'}}>
+            <ChartsSection {...chartsSectionProps} />
+        </section>
+
         {projections && projections.length > 1 && (
             <section style={{...styles.section, pageBreakBefore: 'always'}}>
                 <h2 style={styles.sectionTitle}>Multi-Year Projections</h2>
@@ -376,7 +386,7 @@ const PrintableReport = forwardRef(
                                     <td style={styles.td}>Year {proj.year}</td>
                                     <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.baseline?.totalTax || 0)}
-                                    </td>
+                                    </td> 
                                     <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
                                         {formatCurrency(proj.withStrategies?.totalTax || 0)}
                                     </td>
@@ -384,7 +394,7 @@ const PrintableReport = forwardRef(
                                         {formatCurrency((proj.baseline?.totalTax || 0) - (proj.withStrategies?.totalTax || 0))}
                                     </td>
                                 </tr>
-                            ))}
+                            )).filter(Boolean)}
                         </tbody>
                     </table>
                 </div>
@@ -402,20 +412,22 @@ const PrintableReport = forwardRef(
                         </thead>
                         <tbody>
                             {projections.map((proj, index) => {
-                                const baselineTax = proj.baseline?.totalTax || 0;
-                                const optimizedTax = proj.withStrategies?.totalTax || 0;
-                                const savingsRate = baselineTax > 0 ? (baselineTax - optimizedTax) / baselineTax : 0;
-                                return (
-                                    <tr key={index}>
-                                        <td style={styles.td}>Year {proj.year}</td>
-                                        <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
-                                            {formatCurrency(proj.cumulativeSavings || 0)}
-                                        </td>
-                                        <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
-                                            {formatPercentage(savingsRate)}
-                                        </td>
-                                    </tr>
-                                );
+                                if (proj.cumulativeSavings !== undefined && proj.cumulativeSavings !== null) {
+                                    const baselineTax = proj.baseline?.totalTax || 0;
+                                    const optimizedTax = proj.withStrategies?.totalTax || 0; 
+                                    const savingsRate = baselineTax > 0 ? (baselineTax - optimizedTax) / baselineTax : 0;
+                                    return (
+                                        <tr key={index}>
+                                            <td style={styles.td}>Year {proj.year}</td>
+                                            <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
+                                                {formatCurrency(proj.cumulativeSavings || 0)}
+                                            </td>
+                                            <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                                                {formatPercentage(savingsRate)}
+                                            </td>
+                                        </tr>
+                                    );
+                                }
                             })}
                         </tbody>
                     </table>

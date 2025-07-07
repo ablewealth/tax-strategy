@@ -85,7 +85,7 @@ const ChartsSection = ({ results }) => {
             {/* Multi-year projections - only show if more than 1 year */}
             {results.projections.length > 1 && (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8"> {/* Removed style={...styles.section, pageBreakBefore: 'always'} */}
-                    <h2 className="text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Multi-Year Projections</h2> {/* Removed style={styles.sectionTitle} */}
+                    <h2 className="col-span-full text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">Multi-Year Projections</h2> {/* Removed style={styles.sectionTitle} */}
                     
                     {/* Annual Tax Comparison Table */}
                     <div className="mb-8"> {/* Changed to mb-8 from mb-3rem for consistency with Tailwind */}

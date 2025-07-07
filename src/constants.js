@@ -75,7 +75,7 @@ export const createNewScenario = (name) => ({
 export const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(value || 0));
 export const formatPercentage = (value) => `${(value * 100).toFixed(1)}%`;
 
-export const formatCurrencyForDisplay = (value) => {
+export const formatCurrencyForDisplay = (value) => { // This function is used for displaying numbers in input fields
     if (value === null || value === undefined || isNaN(value)) {
         return '';
     }

@@ -209,6 +209,7 @@ export default function App() {
                     <p>Optimized Tax: ${formatCurrency(calculationResults?.cumulative?.optimizedTax || 0)}</p>
                     <p>Total Savings: ${formatCurrency(calculationResults?.cumulative?.totalSavings || 0)}</p>
                     
+                    <p>Charts Section: [Charts would be here in full report]</p>
                     <p style="margin-top: 2rem; font-size: 0.8rem; color: #666;">
                         This is a simplified report. For full details, please ensure all data is properly loaded.
                     </p>
