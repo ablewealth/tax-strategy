@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants';
 
 // --- Style Definitions for a Professional UHNW Report ---
@@ -273,11 +273,13 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
     }, [scenario, results, years]);
 
     const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
-    const enabledStrategies = allStrategies.filter(strategy => {
-        const isEnabled = scenario.enabledStrategies?.[strategy.id];
-        const inputValue = scenario.clientData?.[strategy.inputRequired];
-        return isEnabled && typeof inputValue === 'number' && inputValue > 0;
-    });
+    const enabledStrategies = useMemo(() => {
+        return allStrategies.filter(strategy => {
+            const isEnabled = scenario.enabledStrategies?.[strategy.id];
+            const inputValue = scenario.clientData?.[strategy.inputRequired];
+            return isEnabled && typeof inputValue === 'number' && inputValue > 0;
+        });
+    }, [scenario.enabledStrategies, scenario.clientData]);
 
     useEffect(() => {
         const fetchInteractionExplanation = async () => {
@@ -288,17 +290,34 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
                     const prompt = `Explain how the following tax strategies might interact with each other and their combined impact on tax optimization. Focus on potential synergies or conflicts. Strategies:\n${strategyDetails}\n\nProvide a concise explanation.`;
                     
-                    let chatHistory = [];
+                    const chatHistory = []; 
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // Leave as-is for Canvas
+                    const apiKey = process.env.REACT_APP_GEMINI_API_KEY || ""; 
+                    
+                    if (!apiKey) {
+                        setInteractionError('API key not configured. Strategy interaction analysis is unavailable.');
+                        setLoadingInteraction(false);
+                        return;
+                    }
+                    
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
                     const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
                     });
+
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                    }
 
                     const result = await response.json();
                     if (result.candidates && result.candidates.length > 0 &&
@@ -310,7 +329,11 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         console.error('Gemini API response structure unexpected:', result);
                     }
                 } catch (error) {
-                    setInteractionError(`Error fetching interaction explanation: ${error.message}`);
+                    if (error.name === 'AbortError') {
+                        setInteractionError('Request timed out. Strategy interaction analysis is unavailable.');
+                    } else {
+                        setInteractionError(`Error fetching interaction explanation: ${error.message}`);
+                    }
                     console.error('Error in Gemini API call:', error);
                 } finally {
                     setLoadingInteraction(false);
@@ -322,7 +345,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         };
 
         fetchInteractionExplanation();
-    }, [enabledStrategies]); // Re-run when enabled strategies change
+    }, [enabledStrategies]);
 
     // Enhanced validation with better error handling
     if (!results || !scenario) {
@@ -460,7 +483,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                             <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
                         </div>
                         <div style={{...styles.metric, ...styles.highlightMetric}}>
-                            <div style={{...styles.metricLabel, color: styles.highlightValue.color}}>Total Potential Tax Savings</div>
+                            <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Potential Tax Savings</div>
                             <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(safeResults.totalSavings)}</div>
                         </div>
                         <div style={styles.metric}>
