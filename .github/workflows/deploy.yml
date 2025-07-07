@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           # Fetch all history for all branches and tags. This is often necessary for tools that inspect Git history.
@@ -32,43 +32,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'npm' # This will now correctly look for package-lock.json in the root
           
-      - name: Verify package.json
+      - name: Install frontend dependencies and build
+        # No 'working-directory' is needed here because your frontend project (with its package.json) is in the root.
         run: |
-          echo "Checking package.json..."
-          cat package.json | head -20
+          echo "Installing frontend dependencies..."
+          # npm ci requires a package-lock.json file to be present in the current directory.
+          # Make sure you have committed your package-lock.json to your repository's root.
+          npm ci 
+          echo "✅ Frontend dependencies installed successfully"
           
-      - name: Clean npm cache
-        run: npm cache clean --force
-          
-      - name: Remove existing lock file if corrupted
-        run: |
-          if [ -f "package-lock.json" ]; then
-            echo "Checking package-lock.json format..."
-            if grep -q "npm install" package-lock.json; then
-              echo "⚠️ Corrupted package-lock.json detected, removing..."
-              rm package-lock.json
-            fi
-          fi
-        
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          npm install
-          echo "✅ Dependencies installed successfully"
-        env:
-          CI: false
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          
-      - name: Build application
-        run: |
-          echo "Building application..."
+          echo "Building frontend application..."
           npm run build
-          echo "✅ Build completed successfully"
+          echo "✅ Frontend build completed successfully"
         env:
-          CI: false
           NODE_OPTIONS: "--max-old-space-size=4096"
+          CI: false # Important for Create React App builds to prevent warnings from being treated as errors
           
       - name: Verify build output
         run: |
@@ -101,7 +81,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './build'
+          path: './build' # This path is correct for a Create React App build in the root
 
   deploy:
     environment:
