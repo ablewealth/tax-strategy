@@ -1,7 +1,8 @@
 import React from 'react';
 import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, Bar, LineChart, Line } from 'recharts';
-import Section from './Section'; // Import Section component
-import { formatCurrency } from '../constants'; // Assuming constants are in parent directory
+import Section from './Section';
+// Import formatCurrency from constants
+import { formatCurrency } from '../constants'; 
 
 const ChartsSection = ({ results }) => {
     if (!results || !results.projections || results.projections.length === 0) return null;
