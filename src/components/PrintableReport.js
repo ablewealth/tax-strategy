@@ -223,13 +223,15 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             hasCumulative: !!(results?.cumulative),
             hasProjections: !!(results?.projections),
             projectionsLength: results?.projections?.length || 0,
-            enabledStrategiesCount: scenario?.enabledStrategies ? Object.values(scenario.enabledStrategies).filter(Boolean).length : 0
+            enabledStrategiesCount: scenario?.enabledStrategies ? Object.values(scenario.enabledStrategies).filter(Boolean).length : 0,
+            scenario: scenario,
+            results: results
         });
     }, [scenario, results, years]);
 
     // Enhanced validation with better error handling
     if (!results || !scenario) {
-        console.warn('PrintableReport: Missing required props');
+        console.warn('PrintableReport: Missing required props', { results: !!results, scenario: !!scenario });
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -238,12 +240,20 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                 <p style={{ fontSize: '14pt', color: '#666' }}>
                     Unable to generate report. Please ensure all required data is available.
                 </p>
+                <p style={{ fontSize: '10pt', color: '#999', marginTop: '1rem' }}>
+                    Debug: scenario={!!scenario}, results={!!results}
+                </p>
             </div>
         );
     }
 
     if (!results.cumulative || !results.projections || results.projections.length === 0) {
-        console.warn('PrintableReport: Missing calculation results');
+        console.warn('PrintableReport: Missing calculation results', {
+            hasCumulative: !!results.cumulative,
+            hasProjections: !!results.projections,
+            projectionsLength: results.projections?.length || 0,
+            results: results
+        });
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -251,6 +261,9 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                 </h1>
                 <p style={{ fontSize: '14pt', color: '#666' }}>
                     Please wait while we process your tax optimization strategies.
+                </p>
+                <p style={{ fontSize: '10pt', color: '#999', marginTop: '1rem' }}>
+                    Debug: cumulative={!!results.cumulative}, projections={!!results.projections}, length={results.projections?.length || 0}
                 </p>
             </div>
         );
@@ -273,13 +286,17 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         // Safe strategy filtering
         const enabledStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES].filter(strategy => {
             try {
-                return scenario.enabledStrategies?.[strategy.id] && 
-                       scenario.clientData?.[strategy.inputRequired] > 0;
+                const isEnabled = scenario.enabledStrategies?.[strategy.id];
+                const hasInput = scenario.clientData?.[strategy.inputRequired] > 0;
+                console.log(`Strategy ${strategy.id}: enabled=${isEnabled}, hasInput=${hasInput}, inputValue=${scenario.clientData?.[strategy.inputRequired]}`);
+                return isEnabled && hasInput;
             } catch (e) {
                 console.warn('Error filtering strategy:', strategy.id, e);
                 return false;
             }
         });
+
+        console.log('Enabled strategies for report:', enabledStrategies.map(s => s.id));
 
         // Safe insights extraction
         const benefits = withStrategies?.insights?.filter(i => i?.type === 'success') || [];
@@ -291,6 +308,15 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             if (projections && projections.length > 0 && projections[0]) {
                 const baseline = projections[0].baseline || {};
                 const optimized = projections[0].withStrategies || {};
+                
+                console.log('Chart data preparation:', {
+                    hasBaseline: !!baseline,
+                    hasOptimized: !!optimized,
+                    baselineFedTax: baseline.fedTax,
+                    baselineStateTax: baseline.stateTax,
+                    optimizedFedTax: optimized.fedTax,
+                    optimizedStateTax: optimized.stateTax
+                });
                 
                 taxBreakdownData = [
                     {
@@ -304,6 +330,10 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         stateTax: optimized.stateTax || 0
                     }
                 ];
+                
+                console.log('Generated chart data:', taxBreakdownData);
+            } else {
+                console.warn('No projections data available for chart');
             }
         } catch (e) {
             console.warn('Error preparing chart data:', e);

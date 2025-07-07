@@ -166,13 +166,13 @@ export default function App() {
     }, [scenario]);
 
     const handlePrint = () => {
-        // console.log('Print button clicked'); // Commented out
-        // console.log('Scenario:', scenario); // Commented out
-        // console.log('Results:', calculationResults); // Commented out
+        console.log('Print button clicked');
+        console.log('Scenario:', scenario);
+        console.log('Results:', calculationResults);
         
         const printContainer = document.getElementById('print-mount');
         if (!printContainer) {
-            // console.error('Print container not found'); // Commented out
+            console.error('Print container not found');
             return;
         }
 
@@ -188,14 +188,14 @@ export default function App() {
                 />, 
                 printContainer, 
                 () => {
-                    // console.log('Print component rendered, starting print...'); // Commented out
+                    console.log('Print component rendered, starting print...');
                     setTimeout(() => {
                         window.print();
                     }, 100);
                 }
             );
         } catch (error) {
-            // console.error('Print rendering error:', error); // Commented out
+            console.error('Print rendering error:', error);
             
             // Fallback: create a simple HTML report
             printContainer.innerHTML = `
