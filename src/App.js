@@ -21,7 +21,7 @@ import Header from './components/Header';
 import ClientInputSection from './components/ClientInputSection';
 import StrategiesSection from './components/StrategiesSection';
 import ResultsDashboard from './components/ResultsDashboard';
-import InsightsSection from './components/components/InsightsSection'; // Corrected path
+import InsightsSection from './components/InsightsSection'; // CORRECTED PATH
 import ChartsSection from './components/ChartsSection';
 import AppFooter from './components/AppFooter';
 
