@@ -280,6 +280,8 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             capitalAllocated: cumulative?.capitalAllocated || 0
         };
 
+        console.log('Safe results extracted:', safeResults);
+
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
         
@@ -298,9 +300,11 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
 
         console.log('Enabled strategies for report:', enabledStrategies.map(s => s.id));
 
-        // Safe insights extraction
+        // Safe insights extraction with null checks
         const benefits = withStrategies?.insights?.filter(i => i?.type === 'success') || [];
         const considerations = withStrategies?.insights?.filter(i => i?.type === 'warning') || [];
+
+        console.log('Insights extracted:', { benefits: benefits.length, considerations: considerations.length });
 
         // Safe chart data preparation
         let taxBreakdownData = [];
@@ -339,6 +343,14 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             console.warn('Error preparing chart data:', e);
             taxBreakdownData = [];
         }
+
+        console.log('About to render report content with data:', {
+            safeResults,
+            enabledStrategiesCount: enabledStrategies.length,
+            benefitsCount: benefits.length,
+            considerationsCount: considerations.length,
+            taxBreakdownDataLength: taxBreakdownData.length
+        });
 
         return (
             <div ref={ref} style={styles.page}>
@@ -403,22 +415,22 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         <h2 style={styles.sectionTitle}>Strategic Implementation Insights</h2>
                         <div style={styles.insightContainer}>
                             <div style={styles.insightColumn}>
-                                {benefits.map((insight, index) => (
+                                {benefits.slice(0, 10).map((insight, index) => (
                                     <div key={`b-${index}`} style={styles.insightCard}>
                                         <div style={{...styles.insightTitle, color: '#2e7d32'}}>
                                             <span style={{fontSize: '1.2rem'}}>✓</span> Strategic Benefit
                                         </div>
-                                        <p style={styles.insightText}>{insight.text}</p>
+                                        <p style={styles.insightText}>{insight?.text || 'Benefit information not available'}</p>
                                     </div>
                                 ))}
                             </div>
                             <div style={styles.insightColumn}>
-                                {considerations.map((insight, index) => (
+                                {considerations.slice(0, 10).map((insight, index) => (
                                     <div key={`c-${index}`} style={{...styles.insightCard, backgroundColor: '#fffbe6', borderColor: '#fcd34d'}}>
                                         <div style={{...styles.insightTitle, color: '#d97706'}}>
                                             <span style={{fontSize: '1.2rem'}}>⚠️</span> Implementation Consideration
                                         </div>
-                                        <p style={styles.insightText}>{insight.text}</p>
+                                        <p style={styles.insightText}>{insight?.text || 'Consideration information not available'}</p>
                                     </div>
                                 ))}
                             </div>
@@ -470,21 +482,30 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                 </thead>
                                 <tbody>
                                     {projections.map((proj, index) => {
-                                        if (!proj) return null;
-                                        return (
-                                            <tr key={index}>
-                                                <td style={styles.td}>Year {proj.year}</td>
-                                                <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
-                                                    {formatCurrency(proj.baseline?.totalTax || 0)}
-                                                </td> 
-                                                <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
-                                                    {formatCurrency(proj.withStrategies?.totalTax || 0)}
-                                                </td>
-                                                <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
-                                                    {formatCurrency((proj.baseline?.totalTax || 0) - (proj.withStrategies?.totalTax || 0))}
-                                                </td>
-                                            </tr>
-                                        );
+                                        if (!proj || typeof proj.year === 'undefined') return null;
+                                        try {
+                                            const baselineTax = proj.baseline?.totalTax || 0;
+                                            const optimizedTax = proj.withStrategies?.totalTax || 0;
+                                            const annualSavings = Math.max(0, baselineTax - optimizedTax);
+                                            
+                                            return (
+                                                <tr key={index}>
+                                                    <td style={styles.td}>Year {proj.year}</td>
+                                                    <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
+                                                        {formatCurrency(baselineTax)}
+                                                    </td> 
+                                                    <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
+                                                        {formatCurrency(optimizedTax)}
+                                                    </td>
+                                                    <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
+                                                        {formatCurrency(annualSavings)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        } catch (e) {
+                                            console.warn('Error rendering projection row:', e, proj);
+                                            return null;
+                                        }
                                     }).filter(Boolean)}
                                 </tbody>
                             </table>
@@ -503,23 +524,28 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                 </thead>
                                 <tbody>
                                     {projections.map((proj, index) => {
-                                        if (!proj || proj.cumulativeSavings === undefined || proj.cumulativeSavings === null) return null;
+                                        if (!proj || typeof proj.year === 'undefined' || proj.cumulativeSavings === undefined || proj.cumulativeSavings === null) return null;
                                         
-                                        const baselineTax = proj.baseline?.totalTax || 0;
-                                        const optimizedTax = proj.withStrategies?.totalTax || 0; 
-                                        const savingsRate = baselineTax > 0 ? (baselineTax - optimizedTax) / baselineTax : 0;
-                                        
-                                        return (
-                                            <tr key={index}>
-                                                <td style={styles.td}>Year {proj.year}</td>
-                                                <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
-                                                    {formatCurrency(proj.cumulativeSavings || 0)}
-                                                </td>
-                                                <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
-                                                    {formatPercentage(savingsRate)}
-                                                </td>
-                                            </tr>
-                                        );
+                                        try {
+                                            const baselineTax = proj.baseline?.totalTax || 0;
+                                            const optimizedTax = proj.withStrategies?.totalTax || 0; 
+                                            const savingsRate = baselineTax > 0 ? Math.max(0, (baselineTax - optimizedTax) / baselineTax) : 0;
+                                            
+                                            return (
+                                                <tr key={index}>
+                                                    <td style={styles.td}>Year {proj.year}</td>
+                                                    <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
+                                                        {formatCurrency(Math.max(0, proj.cumulativeSavings || 0))}
+                                                    </td>
+                                                    <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                                                        {formatPercentage(savingsRate)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        } catch (e) {
+                                            console.warn('Error rendering cumulative savings row:', e, proj);
+                                            return null;
+                                        }
                                     }).filter(Boolean)}
                                 </tbody>
                             </table>
