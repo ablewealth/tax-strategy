@@ -296,7 +296,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     const apiKey = process.env.REACT_APP_GEMINI_API_KEY || ""; 
                     
                     if (!apiKey) {
-                        setInteractionError('API key not configured. Strategy interaction analysis is unavailable.');
+                        setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
                         setLoadingInteraction(false);
                         return;
                     }
@@ -533,7 +533,14 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         {loadingInteraction ? (
                             <p style={styles.loadingText}>Generating explanation of strategy interactions...</p>
                         ) : interactionError ? (
-                            <p style={{...styles.loadingText, color: '#dc2626'}}>Error: {interactionError}</p>
+                            <div style={{...styles.loadingText, color: '#dc2626', backgroundColor: '#fef2f2', padding: '1rem', borderRadius: '4px', border: '1px solid #fecaca'}}>
+                                <strong>AI Analysis Unavailable:</strong> {interactionError}
+                                {interactionError.includes('API key') && (
+                                    <div style={{marginTop: '0.5rem', fontSize: '9pt', color: '#991b1b'}}>
+                                        To enable AI-powered strategy analysis, configure your Gemini API key in the .env file.
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <p style={styles.interactionText}>{interactionExplanation || 'No specific interactions to highlight for the selected strategies.'}</p>
                         )}
