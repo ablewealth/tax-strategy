@@ -18,14 +18,14 @@ const formatAIAnalysis = (text) => {
             if (match) {
                 const [, number, title, content] = match;
                 return (
-                    <div key={index} className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-400 shadow-sm">
-                        <h4 className="text-lg font-bold text-blue-900 mb-3 flex items-center">
-                            <span className="bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm mr-3">
+                    <div key={index} className="mb-4 p-4 bg-white rounded border-l-4 border-blue-600">
+                        <h4 className="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                            <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2 font-semibold">
                                 {number.replace('.', '')}
                             </span>
                             {title.replace(/\*\*/g, '')}
                         </h4>
-                        <div className="text-gray-700 leading-relaxed pl-10">
+                        <div className="text-gray-700 leading-relaxed pl-8">
                             {formatInlineText(content)}
                         </div>
                     </div>
@@ -36,8 +36,8 @@ const formatAIAnalysis = (text) => {
         // Handle main headings with **text** (but not headings with ### or ##)
         if (/^\*\*[^*]+\*\*$/.test(trimmedPart) && !trimmedPart.includes(':') && !trimmedPart.startsWith('#')) {
             return (
-                <div key={index} className="mb-5 mt-7">
-                    <h3 className="text-xl font-bold text-blue-900 mb-3 pb-2 border-b-2 border-blue-200 inline-block">
+                <div key={index} className="mb-4 mt-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 pb-2 border-b border-gray-300">
                         {trimmedPart.replace(/\*\*/g, '')}
                     </h3>
                 </div>
@@ -49,11 +49,11 @@ const formatAIAnalysis = (text) => {
             const level = trimmedPart.match(/^(#{2,3})/)[1].length;
             const text = trimmedPart.replace(/^#{2,3}\s*/, '');
             const headingClass = level === 2 ? 
-                "text-xl font-bold text-blue-900 mb-3 pb-2 border-b-2 border-blue-200 inline-block" :
-                "text-lg font-semibold text-blue-800 mb-2";
+                "text-xl font-bold text-gray-900 mb-2 pb-2 border-b border-gray-300" :
+                "text-lg font-semibold text-gray-800 mb-2";
             
             return (
-                <div key={index} className={level === 2 ? "mb-5 mt-7" : "mb-4 mt-5"}>
+                <div key={index} className={level === 2 ? "mb-4 mt-6" : "mb-3 mt-4"}>
                     <h3 className={headingClass}>
                         {text}
                     </h3>
@@ -66,8 +66,8 @@ const formatAIAnalysis = (text) => {
             const content = trimmedPart.replace(/^\*\*([^*]+):\*\*\s*/, '');
             const heading = trimmedPart.match(/^\*\*([^*]+):\*\*/)[1];
             return (
-                <div key={index} className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <h5 className="text-base font-semibold text-blue-800 mb-2 flex items-center">
+                <div key={index} className="mb-3 bg-gray-50 p-3 rounded border border-gray-200">
+                    <h5 className="text-base font-semibold text-gray-800 mb-2 flex items-center">
                         <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
                         {heading}:
                     </h5>
@@ -82,12 +82,12 @@ const formatAIAnalysis = (text) => {
         if (trimmedPart.startsWith('>')) {
             const content = trimmedPart.replace(/^>\s*/, '');
             return (
-                <div key={index} className="mb-4 border-l-4 border-yellow-400 bg-yellow-50 p-4 rounded-r-lg">
+                <div key={index} className="mb-4 border-l-4 border-amber-400 bg-amber-50 p-4 rounded-r">
                     <div className="flex items-start">
-                        <svg className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
-                        <div className="text-yellow-800 leading-relaxed">
+                        <div className="text-amber-800 leading-relaxed">
                             {formatInlineText(content)}
                         </div>
                     </div>
@@ -99,8 +99,8 @@ const formatAIAnalysis = (text) => {
         if (trimmedPart.startsWith('*   ') || trimmedPart.startsWith('* ')) {
             const content = trimmedPart.replace(/^\*\s*/, '');
             return (
-                <div key={index} className="flex items-start mb-3 pl-4">
-                    <span className="text-blue-600 mr-3 mt-1 text-lg">•</span>
+                <div key={index} className="flex items-start mb-2 pl-3">
+                    <span className="text-blue-600 mr-3 mt-1">•</span>
                     <div className="text-gray-700 leading-relaxed flex-1">
                         {formatInlineText(content)}
                     </div>
@@ -114,8 +114,8 @@ const formatAIAnalysis = (text) => {
             if (match) {
                 const [, number, content] = match;
                 return (
-                    <div key={index} className="flex items-start mb-3 pl-4">
-                        <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 font-medium">
+                    <div key={index} className="flex items-start mb-2 pl-3">
+                        <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5 font-medium">
                             {number.replace('.', '')}
                         </span>
                         <div className="text-gray-700 leading-relaxed flex-1">
@@ -129,8 +129,8 @@ const formatAIAnalysis = (text) => {
         // Handle regular paragraphs with better spacing
         if (trimmedPart.length > 0) {
             return (
-                <div key={index} className="mb-4 p-3 bg-white rounded-md border border-gray-100 shadow-sm">
-                    <p className="text-gray-700 leading-relaxed text-base">
+                <div key={index} className="mb-3 p-3 bg-white rounded border border-gray-100">
+                    <p className="text-gray-700 leading-relaxed">
                         {formatInlineText(trimmedPart)}
                     </p>
                 </div>
@@ -313,19 +313,123 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
                 const optimizedTax = results?.cumulative?.optimizedTax || 0;
                 const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
                 
-                // Calculate strategy-specific data
-                const strategyContributions = enabledStrategies.map(strategy => {
+                // Calculate strategy-specific data (keeping for backward compatibility)
+                // const strategyContributions = enabledStrategies.map(strategy => {
+                //     const inputValue = clientData[strategy.inputRequired] || 0;
+                //     const estimatedSavings = inputValue * 0.25; // Rough estimate based on average tax rate
+                //     return {
+                //         name: strategy.name,
+                //         amount: inputValue,
+                //         estimatedSavings: estimatedSavings
+                //     };
+                // });
+                
+                // Calculate more precise strategy-specific savings and state impacts
+                
+                // Calculate more precise strategy-specific savings and state impacts
+                const strategyDetailsForAI = enabledStrategies.map(strategy => {
                     const inputValue = clientData[strategy.inputRequired] || 0;
-                    // Estimate individual strategy savings (simplified calculation)
-                    const estimatedSavings = inputValue * 0.25; // Rough estimate based on average tax rate
+                    let federalBenefit = 0;
+                    let stateBenefit = 0;
+                    let stateAddBack = 0;
+                    let specialConsiderations = '';
+                    
+                    // Calculate specific benefits based on strategy type and state
+                    switch (strategy.id) {
+                        case 'EQUIP_S179_01':
+                            federalBenefit = Math.min(inputValue, 1220000) * 0.35; // Rough federal tax benefit
+                            if (clientState === 'NY') {
+                                stateBenefit = Math.min(inputValue, 1220000) * 0.109; // NY allows full deduction
+                            } else { // NJ
+                                stateBenefit = Math.min(inputValue, 25000) * 0.1075; // NJ caps at $25K
+                                stateAddBack = Math.max(0, inputValue - 25000);
+                                specialConsiderations = 'NJ caps Section 179 at $25,000 with required add-back';
+                            }
+                            break;
+                        case 'SOLO401K_EMPLOYEE_01':
+                            federalBenefit = Math.min(inputValue, 23000) * 0.35;
+                            if (clientState === 'NY') {
+                                stateBenefit = Math.min(inputValue, 23000) * 0.109;
+                            } else { // NJ
+                                stateBenefit = 0; // NJ taxes 401k deferrals
+                                stateAddBack = Math.min(inputValue, 23000);
+                                specialConsiderations = 'NJ taxes 401(k) deferrals - no state tax benefit';
+                            }
+                            break;
+                        case 'SOLO401K_EMPLOYER_01':
+                        case 'DB_PLAN_01':
+                            federalBenefit = inputValue * 0.35;
+                            stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.1075);
+                            specialConsiderations = 'Reduces QBI base income';
+                            break;
+                        case 'QUANT_DEALS_01':
+                            const exposureRates = {
+                                '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, netBenefit: 0.035 },
+                                '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, netBenefit: 0.046 },
+                                '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, netBenefit: 0.069 },
+                                '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, netBenefit: 0.106 }
+                            };
+                            const exposure = exposureRates[clientData.dealsExposure] || exposureRates['175/75'];
+                            federalBenefit = inputValue * exposure.netBenefit * 0.35;
+                            stateBenefit = inputValue * exposure.netBenefit * (clientState === 'NY' ? 0.109 : 0.1075);
+                            specialConsiderations = `${clientData.dealsExposure || '175/75'} exposure level - ${(exposure.netBenefit * 100).toFixed(1)}% annual benefit`;
+                            break;
+                        case 'CHAR_CLAT_01':
+                            federalBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.35;
+                            if (clientState === 'NY') {
+                                stateBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.5 * 0.109;
+                                specialConsiderations = 'NY allows 50% of federal charitable deduction';
+                            } else {
+                                stateBenefit = 0;
+                                specialConsiderations = 'NJ provides no state tax benefit for charitable deductions';
+                            }
+                            break;
+                        case 'OG_USENERGY_01':
+                            federalBenefit = inputValue * 0.70 * 0.35;
+                            if (clientState === 'NY') {
+                                stateBenefit = inputValue * 0.70 * 0.109;
+                            } else {
+                                stateBenefit = 0;
+                                specialConsiderations = 'NJ provides no state deduction for oil & gas investments';
+                            }
+                            break;
+                        case 'FILM_SEC181_01':
+                            federalBenefit = inputValue * 0.35;
+                            if (clientState === 'NY') {
+                                stateBenefit = inputValue * 0.109;
+                            } else {
+                                stateBenefit = 0;
+                                specialConsiderations = 'NJ provides no state deduction for film investments';
+                            }
+                            break;
+                        case 'QBI_FINAL_01':
+                            if (businessIncome > 0) {
+                                federalBenefit = businessIncome * 0.20 * 0.35;
+                                stateBenefit = 0; // QBI is federal only
+                                specialConsiderations = 'Federal-only benefit, no state equivalent';
+                            }
+                            break;
+                        default:
+                            // For any other strategies, use generic calculation
+                            federalBenefit = inputValue * 0.25; // 25% effective tax rate estimate
+                            stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.1075) * 0.5; // Conservative state benefit
+                            specialConsiderations = 'Generic strategy calculation';
+                            break;
+                    }
+                    
                     return {
                         name: strategy.name,
+                        id: strategy.id,
                         amount: inputValue,
-                        estimatedSavings: estimatedSavings
+                        federalBenefit: federalBenefit,
+                        stateBenefit: stateBenefit,
+                        stateAddBack: stateAddBack,
+                        totalBenefit: federalBenefit + stateBenefit,
+                        specialConsiderations: specialConsiderations
                     };
                 });
-                
-                const prompt = `You are a tax strategist analyzing specific strategies for a ${stateDisplayName} resident. Generate a concise, actionable analysis.
+
+                const prompt = `You are a tax strategist analyzing ${enabledStrategies.length} specific strategies for a ${stateDisplayName} resident in 2025. Generate a concise, actionable analysis focusing on strategy interactions and optimal sequencing.
 
 **Client Profile:**
 - W2 Income: $${w2Income.toLocaleString()}
@@ -340,40 +444,47 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
 - Current Year Savings: $${currentYearSavings.toLocaleString()}
 - Total Multi-Year Savings: $${totalSavings.toLocaleString()}
 
-**Selected Strategies with Amounts:**
-${strategyContributions.map(s => `- ${s.name}: $${s.amount.toLocaleString()} (Est. savings: $${s.estimatedSavings.toLocaleString()})`).join('\n')}
+**Strategy Analysis with ${stateDisplayName} Impact:**
+${strategyDetailsForAI.map(s => `- **${s.name}**: $${s.amount.toLocaleString()} → Fed: $${s.federalBenefit.toLocaleString()} | State: $${s.stateBenefit.toLocaleString()}${s.stateAddBack > 0 ? ` | Add-back: $${s.stateAddBack.toLocaleString()}` : ''} | Total: $${s.totalBenefit.toLocaleString()}${s.specialConsiderations ? ` | ${s.specialConsiderations}` : ''}`).join('\n')}
 
-**CRITICAL: Use only ** for bold text. Never use ### or ## for headings. Format as follows:**
+**CRITICAL: Use only ** for bold text. Never use ### or ## for headings. Provide specific analysis for 2025+ tax years:**
 
-**Strategy Performance Analysis**
+**Strategy Effectiveness Ranking**
 
-For each strategy above, analyze:
-- Actual tax reduction impact
-- ${stateDisplayName} state tax benefits/limitations
-- Cost vs. benefit ratio
+Rank strategies by total tax benefit (federal + state):
+1. [Highest total benefit strategy] - $[amount] total savings
+2. [Second highest] - $[amount] total savings
+3. [Continue for all strategies]
 
-**${stateDisplayName} State Tax Impact**
+**${stateDisplayName} State Tax Optimization**
 
-Specific to your $${currentYearSavings.toLocaleString()} in current savings:
-- How ${stateDisplayName} amplifies or reduces federal benefits
-- State-specific deduction limits affecting your strategies
-- Net state vs. federal tax optimization
+${clientState === 'NJ' ? 'New Jersey specific impacts:' : 'New York specific impacts:'}
+- ${clientState === 'NJ' ? 'Section 179 capped at $25,000 (add-back required above this)' : 'Section 179 fully deductible at state level'}
+- ${clientState === 'NJ' ? '401(k) deferrals are taxable (no state benefit)' : '401(k) deferrals are deductible'}
+- ${clientState === 'NJ' ? 'No state benefits for charitable, oil & gas, or film investments' : 'Partial state benefits for charitable (50%), full for oil & gas and film'}
+- Net state impact: $[calculate net state benefit vs. federal]
 
-**Optimization Recommendations**
+**Strategy Sequencing for Maximum Benefit**
 
 Based on your $${totalSavings.toLocaleString()} potential savings:
-1. [Highest impact strategy] - prioritize first
-2. [Strategy timing] - when to implement
-3. [State-specific adjustments] for ${stateDisplayName}
+1. **Priority 1**: [Strategy with highest ROI] - implement first for [specific reason]
+2. **Priority 2**: [Strategy with timing benefits] - [timing consideration]
+3. **Priority 3**: [Strategy with interaction benefits] - [interaction with other strategies]
 
-**Bottom Line**
+**Critical Interactions**
 
-- Your current optimization saves: $${currentYearSavings.toLocaleString()}/year
-- Most effective strategy: [name specific strategy and dollar impact]
-- ${stateDisplayName} advantage: [specific state benefit with dollar amount]
-- Next action: [immediate next step]
+- **Positive synergies**: [Which strategies work better together and why]
+- **Negative interactions**: [Which strategies reduce each other's effectiveness]
+- **Timing dependencies**: [Which strategies must be implemented in specific order]
 
-Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplayName} state rules.`;
+**2025 Tax Year Action Plan**
+
+Your immediate next steps:
+1. [Most urgent action with deadline]
+2. [Second priority with timeline]
+3. [Third priority with implementation notes]
+
+Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLocaleString()} savings and ${stateDisplayName} state rules.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -444,30 +555,30 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
             description="Comprehensive analysis of how your selected strategies work together, tailored to your state and financial profile"
         >
             {loadingInteraction ? (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center justify-center py-8">
                         <div className="relative">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
-                            <div className="absolute inset-0 rounded-full h-12 w-12 border-4 border-transparent border-t-blue-400 animate-spin" style={{animationDuration: '1.5s'}}></div>
+                            <div className="animate-spin rounded-full h-10 w-10 border-3 border-gray-200 border-t-blue-600"></div>
+                            <div className="absolute inset-0 rounded-full h-10 w-10 border-3 border-transparent border-t-blue-400 animate-spin" style={{animationDuration: '1.5s'}}></div>
                         </div>
                         <div className="ml-4">
-                            <div className="text-lg font-semibold text-blue-900 mb-1">
+                            <div className="text-lg font-semibold text-gray-900 mb-1">
                                 Professional Tax Analysis in Progress
                             </div>
-                            <div className="text-sm text-blue-700">
+                            <div className="text-sm text-gray-600">
                                 Generating comprehensive strategy analysis for {scenario?.clientData?.state || 'your state'} residents...<br/>
-                                <span className="text-xs opacity-75">This detailed analysis may take up to 30 seconds</span>
+                                <span className="text-xs text-gray-500">This detailed analysis may take up to 30 seconds</span>
                             </div>
                         </div>
                     </div>
-                    <div className="mt-6 bg-white rounded-lg p-4 border border-blue-100">
+                    <div className="mt-4 bg-gray-50 rounded p-4 border border-gray-100">
                         <div className="text-sm text-gray-600 mb-3">
                             <strong>Client Profile:</strong>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <span className="text-xs text-gray-500">State of Residence:</span>
-                                <div className="font-medium text-blue-800">
+                                <div className="font-medium text-gray-800">
                                     {scenario?.clientData?.state === 'NJ' ? 'New Jersey' : 
                                      scenario?.clientData?.state === 'NY' ? 'New York' : 
                                      scenario?.clientData?.state || 'Not specified'}
@@ -475,12 +586,12 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                             </div>
                             <div>
                                 <span className="text-xs text-gray-500">Selected Strategies:</span>
-                                <div className="font-medium text-blue-800">{enabledStrategies.length}</div>
+                                <div className="font-medium text-gray-800">{enabledStrategies.length}</div>
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {enabledStrategies.map((strategy, index) => (
-                                <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
                                     {strategy.name}
                                 </span>
                             ))}
@@ -488,11 +599,11 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                     </div>
                 </div>
             ) : interactionError ? (
-                <div className="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-6 shadow-lg">
+                <div className="bg-white border border-red-200 rounded-lg p-6">
                     <div className="flex items-start">
                         <div className="flex-shrink-0 mr-4">
                             <div className="bg-red-100 rounded-full p-3">
-                                <svg className="h-6 w-6 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
                             </div>
@@ -502,7 +613,7 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                             <p className="text-red-800 mb-4 leading-relaxed">{interactionError}</p>
                             
                             {interactionError.includes('API key') && (
-                                <div className="bg-red-100 border border-red-200 rounded-lg p-4 mb-4">
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                                     <h5 className="font-medium text-red-900 mb-2">Setup Required</h5>
                                     <p className="text-sm text-red-800 mb-3">
                                         To enable AI-powered strategy analysis, you'll need to configure your Gemini API key.
@@ -515,11 +626,11 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                                 </div>
                             )}
                             
-                            <div className="bg-white rounded-lg p-4 border border-red-100">
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                                 <h5 className="font-medium text-gray-900 mb-2">Selected Strategies:</h5>
                                 <div className="flex flex-wrap gap-2">
                                     {enabledStrategies.map((strategy, index) => (
-                                        <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                                        <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm">
                                             {strategy.name}
                                         </span>
                                     ))}
@@ -530,12 +641,12 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                 </div>
             ) : interactionExplanation ? (
                 <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 shadow-lg">
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center">
-                                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-2 mr-3">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="bg-blue-600 rounded-full p-2 mr-3">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                                         </svg>
                                     </div>
@@ -569,13 +680,13 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                         </div>
                         
                         <div className="prose prose-lg max-w-none">
-                            <div className="ai-analysis-content space-y-4">
+                            <div className="ai-analysis-content space-y-3">
                                 {formatAIAnalysis(interactionExplanation)}
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-3 rounded">
                         <div className="flex items-center">
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -591,10 +702,10 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                     </div>
                 </div>
             ) : (
-                <div className="bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200 rounded-xl p-8 text-center">
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
                     <div className="mb-6">
-                        <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full p-4 w-20 h-20 mx-auto mb-4">
-                            <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-blue-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+                            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                             </svg>
                         </div>
@@ -612,21 +723,21 @@ Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplay
                         </button>
                     </div>
                     
-                    <div className="bg-white rounded-lg p-6 border border-gray-200 max-w-md mx-auto">
+                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 max-w-md mx-auto">
                         <div className="text-sm text-gray-600 mb-4">
                             <strong>How it works:</strong>
                         </div>
                         <div className="space-y-3 text-sm text-gray-700">
                             <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3 mt-0.5">1</span>
+                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">1</span>
                                 <span>Choose 2 or more tax strategies</span>
                             </div>
                             <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3 mt-0.5">2</span>
+                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">2</span>
                                 <span>Click to generate AI analysis</span>
                             </div>
                             <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3 mt-0.5">3</span>
+                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">3</span>
                                 <span>Get professional insights on optimization</span>
                             </div>
                         </div>
