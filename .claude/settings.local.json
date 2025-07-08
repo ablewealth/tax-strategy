@@ -4,7 +4,9 @@
       "Bash(npm test:*)",
       "Bash(rm:*)",
       "Bash(npm run deploy:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm start)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }
