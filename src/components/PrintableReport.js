@@ -1,14 +1,14 @@
 import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants';
 
-// --- Style Definitions for a Professional UHNW Report ---
+// --- Compact Style Definitions for Dense Data Layout ---
 const styles = {
     page: {
         fontFamily: "'Roboto', sans-serif",
-        padding: '2cm',
+        padding: '1.5cm', // Reduced padding for more content
         color: '#333',
-        lineHeight: 1.4, // Good for readability in print
-        fontSize: '10pt',
+        lineHeight: 1.3, // Tighter line spacing
+        fontSize: '9pt', // Smaller base font
         backgroundColor: '#fff',
     },
     header: {
@@ -16,192 +16,206 @@ const styles = {
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         borderBottom: '1px solid #333',
-        paddingBottom: '1rem',
-        marginBottom: '2rem',
+        paddingBottom: '0.5rem', // Reduced padding
+        marginBottom: '1rem', // Reduced margin
     },
     logo: {
-        height: '25px',
+        height: '20px', // Smaller logo
     },
     headerText: {
         textAlign: 'right',
     },
     reportTitle: {
         fontFamily: "'Lato', sans-serif",
-        fontSize: '20pt',
+        fontSize: '16pt', // Smaller title
         fontWeight: '900',
         margin: 0,
         color: '#111',
     },
     clientInfo: {
-        fontSize: '10pt',
+        fontSize: '9pt',
         color: '#555',
-        lineHeight: 1.5,
+        lineHeight: 1.3,
     },
     section: {
-        marginBottom: '2rem',
-        pageBreakInside: 'avoid', // Prevents sections from breaking across pages
+        marginBottom: '1rem', // Reduced section spacing
+        pageBreakInside: 'avoid',
     },
     sectionTitle: {
         fontFamily: "'Lato', sans-serif",
-        fontSize: '14pt',
+        fontSize: '12pt', // Smaller section titles
         fontWeight: '700',
         borderBottom: '1px solid #ddd',
-        paddingBottom: '0.5rem',
-        marginBottom: '1rem',
+        paddingBottom: '0.25rem', // Reduced padding
+        marginBottom: '0.5rem', // Reduced margin
         color: '#111',
     },
     summaryGrid: {
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '1rem 1.5rem',
+        gridTemplateColumns: '1fr 1fr 1fr', // 3 columns instead of 2
+        gap: '0.5rem 1rem', // Reduced gaps
     },
     metric: {
-        backgroundColor: '#f9f9f9', // Light background for metrics
+        backgroundColor: '#f9f9f9',
         border: '1px solid #eee',
-        padding: '1rem',
-        borderRadius: '4px',
+        padding: '0.5rem', // Reduced padding
+        borderRadius: '2px',
     },
     metricLabel: {
-        fontSize: '9pt',
+        fontSize: '8pt', // Smaller labels
         color: '#666',
-        marginBottom: '0.25rem',
+        marginBottom: '0.15rem',
         textTransform: 'uppercase',
-        letterSpacing: '0.5px',
+        letterSpacing: '0.3px',
     },
     metricValue: {
-        fontSize: '16pt',
+        fontSize: '12pt', // Smaller values
         fontWeight: '700',
         color: '#111',
     },
-    // Simplified highlight metric for print
     highlightMetric: {
-        backgroundColor: '#f0fdf0', // Very light green for subtle highlight
+        backgroundColor: '#f0fdf0',
         borderColor: '#d0e0d0',
     },
     highlightValue: {
-        color: '#2e7d32', // Darker green for value
+        color: '#2e7d32',
     },
     table: {
         width: '100%',
         borderCollapse: 'collapse',
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller table font
     },
     th: {
         textAlign: 'left',
-        padding: '0.5rem 0.75rem',
+        padding: '0.3rem 0.5rem', // Reduced padding
         borderBottom: '1.5px solid #333',
         fontFamily: "'Lato', sans-serif",
         fontWeight: '700',
+        fontSize: '8pt',
     },
     td: {
         textAlign: 'left',
-        padding: '0.5rem 0.75rem',
+        padding: '0.3rem 0.5rem', // Reduced padding
         borderBottom: '1px solid #eee',
+        fontSize: '8pt',
     },
     tdRight: {
         textAlign: 'right',
-        padding: '0.5rem 0.75rem',
+        padding: '0.3rem 0.5rem', // Reduced padding
         borderBottom: '1px solid #eee',
+        fontSize: '8pt',
     },
     insightContainer: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: '1.5rem',
+        gap: '0.5rem', // Reduced gap
     },
     insightColumn: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
+        gap: '0.5rem', // Reduced gap
     },
-    // Simplified insight card for print
     insightCard: {
         border: '1px solid #eee',
-        borderRadius: '4px',
-        padding: '1rem',
-        backgroundColor: '#fefefe', // Almost white for general insights
+        borderRadius: '2px',
+        padding: '0.5rem', // Reduced padding
+        backgroundColor: '#fefefe',
     },
     insightTitle: {
         fontFamily: "'Lato', sans-serif",
         fontWeight: '700',
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller insight titles
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
-        marginBottom: '0.5rem',
+        gap: '0.25rem',
+        marginBottom: '0.25rem',
     },
     insightText: {
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller insight text
         color: '#444',
-        paddingLeft: '1.75rem', // Aligns text with bullet/icon
+        paddingLeft: '1rem', // Reduced padding
+        lineHeight: 1.2,
     },
-    // Specific style for warning insights
     warningInsightCard: {
-        backgroundColor: '#fffdf0', // Very light yellow for warning
+        backgroundColor: '#fffdf0',
         borderColor: '#f0e0c0',
     },
     footer: {
-        marginTop: '2.5rem',
-        paddingTop: '1rem',
+        marginTop: '1rem', // Reduced margin
+        paddingTop: '0.5rem', // Reduced padding
         borderTop: '1px solid #ccc',
-        fontSize: '7.5pt',
+        fontSize: '6pt', // Smaller footer text
         color: '#777',
-        lineHeight: 1.4,
-        pageBreakBefore: 'always', // Ensures footer starts on a new page if content is long
+        lineHeight: 1.2,
+        pageBreakBefore: 'auto', // Allow natural page breaks for compact layout
     },
-    chartPlaceholder: {
-        backgroundColor: '#f8f9fa',
-        border: '2px dashed #dee2e6',
-        borderRadius: '8px',
-        padding: '3rem',
-        textAlign: 'center',
-        margin: '2rem 0',
-    },
-    chartText: {
-        fontSize: '12pt',
-        color: '#6c757d',
-        fontStyle: 'italic',
-    },
-    // New styles for detailed strategy explanations
     strategyDetail: {
-        marginBottom: '1.5rem',
+        marginBottom: '0.75rem', // Reduced margin
         pageBreakInside: 'avoid',
     },
     strategyDetailTitle: {
         fontFamily: "'Lato', sans-serif",
-        fontSize: '12pt',
+        fontSize: '10pt', // Smaller strategy titles
         fontWeight: '700',
         color: '#111',
-        marginBottom: '0.5rem',
+        marginBottom: '0.25rem', // Reduced margin
     },
     strategyDetailDescription: {
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller descriptions
         color: '#444',
-        lineHeight: 1.5,
+        lineHeight: 1.3,
     },
-    // New styles for interactions section
     interactionText: {
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller interaction text
         color: '#444',
-        lineHeight: 1.5,
+        lineHeight: 1.3,
         backgroundColor: '#f8f8f8',
         border: '1px solid #eee',
-        padding: '1rem',
-        borderRadius: '4px',
+        padding: '0.5rem', // Reduced padding
+        borderRadius: '2px',
     },
     loadingText: {
-        fontSize: '10pt',
+        fontSize: '8pt', // Smaller loading text
         color: '#666',
         fontStyle: 'italic',
+    },
+    // New compact styles for better data density
+    compactTable: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        fontSize: '7pt', // Even smaller for dense data
+        marginBottom: '0.5rem',
+    },
+    compactTh: {
+        textAlign: 'left',
+        padding: '0.2rem 0.3rem',
+        borderBottom: '1px solid #333',
+        fontFamily: "'Lato', sans-serif",
+        fontWeight: '700',
+        fontSize: '7pt',
+        backgroundColor: '#f5f5f5',
+    },
+    compactTd: {
+        textAlign: 'left',
+        padding: '0.2rem 0.3rem',
+        borderBottom: '1px solid #eee',
+        fontSize: '7pt',
+    },
+    compactTdRight: {
+        textAlign: 'right',
+        padding: '0.2rem 0.3rem',
+        borderBottom: '1px solid #eee',
+        fontSize: '7pt',
     }
 };
 
-// Simple data table - always works
+// Compact data table for dense information display
 const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#083038' }) => {
     if (!data || data.length === 0) {
         return (
-            <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h3>
-                <p style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>
+            <div style={{ marginBottom: '1rem' }}>
+                <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '10pt' }}>{title}</h3>
+                <p style={{ textAlign: 'center', fontStyle: 'italic', color: '#666', fontSize: '8pt' }}>
                     No data available for analysis.
                 </p>
             </div>
@@ -209,28 +223,28 @@ const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#08303
     }
 
     return (
-        <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h3>
-            <table style={styles.table}>
+        <div style={{ marginBottom: '1rem' }}>
+            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '10pt' }}>{title}</h3>
+            <table style={styles.compactTable}>
                 <thead>
                     <tr>
-                        <th style={styles.th}>Scenario</th>
-                        <th style={{ ...styles.th, textAlign: 'right' }}>Federal Tax</th>
-                        <th style={{ ...styles.th, textAlign: 'right' }}>State Tax</th>
-                        <th style={{ ...styles.th, textAlign: 'right' }}>Total Tax</th>
+                        <th style={styles.compactTh}>Scenario</th>
+                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Federal Tax</th>
+                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>State Tax</th>
+                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Total Tax</th>
                     </tr>
                 </thead>
                 <tbody>
                     {data.map((item, index) => (
                         <tr key={index}>
-                            <td style={styles.td}>{item.scenario}</td>
-                            <td style={{ ...styles.tdRight, color: federalColor, fontWeight: 'bold' }}>
+                            <td style={styles.compactTd}>{item.scenario}</td>
+                            <td style={{ ...styles.compactTdRight, color: federalColor, fontWeight: 'bold' }}>
                                 {formatCurrency(item.federalTax || 0)}
                             </td>
-                            <td style={{ ...styles.tdRight, color: stateColor, fontWeight: 'bold' }}>
+                            <td style={{ ...styles.compactTdRight, color: stateColor, fontWeight: 'bold' }}>
                                 {formatCurrency(item.stateTax || 0)}
                             </td>
-                            <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                            <td style={{ ...styles.compactTdRight, fontWeight: 'bold' }}>
                                 {formatCurrency((item.federalTax || 0) + (item.stateTax || 0))}
                             </td>
                         </tr>
@@ -241,16 +255,6 @@ const DataTable = ({ data, title, federalColor = '#041D5B', stateColor = '#08303
     );
 };
 
-// Chart placeholder for print
-const ChartPlaceholder = ({ title, description }) => (
-    <div style={styles.chartPlaceholder}>
-        <h3 style={{ ...styles.chartText, fontWeight: 'bold', marginBottom: '1rem' }}>{title}</h3>
-        <p style={styles.chartText}>{description}</p>
-        <p style={{ ...styles.chartText, marginTop: '1rem', fontSize: '9pt' }}>
-            Interactive charts are available in the digital version of this report.
-        </p>
-    </div>
-);
 
 // --- Main Report Component ---
 const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
@@ -450,20 +454,24 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     <h2 style={styles.sectionTitle}>Executive Summary</h2>
                     <div style={styles.summaryGrid}>
                         <div style={styles.metric}>
-                            <div style={styles.metricLabel}>Baseline Tax Liability</div>
+                            <div style={styles.metricLabel}>Baseline Tax</div>
                             <div style={styles.metricValue}>{formatCurrency(safeResults.baselineTax)}</div>
                         </div>
                         <div style={styles.metric}>
-                            <div style={styles.metricLabel}>Optimized Tax Liability</div>
+                            <div style={styles.metricLabel}>Optimized Tax</div>
                             <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
                         </div>
                         <div style={{...styles.metric, ...styles.highlightMetric}}>
-                            <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Potential Tax Savings</div>
+                            <div style={{...styles.metricLabel, color: '#2e7d32'}}>Total Savings</div>
                             <div style={{...styles.metricValue, ...styles.highlightValue}}>{formatCurrency(safeResults.totalSavings)}</div>
                         </div>
                         <div style={styles.metric}>
-                            <div style={styles.metricLabel}>Effective Tax Rate Reduction</div>
+                            <div style={styles.metricLabel}>Tax Rate Reduction</div>
                             <div style={styles.metricValue}>{formatPercentage(savingsPercentage)}</div>
+                        </div>
+                        <div style={styles.metric}>
+                            <div style={styles.metricLabel}>Capital Allocated</div>
+                            <div style={styles.metricValue}>{formatCurrency(safeResults.capitalAllocated)}</div>
                         </div>
                     </div>
                 </section>
@@ -471,18 +479,18 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                 {enabledStrategies.length > 0 && (
                     <section style={styles.section}>
                         <h2 style={styles.sectionTitle}>Applied Strategies & Contributions</h2>
-                        <table style={styles.table}>
+                        <table style={styles.compactTable}>
                             <thead>
                                 <tr>
-                                    <th style={styles.th}>Strategy / Plan</th>
-                                    <th style={{...styles.th, textAlign: 'right'}}>Amount</th>
+                                    <th style={styles.compactTh}>Strategy / Plan</th>
+                                    <th style={{...styles.compactTh, textAlign: 'right'}}>Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {enabledStrategies.map((strategy) => (
                                     <tr key={strategy.id}>
-                                        <td style={styles.td}>{strategy.name}</td>
-                                        <td style={styles.tdRight}>{formatCurrency(scenario.clientData[strategy.inputRequired] || 0)}</td>
+                                        <td style={styles.compactTd}>{strategy.name}</td>
+                                        <td style={styles.compactTdRight}>{formatCurrency(scenario.clientData[strategy.inputRequired] || 0)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -561,35 +569,20 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     />
                 </section>
 
-                {/* Charts Section - Replaced with placeholders for print reliability */}
-                <section style={{...styles.section, pageBreakBefore: 'always'}}>
-                    <h2 style={styles.sectionTitle}>Visual Analysis</h2>
-                    <ChartPlaceholder 
-                        title="Tax Liability Comparison"
-                        description="Interactive bar chart showing baseline vs optimized tax scenarios with federal and state breakdown"
-                    />
-                    {projections && projections.length > 1 && (
-                        <ChartPlaceholder 
-                            title="Multi-Year Projections"
-                            description="Interactive charts showing annual tax comparison and cumulative savings over time"
-                        />
-                    )}
-                </section>
-
                 {projections && projections.length > 1 && (
-                    <section style={{...styles.section, pageBreakBefore: 'always'}}>
+                    <section style={styles.section}>
                         <h2 style={styles.sectionTitle}>Multi-Year Projections</h2>
                         
                         {/* Annual Tax Comparison Table */}
-                        <div style={{ marginBottom: '3rem' }}>
-                            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Annual Tax Liability Comparison</h3>
-                            <table style={styles.table}>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '10pt' }}>Annual Tax Liability Comparison</h3>
+                            <table style={styles.compactTable}>
                                 <thead>
                                     <tr>
-                                        <th style={styles.th}>Year</th>
-                                        <th style={{ ...styles.th, textAlign: 'right' }}>Baseline Tax</th>
-                                        <th style={{ ...styles.th, textAlign: 'right' }}>Optimized Tax</th>
-                                        <th style={{ ...styles.th, textAlign: 'right' }}>Annual Savings</th>
+                                        <th style={styles.compactTh}>Year</th>
+                                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Baseline Tax</th>
+                                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Optimized Tax</th>
+                                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Annual Savings</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -602,20 +595,19 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                             
                                             return (
                                                 <tr key={index}>
-                                                    <td style={styles.td}>Year {proj.year}</td>
-                                                    <td style={{ ...styles.tdRight, color: '#9ca3af', fontWeight: 'bold' }}>
+                                                    <td style={styles.compactTd}>Year {proj.year}</td>
+                                                    <td style={{ ...styles.compactTdRight, color: '#9ca3af', fontWeight: 'bold' }}>
                                                         {formatCurrency(baselineTax)}
                                                     </td> 
-                                                    <td style={{ ...styles.tdRight, color: '#041D5B', fontWeight: 'bold' }}>
+                                                    <td style={{ ...styles.compactTdRight, color: '#041D5B', fontWeight: 'bold' }}>
                                                         {formatCurrency(optimizedTax)}
                                                     </td>
-                                                    <td style={{ ...styles.tdRight, color: '#059669', fontWeight: 'bold' }}>
+                                                    <td style={{ ...styles.compactTdRight, color: '#059669', fontWeight: 'bold' }}>
                                                         {formatCurrency(annualSavings)}
                                                     </td>
                                                 </tr>
                                             );
                                         } catch (e) {
-                                            // Error rendering projection row
                                             return null;
                                         }
                                     }).filter(Boolean)}
@@ -624,14 +616,14 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         </div>
 
                         {/* Cumulative Savings Table */}
-                        <div style={{ marginBottom: '3rem' }}>
-                            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }}>Cumulative Savings Over Time</h3>
-                            <table style={styles.table}>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <h3 style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '10pt' }}>Cumulative Savings Over Time</h3>
+                            <table style={styles.compactTable}>
                                 <thead>
                                     <tr>
-                                        <th style={styles.th}>Year</th>
-                                        <th style={{ ...styles.th, textAlign: 'right' }}>Cumulative Savings</th>
-                                        <th style={{ ...styles.th, textAlign: 'right' }}>Savings Rate</th>
+                                        <th style={styles.compactTh}>Year</th>
+                                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Cumulative Savings</th>
+                                        <th style={{ ...styles.compactTh, textAlign: 'right' }}>Savings Rate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -645,17 +637,16 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                             
                                             return (
                                                 <tr key={index}>
-                                                    <td style={styles.td}>Year {proj.year}</td>
-                                                    <td style={{ ...styles.tdRight, color: '#f59e0b', fontWeight: 'bold' }}>
+                                                    <td style={styles.compactTd}>Year {proj.year}</td>
+                                                    <td style={{ ...styles.compactTdRight, color: '#f59e0b', fontWeight: 'bold' }}>
                                                         {formatCurrency(Math.max(0, proj.cumulativeSavings || 0))}
                                                     </td>
-                                                    <td style={{ ...styles.tdRight, fontWeight: 'bold' }}>
+                                                    <td style={{ ...styles.compactTdRight, fontWeight: 'bold' }}>
                                                         {formatPercentage(savingsRate)}
                                                     </td>
                                                 </tr>
                                             );
                                         } catch (e) {
-                                            // Error rendering cumulative savings row
                                             return null;
                                         }
                                     }).filter(Boolean)}
