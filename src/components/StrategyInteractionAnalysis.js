@@ -265,8 +265,8 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                 setInteractionError('');
                 try {
                     const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
-                    const prompt = `Explain how the following tax strategies might interact with each other and their combined impact on tax optimization. Focus on potential synergies or conflicts. Strategies:\n${strategyDetails}\n\nProvide a concise explanation.`;
-                    
+                    const prompt = `Explain how the following tax strategies interact for optimal tax optimization. Analyze their interdependencies, identifying potential synergies and conflicts. Determine the optimal sequence for applying these strategies, crucially integrating the taxpayer's State of Residence to explain its specific impact on overall tax optimization. Strategies:\n${strategyDetails}\n\n Provide a concise explanation.`;
+
                     const chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
