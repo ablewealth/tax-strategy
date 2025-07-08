@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
-          npm ci 
+          npm ci || (echo "npm ci failed, falling back to npm install" && npm install)
           echo "✅ Dependencies installed successfully"
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
