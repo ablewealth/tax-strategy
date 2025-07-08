@@ -6,7 +6,7 @@
 Your current API key has been exposed and should be regenerated immediately:
 
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. **Delete the current key**: `AIzaSyBGVNZ3c5A5RcR1YSShGPS1L1HVh4d4kx8`
+2. **Delete the current key**: ``
 3. **Create a new API key**
 4. **Update your local `.env` file** with the new key
 
