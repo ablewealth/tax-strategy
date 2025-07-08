@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/tax-strategy/static/css/main.6e0d5c46.css",
-    "main.js": "/tax-strategy/static/js/main.710f777d.js",
+    "main.css": "/tax-strategy/static/css/main.f9ba74ba.css",
+    "main.js": "/tax-strategy/static/js/main.e4673dc9.js",
     "index.html": "/tax-strategy/index.html",
-    "main.6e0d5c46.css.map": "/tax-strategy/static/css/main.6e0d5c46.css.map",
-    "main.710f777d.js.map": "/tax-strategy/static/js/main.710f777d.js.map"
+    "main.f9ba74ba.css.map": "/tax-strategy/static/css/main.f9ba74ba.css.map",
+    "main.e4673dc9.js.map": "/tax-strategy/static/js/main.e4673dc9.js.map"
   },
   "entrypoints": [
-    "static/css/main.6e0d5c46.css",
-    "static/js/main.710f777d.js"
+    "static/css/main.f9ba74ba.css",
+    "static/js/main.e4673dc9.js"
   ]
 }
