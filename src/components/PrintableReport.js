@@ -270,6 +270,14 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             scenario: scenario,
             results: results
         });
+        
+        // Debug environment variable loading
+        console.log('Environment variable debug:', {
+            REACT_APP_GEMINI_API_KEY: process.env.REACT_APP_GEMINI_API_KEY,
+            apiKeyLength: (process.env.REACT_APP_GEMINI_API_KEY || '').length,
+            apiKeyExists: !!process.env.REACT_APP_GEMINI_API_KEY,
+            allEnvVars: Object.keys(process.env).filter(key => key.startsWith('REACT_APP_'))
+        });
     }, [scenario, results, years]);
 
     const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
@@ -283,6 +291,13 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
 
     useEffect(() => {
         const fetchInteractionExplanation = async () => {
+            console.log('fetchInteractionExplanation called with:', {
+                enabledStrategiesLength: enabledStrategies.length,
+                enabledStrategiesNames: enabledStrategies.map(s => s.name),
+                apiKey: process.env.REACT_APP_GEMINI_API_KEY ? 'SET' : 'NOT SET',
+                apiKeyLength: (process.env.REACT_APP_GEMINI_API_KEY || '').length
+            });
+            
             if (enabledStrategies.length > 1) {
                 setLoadingInteraction(true);
                 setInteractionError('');
@@ -294,6 +309,12 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
                     const apiKey = process.env.REACT_APP_GEMINI_API_KEY || ""; 
+                    
+                    console.log('API integration check:', {
+                        apiKey: apiKey ? 'CONFIGURED' : 'NOT CONFIGURED',
+                        apiKeyLength: apiKey.length,
+                        payloadSize: JSON.stringify(payload).length
+                    });
                     
                     if (!apiKey) {
                         setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
