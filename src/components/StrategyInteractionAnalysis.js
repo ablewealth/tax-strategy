@@ -284,18 +284,81 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                                        clientState === 'NY' ? 'New York' : 
                                        clientState;
                 
-                const prompt = `Analyze tax strategy interactions for a ${stateDisplayName} resident with ${enabledStrategies.length} strategies:
+                // Extract client financial data
+                const clientData = scenario?.clientData || {};
+                const w2Income = clientData.w2Income || 0;
+                const businessIncome = clientData.businessIncome || 0;
+                const shortTermGains = clientData.shortTermGains || 0;
+                const longTermGains = clientData.longTermGains || 0;
+                
+                const prompt = `You are an expert financial analyst. Your task is to generate a comprehensive, polished, and professional tax strategy analysis based on the provided strategies and specific client financial data. The output must adhere to a fixed, consistent structure to ensure a uniform voice and presentation for all analyses.
 
+Client Financial Data to Consider:
+- W2 Income: $${w2Income.toLocaleString()}
+- Business Income: $${businessIncome.toLocaleString()}
+- Short-term Capital Gains: $${shortTermGains.toLocaleString()}
+- Long-term Capital Gains: $${longTermGains.toLocaleString()}
+- Client's State of Residence: ${stateDisplayName}
+
+Selected Tax Strategies:
 ${strategyDetails}
 
-Provide analysis covering:
-1. **Strategy Interdependencies**: How these work together or conflict
-2. **${stateDisplayName} Tax Impact**: State-specific implications and opportunities  
-3. **Implementation Sequence**: Optimal order for maximum benefit
-4. **Key Synergies**: Primary interactions to leverage
-5. **Potential Conflicts**: Issues to avoid or mitigate
+Output Structure and Guidelines:
 
-Focus on actionable advice for ${stateDisplayName} tax optimization.`;
+## Introduction & Objective
+Start with a brief, professional introduction outlining the purpose of the analysis: to optimize tax strategies for the client based on their specific financial profile. Clearly state the client's objective to aggressively minimize their combined federal and state tax burden.
+
+## Client Scenario
+Present a concise summary of the client's tax situation, including their ${stateDisplayName} residency and primary goal based on their income profile.
+
+## Key Strategic Interdependencies
+Analyze and explain the interplay between the selected tax strategies. For each strategy, provide a clear, concise explanation of its purpose, how it works, and its impact, specifically referencing the client's income types (W2: $${w2Income.toLocaleString()}, Business: $${businessIncome.toLocaleString()}, Short-term Gains: $${shortTermGains.toLocaleString()}, Long-term Gains: $${longTermGains.toLocaleString()}) where relevant.
+
+Create sub-sections for each major strategy category:
+- Business & Trading Strategies: How these create deductions and optimize business income
+- Retirement Planning: Benefits for tax-deferred savings and current income reduction
+- Charitable Giving: Income reduction through strategic contributions
+- Other relevant strategies based on the selected options
+
+## ${stateDisplayName} Tax Impact Analysis
+Provide a detailed breakdown of how ${stateDisplayName} tax laws interact with the proposed strategies:
+
+### General Conformity
+Explain ${stateDisplayName}'s general conformity to federal tax code with key differences.
+
+### Capital Gains Treatment
+Discuss how ${stateDisplayName} treats capital gains and implications for the client's $${shortTermGains.toLocaleString()} in short-term and $${longTermGains.toLocaleString()} in long-term gains.
+
+### Business Income Optimization
+Detail ${stateDisplayName}'s treatment of business deductions and QBI optimization for the client's $${businessIncome.toLocaleString()} in business income.
+
+### Retirement Contributions
+Explain the tax treatment of retirement contributions in ${stateDisplayName}.
+
+### Additional State-Specific Considerations
+Include any other relevant state tax impacts such as PTE elections, property tax credits, and estate tax status.
+
+## Optimal Implementation Sequence
+Outline the recommended order for implementing the strategies to maximize benefits:
+
+1. **Retirement Planning**: Prioritize retirement plan contributions
+2. **Business Structure Optimization**: Implement business deductions and QBI strategies
+3. **Capital Gains Management**: Execute trading and capital gains strategies
+4. **Charitable Strategies**: Implement charitable giving for additional deductions
+5. **Ongoing Monitoring**: Regular review and adjustment of strategies
+
+## Key Synergies and Potential Conflicts
+Identify how strategies work together and any potential conflicts to avoid.
+
+Formatting Requirements:
+- Use clear, professional, and confident language
+- Maintain a consistent, authoritative tone
+- Ensure explanations are accessible to non-expert audiences
+- Use proper Markdown formatting for headings and structure
+- Focus on actionable insights specific to ${stateDisplayName} residents
+- Reference specific dollar amounts from the client's profile where relevant
+
+Generate a comprehensive analysis that is both professional and practical for immediate implementation.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -362,8 +425,8 @@ Focus on actionable advice for ${stateDisplayName} tax optimization.`;
 
     return (
         <Section 
-            title="🤖 AI Strategy Analysis" 
-            description="Understanding how your selected tax strategies work together in your state"
+            title="🤖 Professional Tax Strategy Analysis" 
+            description="Comprehensive analysis of how your selected strategies work together, tailored to your state and financial profile"
         >
             {loadingInteraction ? (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8">
@@ -374,11 +437,11 @@ Focus on actionable advice for ${stateDisplayName} tax optimization.`;
                         </div>
                         <div className="ml-4">
                             <div className="text-lg font-semibold text-blue-900 mb-1">
-                                AI Analysis in Progress
+                                Professional Tax Analysis in Progress
                             </div>
                             <div className="text-sm text-blue-700">
-                                Analyzing strategy interactions for {scenario?.clientData?.state || 'your state'}...<br/>
-                                <span className="text-xs opacity-75">This may take up to 30 seconds</span>
+                                Generating comprehensive strategy analysis for {scenario?.clientData?.state || 'your state'} residents...<br/>
+                                <span className="text-xs opacity-75">This detailed analysis may take up to 30 seconds</span>
                             </div>
                         </div>
                     </div>
@@ -461,7 +524,7 @@ Focus on actionable advice for ${stateDisplayName} tax optimization.`;
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900">AI Strategy Analysis</h3>
+                                    <h3 className="text-xl font-bold text-gray-900">Professional Tax Strategy Analysis</h3>
                                 </div>
                                 <button
                                     onClick={fetchInteractionExplanation}
@@ -476,7 +539,7 @@ Focus on actionable advice for ${stateDisplayName} tax optimization.`;
                                 </button>
                             </div>
                             <p className="text-gray-600 text-sm">
-                                Advanced analysis of how your selected tax strategies complement each other in {scenario?.clientData?.state || 'your state'}
+                                Comprehensive professional analysis of how your selected tax strategies optimize your tax burden in {scenario?.clientData?.state || 'your state'}
                             </p>
                             {strategiesChanged && (
                                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -520,9 +583,9 @@ Focus on actionable advice for ${stateDisplayName} tax optimization.`;
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Strategy Analysis</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Professional Tax Strategy Analysis</h3>
                         <p className="text-gray-600 mb-6">
-                            Ready to analyze how your selected tax strategies work together for {scenario?.clientData?.state || 'your state'} residents
+                            Ready to generate a comprehensive, professional analysis of how your selected tax strategies work together for {scenario?.clientData?.state || 'your state'} residents, including specific dollar amounts and implementation guidance
                         </p>
                         
                         <button
