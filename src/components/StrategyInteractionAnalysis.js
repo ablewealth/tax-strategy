@@ -279,7 +279,24 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
             setInteractionError('');
             try {
                 const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
-                const prompt = `Explain how the following tax strategies interact for optimal tax optimization. Analyze their interdependencies, identifying potential synergies and conflicts. Determine the optimal sequence for applying these strategies, crucially integrating the taxpayer's State of Residence to explain its specific impact on overall tax optimization. Strategies:\n${strategyDetails}\n\n Provide a concise explanation.`;
+                const clientState = scenario?.clientData?.state || 'Not specified';
+                const prompt = `Analyze the following tax strategies for optimal tax optimization, specifically considering the taxpayer's State of Residence: ${clientState}.
+
+Client Profile:
+- State of Residence: ${clientState}
+- Selected Tax Strategies: ${enabledStrategies.length}
+
+Tax Strategies to Analyze:
+${strategyDetails}
+
+Please provide a comprehensive analysis that includes:
+1. **Strategy Interdependencies**: How these strategies work together or conflict
+2. **State-Specific Impact**: How ${clientState} tax laws affect the effectiveness of each strategy
+3. **Optimal Sequencing**: The recommended order for implementing these strategies
+4. **State Tax Considerations**: Specific ${clientState} tax implications for each strategy
+5. **Synergies & Conflicts**: Potential interactions between strategies in ${clientState}
+
+Focus on practical, actionable advice for maximizing tax benefits while considering ${clientState}-specific regulations and opportunities.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -340,7 +357,7 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
     return (
         <Section 
             title="🤖 AI Strategy Analysis" 
-            description="Understanding how your selected tax strategies work together"
+            description="Understanding how your selected tax strategies work together in your state"
         >
             {loadingInteraction ? (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8">
@@ -354,13 +371,27 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                                 AI Analysis in Progress
                             </div>
                             <div className="text-sm text-blue-700">
-                                Analyzing strategy interactions and synergies...
+                                Analyzing strategy interactions for {scenario?.clientData?.state || 'your state'}...
                             </div>
                         </div>
                     </div>
                     <div className="mt-6 bg-white rounded-lg p-4 border border-blue-100">
                         <div className="text-sm text-gray-600 mb-3">
-                            <strong>Selected Strategies:</strong>
+                            <strong>Client Profile:</strong>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <span className="text-xs text-gray-500">State of Residence:</span>
+                                <div className="font-medium text-blue-800">
+                                    {scenario?.clientData?.state === 'NJ' ? 'New Jersey' : 
+                                     scenario?.clientData?.state === 'NY' ? 'New York' : 
+                                     scenario?.clientData?.state || 'Not specified'}
+                                </div>
+                            </div>
+                            <div>
+                                <span className="text-xs text-gray-500">Selected Strategies:</span>
+                                <div className="font-medium text-blue-800">{enabledStrategies.length}</div>
+                            </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {enabledStrategies.map((strategy, index) => (
@@ -438,7 +469,7 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                                 </button>
                             </div>
                             <p className="text-gray-600 text-sm">
-                                Advanced analysis of how your selected tax strategies complement each other
+                                Advanced analysis of how your selected tax strategies complement each other in {scenario?.clientData?.state || 'your state'}
                             </p>
                             {strategiesChanged && (
                                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -484,7 +515,7 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Strategy Analysis</h3>
                         <p className="text-gray-600 mb-6">
-                            Ready to analyze how your selected tax strategies work together
+                            Ready to analyze how your selected tax strategies work together for {scenario?.clientData?.state || 'your state'} residents
                         </p>
                         
                         <button

@@ -260,44 +260,22 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
 
     // Add error boundary logging
     useEffect(() => {
-        console.log('PrintableReport rendering with:', {
-            hasScenario: !!scenario,
-            hasResults: !!results,
-            hasCumulative: !!(results?.cumulative),
-            hasProjections: !!(results?.projections),
-            projectionsLength: results?.projections?.length || 0,
-            enabledStrategiesCount: scenario?.enabledStrategies ? Object.values(scenario.enabledStrategies).filter(Boolean).length : 0,
-            scenario: scenario,
-            results: results
-        });
-        
         // Debug environment variable loading
         console.log('Environment variable debug:', {
-            REACT_APP_GEMINI_API_KEY: process.env.REACT_APP_GEMINI_API_KEY,
-            apiKeyLength: (process.env.REACT_APP_GEMINI_API_KEY || '').length,
-            apiKeyExists: !!process.env.REACT_APP_GEMINI_API_KEY,
-            allEnvVars: Object.keys(process.env).filter(key => key.startsWith('REACT_APP_'))
         });
     }, [scenario, results, years]);
 
-    const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+    const allStrategies = useMemo(() => [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES], []);
     const enabledStrategies = useMemo(() => {
         return allStrategies.filter(strategy => {
             const isEnabled = scenario.enabledStrategies?.[strategy.id];
             const inputValue = scenario.clientData?.[strategy.inputRequired];
             return isEnabled && typeof inputValue === 'number' && inputValue > 0;
         });
-    }, [scenario.enabledStrategies, scenario.clientData]);
+    }, [allStrategies, scenario.enabledStrategies, scenario.clientData]);
 
     useEffect(() => {
         const fetchInteractionExplanation = async () => {
-            console.log('fetchInteractionExplanation called with:', {
-                enabledStrategiesLength: enabledStrategies.length,
-                enabledStrategiesNames: enabledStrategies.map(s => s.name),
-                apiKey: process.env.REACT_APP_GEMINI_API_KEY ? 'SET' : 'NOT SET',
-                apiKeyLength: (process.env.REACT_APP_GEMINI_API_KEY || '').length
-            });
-            
             if (enabledStrategies.length > 1) {
                 setLoadingInteraction(true);
                 setInteractionError('');

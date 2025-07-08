@@ -11,10 +11,7 @@ import {
     NY_TAX_BRACKETS,
     STANDARD_DEDUCTION,
     createNewScenario,
-    formatCurrency, // Import formatCurrency
-    formatPercentage, // Import formatPercentage
-    formatCurrencyForDisplay,
-    parseCurrencyInput
+    formatCurrency // Import formatCurrency
 } from './constants';
 import PrintableReport from './components/PrintableReport';
 
@@ -167,13 +164,8 @@ export default function App() {
     }, [scenario]);
 
     const handlePrint = () => {
-        console.log('Print button clicked');
-        console.log('Scenario:', scenario);
-        console.log('Results:', calculationResults);
-        
         const printContainer = document.getElementById('print-mount');
         if (!printContainer) {
-            console.error('Print container not found');
             return;
         }
 
@@ -196,8 +188,6 @@ export default function App() {
                 }
             );
         } catch (error) {
-            console.error('Print rendering error:', error);
-            
             // Fallback: create a simple HTML report
             printContainer.innerHTML = `
                 <div style="padding: 2cm; font-family: Arial, sans-serif;">

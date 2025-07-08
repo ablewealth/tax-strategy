@@ -1,7 +1,7 @@
 import React from 'react';
 import { CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, BarChart, ResponsiveContainer, Bar, LineChart, Line } from 'recharts';
 import Section from './Section';
-import { formatCurrency, formatPercentage } from '../constants'; // Ensure formatCurrency and formatPercentage are imported
+import { formatCurrency } from '../constants'; // Ensure formatCurrency is imported
 
 // Removed 'styles' from props, as it's not needed for the main UI component
 const ChartsSection = ({ results }) => { 
