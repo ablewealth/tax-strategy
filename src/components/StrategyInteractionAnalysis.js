@@ -129,7 +129,7 @@ const formatInlineText = (text) => {
     if (!text) return '';
     
     // Handle multiple formatting patterns
-    let processedText = text;
+    const processedText = text;
     const parts = [];
     let lastIndex = 0;
     
