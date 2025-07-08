@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 import Section from './Section';
 
@@ -248,6 +248,8 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
     const [interactionExplanation, setInteractionExplanation] = useState('');
     const [loadingInteraction, setLoadingInteraction] = useState(false);
     const [interactionError, setInteractionError] = useState('');
+    const [hasAnalyzed, setHasAnalyzed] = useState(false);
+    const [lastAnalyzedStrategies, setLastAnalyzedStrategies] = useState([]);
 
     const allStrategies = useMemo(() => [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES], []);
     const enabledStrategies = useMemo(() => {
@@ -258,70 +260,77 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
         });
     }, [allStrategies, scenario?.enabledStrategies, scenario?.clientData]);
 
-    useEffect(() => {
-        const fetchInteractionExplanation = async () => {
-            if (enabledStrategies.length > 1) {
-                setLoadingInteraction(true);
-                setInteractionError('');
-                try {
-                    const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
-                    const prompt = `Explain how the following tax strategies interact for optimal tax optimization. Analyze their interdependencies, identifying potential synergies and conflicts. Determine the optimal sequence for applying these strategies, crucially integrating the taxpayer's State of Residence to explain its specific impact on overall tax optimization. Strategies:\n${strategyDetails}\n\n Provide a concise explanation.`;
+    // Check if strategies have changed since last analysis
+    const strategiesChanged = useMemo(() => {
+        const currentStrategyIds = enabledStrategies.map(s => s.id).sort();
+        const lastStrategyIds = lastAnalyzedStrategies.map(s => s.id).sort();
+        return JSON.stringify(currentStrategyIds) !== JSON.stringify(lastStrategyIds);
+    }, [enabledStrategies, lastAnalyzedStrategies]);
 
-                    const chatHistory = [];
-                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                    const payload = { contents: chatHistory };
-                    const apiKey = process.env.REACT_APP_GEMINI_API_KEY || "";
-                    
-                    if (!apiKey) {
-                        setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
-                        setLoadingInteraction(false);
-                        return;
-                    }
-                    
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const getButtonText = () => {
+        if (!hasAnalyzed) return 'Generate AI Analysis';
+        if (strategiesChanged) return 'Refresh Analysis';
+        return 'Regenerate Analysis';
+    };
 
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const fetchInteractionExplanation = async () => {
+        if (enabledStrategies.length > 1) {
+            setLoadingInteraction(true);
+            setInteractionError('');
+            try {
+                const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
+                const prompt = `Explain how the following tax strategies interact for optimal tax optimization. Analyze their interdependencies, identifying potential synergies and conflicts. Determine the optimal sequence for applying these strategies, crucially integrating the taxpayer's State of Residence to explain its specific impact on overall tax optimization. Strategies:\n${strategyDetails}\n\n Provide a concise explanation.`;
 
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) {
-                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-                    }
-
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        setInteractionExplanation(result.candidates[0].content.parts[0].text);
-                    } else {
-                        setInteractionError('Failed to generate interaction explanation.');
-                    }
-                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        setInteractionError('Request timed out. Strategy interaction analysis is unavailable.');
-                    } else {
-                        setInteractionError(`Error fetching interaction explanation: ${error.message}`);
-                    }
-                } finally {
+                const chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = process.env.REACT_APP_GEMINI_API_KEY || "";
+                
+                if (!apiKey) {
+                    setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
                     setLoadingInteraction(false);
+                    return;
                 }
-            } else {
-                setInteractionExplanation('');
-                setInteractionError('');
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    setInteractionExplanation(result.candidates[0].content.parts[0].text);
+                    setHasAnalyzed(true);
+                    setLastAnalyzedStrategies([...enabledStrategies]);
+                } else {
+                    setInteractionError('Failed to generate interaction explanation.');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    setInteractionError('Request timed out. Strategy interaction analysis is unavailable.');
+                } else {
+                    setInteractionError(`Error fetching interaction explanation: ${error.message}`);
+                }
+            } finally {
                 setLoadingInteraction(false);
             }
-        };
-
-        fetchInteractionExplanation();
-    }, [enabledStrategies]);
+        }
+    };
 
     // Don't render if no strategies or only one strategy
     if (enabledStrategies.length <= 1) {
@@ -407,17 +416,40 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                 <div className="space-y-6">
                     <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 shadow-lg">
                         <div className="mb-6">
-                            <div className="flex items-center mb-4">
-                                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-2 mr-3">
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
-                                    </svg>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center">
+                                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full p-2 mr-3">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900">AI Strategy Analysis</h3>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900">AI Strategy Analysis</h3>
+                                <button
+                                    onClick={fetchInteractionExplanation}
+                                    disabled={loadingInteraction}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                        strategiesChanged 
+                                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    {loadingInteraction ? 'Analyzing...' : getButtonText()}
+                                </button>
                             </div>
                             <p className="text-gray-600 text-sm">
                                 Advanced analysis of how your selected tax strategies complement each other
                             </p>
+                            {strategiesChanged && (
+                                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                    <div className="flex items-center text-orange-800">
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.064 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                        </svg>
+                                        <span className="text-sm font-medium">Strategies changed - refresh for updated analysis</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         
                         <div className="prose prose-lg max-w-none">
@@ -451,9 +483,17 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                             </svg>
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Strategy Analysis</h3>
-                        <p className="text-gray-600 mb-4">
-                            Select multiple tax strategies to unlock AI-powered interaction analysis
+                        <p className="text-gray-600 mb-6">
+                            Ready to analyze how your selected tax strategies work together
                         </p>
+                        
+                        <button
+                            onClick={fetchInteractionExplanation}
+                            disabled={loadingInteraction}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                        >
+                            {loadingInteraction ? 'Analyzing...' : getButtonText()}
+                        </button>
                     </div>
                     
                     <div className="bg-white rounded-lg p-6 border border-gray-200 max-w-md mx-auto">
@@ -467,7 +507,7 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                             </div>
                             <div className="flex items-start">
                                 <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3 mt-0.5">2</span>
-                                <span>AI analyzes potential synergies and conflicts</span>
+                                <span>Click to generate AI analysis</span>
                             </div>
                             <div className="flex items-start">
                                 <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-3 mt-0.5">3</span>
