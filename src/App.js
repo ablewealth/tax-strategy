@@ -26,6 +26,7 @@ import ResultsDashboard from './components/ResultsDashboard';
 import InsightsSection from './components/InsightsSection'; // CORRECTED: Removed extra 'components/'
 import ChartsSection from './components/ChartsSection';
 import AppFooter from './components/AppFooter';
+import StrategyInteractionAnalysis from './components/StrategyInteractionAnalysis';
 
 
 // --- Helper & Calculation Functions (Logic preserved) ---
@@ -230,6 +231,7 @@ export default function App() {
                 <StrategiesSection scenario={scenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
                 <ResultsDashboard results={calculationResults} />
                 <InsightsSection insights={calculationResults?.withStrategies?.insights} />
+                <StrategyInteractionAnalysis scenario={scenario} />
                 <ChartsSection results={calculationResults} />
             </main>
             <AppFooter />
