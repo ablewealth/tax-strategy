@@ -221,7 +221,7 @@ export default function App() {
                 <StrategiesSection scenario={scenario} toggleStrategy={handleToggleStrategy} updateClientData={handleUpdateClientData} />
                 <ResultsDashboard results={calculationResults} />
                 <InsightsSection insights={calculationResults?.withStrategies?.insights} />
-                <StrategyInteractionAnalysis scenario={scenario} />
+                <StrategyInteractionAnalysis scenario={scenario} results={calculationResults} />
                 <ChartsSection results={calculationResults} />
             </main>
             <AppFooter />

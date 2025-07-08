@@ -33,12 +33,29 @@ const formatAIAnalysis = (text) => {
             }
         }
         
-        // Handle main headings with **text**
-        if (/^\*\*[^*]+\*\*/.test(trimmedPart) && !trimmedPart.includes(':')) {
+        // Handle main headings with **text** (but not headings with ### or ##)
+        if (/^\*\*[^*]+\*\*$/.test(trimmedPart) && !trimmedPart.includes(':') && !trimmedPart.startsWith('#')) {
             return (
                 <div key={index} className="mb-5 mt-7">
                     <h3 className="text-xl font-bold text-blue-900 mb-3 pb-2 border-b-2 border-blue-200 inline-block">
                         {trimmedPart.replace(/\*\*/g, '')}
+                    </h3>
+                </div>
+            );
+        }
+        
+        // Handle markdown headings (###, ##) and convert them to styled headings
+        if (/^#{2,3}\s/.test(trimmedPart)) {
+            const level = trimmedPart.match(/^(#{2,3})/)[1].length;
+            const text = trimmedPart.replace(/^#{2,3}\s*/, '');
+            const headingClass = level === 2 ? 
+                "text-xl font-bold text-blue-900 mb-3 pb-2 border-b-2 border-blue-200 inline-block" :
+                "text-lg font-semibold text-blue-800 mb-2";
+            
+            return (
+                <div key={index} className={level === 2 ? "mb-5 mt-7" : "mb-4 mt-5"}>
+                    <h3 className={headingClass}>
+                        {text}
                     </h3>
                 </div>
             );
@@ -244,7 +261,7 @@ const formatInlineText = (text) => {
     return parts.length > 0 ? parts : text;
 };
 
-const StrategyInteractionAnalysis = ({ scenario }) => {
+const StrategyInteractionAnalysis = ({ scenario, results }) => {
     const [interactionExplanation, setInteractionExplanation] = useState('');
     const [loadingInteraction, setLoadingInteraction] = useState(false);
     const [interactionError, setInteractionError] = useState('');
@@ -278,7 +295,6 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
             setLoadingInteraction(true);
             setInteractionError('');
             try {
-                const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
                 const clientState = scenario?.clientData?.state || 'Not specified';
                 const stateDisplayName = clientState === 'NJ' ? 'New Jersey' : 
                                        clientState === 'NY' ? 'New York' : 
@@ -291,74 +307,73 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
                 const shortTermGains = clientData.shortTermGains || 0;
                 const longTermGains = clientData.longTermGains || 0;
                 
-                const prompt = `You are an expert financial analyst. Your task is to generate a comprehensive, polished, and professional tax strategy analysis based on the provided strategies and specific client financial data. The output must adhere to a fixed, consistent structure to ensure a uniform voice and presentation for all analyses.
+                // Extract calculation results
+                const totalSavings = results?.cumulative?.totalSavings || 0;
+                const baselineTax = results?.cumulative?.baselineTax || 0;
+                const optimizedTax = results?.cumulative?.optimizedTax || 0;
+                const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
+                
+                // Calculate strategy-specific data
+                const strategyContributions = enabledStrategies.map(strategy => {
+                    const inputValue = clientData[strategy.inputRequired] || 0;
+                    // Estimate individual strategy savings (simplified calculation)
+                    const estimatedSavings = inputValue * 0.25; // Rough estimate based on average tax rate
+                    return {
+                        name: strategy.name,
+                        amount: inputValue,
+                        estimatedSavings: estimatedSavings
+                    };
+                });
+                
+                const prompt = `You are a tax strategist analyzing specific strategies for a ${stateDisplayName} resident. Generate a concise, actionable analysis.
 
-Client Financial Data to Consider:
+**Client Profile:**
 - W2 Income: $${w2Income.toLocaleString()}
 - Business Income: $${businessIncome.toLocaleString()}
 - Short-term Capital Gains: $${shortTermGains.toLocaleString()}
 - Long-term Capital Gains: $${longTermGains.toLocaleString()}
-- Client's State of Residence: ${stateDisplayName}
+- State: ${stateDisplayName}
 
-Selected Tax Strategies:
-${strategyDetails}
+**Current Tax Situation:**
+- Baseline Annual Tax: $${baselineTax.toLocaleString()}
+- Optimized Annual Tax: $${optimizedTax.toLocaleString()}
+- Current Year Savings: $${currentYearSavings.toLocaleString()}
+- Total Multi-Year Savings: $${totalSavings.toLocaleString()}
 
-Output Structure and Guidelines:
+**Selected Strategies with Amounts:**
+${strategyContributions.map(s => `- ${s.name}: $${s.amount.toLocaleString()} (Est. savings: $${s.estimatedSavings.toLocaleString()})`).join('\n')}
 
-## Introduction & Objective
-Start with a brief, professional introduction outlining the purpose of the analysis: to optimize tax strategies for the client based on their specific financial profile. Clearly state the client's objective to aggressively minimize their combined federal and state tax burden.
+**CRITICAL: Use only ** for bold text. Never use ### or ## for headings. Format as follows:**
 
-## Client Scenario
-Present a concise summary of the client's tax situation, including their ${stateDisplayName} residency and primary goal based on their income profile.
+**Strategy Performance Analysis**
 
-## Key Strategic Interdependencies
-Analyze and explain the interplay between the selected tax strategies. For each strategy, provide a clear, concise explanation of its purpose, how it works, and its impact, specifically referencing the client's income types (W2: $${w2Income.toLocaleString()}, Business: $${businessIncome.toLocaleString()}, Short-term Gains: $${shortTermGains.toLocaleString()}, Long-term Gains: $${longTermGains.toLocaleString()}) where relevant.
+For each strategy above, analyze:
+- Actual tax reduction impact
+- ${stateDisplayName} state tax benefits/limitations
+- Cost vs. benefit ratio
 
-Create sub-sections for each major strategy category:
-- Business & Trading Strategies: How these create deductions and optimize business income
-- Retirement Planning: Benefits for tax-deferred savings and current income reduction
-- Charitable Giving: Income reduction through strategic contributions
-- Other relevant strategies based on the selected options
+**${stateDisplayName} State Tax Impact**
 
-## ${stateDisplayName} Tax Impact Analysis
-Provide a detailed breakdown of how ${stateDisplayName} tax laws interact with the proposed strategies:
+Specific to your $${currentYearSavings.toLocaleString()} in current savings:
+- How ${stateDisplayName} amplifies or reduces federal benefits
+- State-specific deduction limits affecting your strategies
+- Net state vs. federal tax optimization
 
-### General Conformity
-Explain ${stateDisplayName}'s general conformity to federal tax code with key differences.
+**Optimization Recommendations**
 
-### Capital Gains Treatment
-Discuss how ${stateDisplayName} treats capital gains and implications for the client's $${shortTermGains.toLocaleString()} in short-term and $${longTermGains.toLocaleString()} in long-term gains.
+Based on your $${totalSavings.toLocaleString()} potential savings:
+1. [Highest impact strategy] - prioritize first
+2. [Strategy timing] - when to implement
+3. [State-specific adjustments] for ${stateDisplayName}
 
-### Business Income Optimization
-Detail ${stateDisplayName}'s treatment of business deductions and QBI optimization for the client's $${businessIncome.toLocaleString()} in business income.
+**Bottom Line**
 
-### Retirement Contributions
-Explain the tax treatment of retirement contributions in ${stateDisplayName}.
+- Your current optimization saves: $${currentYearSavings.toLocaleString()}/year
+- Most effective strategy: [name specific strategy and dollar impact]
+- ${stateDisplayName} advantage: [specific state benefit with dollar amount]
+- Next action: [immediate next step]
 
-### Additional State-Specific Considerations
-Include any other relevant state tax impacts such as PTE elections, property tax credits, and estate tax status.
-
-## Optimal Implementation Sequence
-Outline the recommended order for implementing the strategies to maximize benefits:
-
-1. **Retirement Planning**: Prioritize retirement plan contributions
-2. **Business Structure Optimization**: Implement business deductions and QBI strategies
-3. **Capital Gains Management**: Execute trading and capital gains strategies
-4. **Charitable Strategies**: Implement charitable giving for additional deductions
-5. **Ongoing Monitoring**: Regular review and adjustment of strategies
-
-## Key Synergies and Potential Conflicts
-Identify how strategies work together and any potential conflicts to avoid.
-
-Formatting Requirements:
-- Use clear, professional, and confident language
-- Maintain a consistent, authoritative tone
-- Ensure explanations are accessible to non-expert audiences
-- Use proper Markdown formatting for headings and structure
-- Focus on actionable insights specific to ${stateDisplayName} residents
-- Reference specific dollar amounts from the client's profile where relevant
-
-Generate a comprehensive analysis that is both professional and practical for immediate implementation.`;
+Keep analysis under 300 words. Focus on your specific numbers and ${stateDisplayName} state rules.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
