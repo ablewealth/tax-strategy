@@ -1,6 +1,11 @@
 import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY, formatCurrency, formatPercentage } from '../constants';
 
+// Function to format numbers without decimals for printable report
+const formatCurrencyNoDecimals = (amount) => {
+    return Math.round(amount).toLocaleString();
+};
+
 // --- Compact Style Definitions for Dense Data Layout ---
 const styles = {
     page: {
@@ -283,15 +288,168 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                 setLoadingInteraction(true);
                 setInteractionError('');
                 try {
-                    const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
-                    const prompt = `Explain how the following tax strategies might interact with each other and their combined impact on tax optimization. Focus on potential synergies or conflicts. Strategies:\n${strategyDetails}\n\nProvide a concise explanation.`;
+                    const clientState = scenario?.clientData?.state || 'Not specified';
+                    const stateDisplayName = clientState === 'NJ' ? 'New Jersey' : 
+                                           clientState === 'NY' ? 'New York' : 
+                                           clientState;
                     
+                    // Extract client financial data
+                    const clientData = scenario?.clientData || {};
+                    const w2Income = clientData.w2Income || 0;
+                    const businessIncome = clientData.businessIncome || 0;
+                    const shortTermGains = clientData.shortTermGains || 0;
+                    const longTermGains = clientData.longTermGains || 0;
+                    
+                    // Extract calculation results
+                    const totalSavings = results?.cumulative?.totalSavings || 0;
+                    const baselineTax = results?.cumulative?.baselineTax || 0;
+                    const optimizedTax = results?.cumulative?.optimizedTax || 0;
+                    const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
+                    
+                    // Calculate strategy-specific data for AI analysis
+                    const strategyDetailsForAI = enabledStrategies.map(strategy => {
+                        const inputValue = clientData[strategy.inputRequired] || 0;
+                        let federalBenefit = 0;
+                        let stateBenefit = 0;
+                        let stateAddBack = 0;
+                        let specialConsiderations = '';
+                        
+                        // Calculate specific benefits based on strategy type and state
+                        switch (strategy.id) {
+                            case 'EQUIP_S179_01':
+                                federalBenefit = Math.min(inputValue, 1220000) * 0.35;
+                                if (clientState === 'NY') {
+                                    stateBenefit = Math.min(inputValue, 1220000) * 0.109;
+                                } else {
+                                    stateBenefit = Math.min(inputValue, 25000) * 0.1075;
+                                    stateAddBack = Math.max(0, inputValue - 25000);
+                                    specialConsiderations = 'NJ caps Section 179 at $25,000 with required add-back';
+                                }
+                                break;
+                            case 'SOLO401K_EMPLOYEE_01':
+                                federalBenefit = Math.min(inputValue, 23000) * 0.35;
+                                if (clientState === 'NY') {
+                                    stateBenefit = Math.min(inputValue, 23000) * 0.109;
+                                } else {
+                                    stateBenefit = 0;
+                                    stateAddBack = Math.min(inputValue, 23000);
+                                    specialConsiderations = 'NJ taxes 401(k) deferrals - no state tax benefit';
+                                }
+                                break;
+                            case 'SOLO401K_EMPLOYER_01':
+                            case 'DB_PLAN_01':
+                                federalBenefit = inputValue * 0.35;
+                                stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.1075);
+                                specialConsiderations = 'Reduces QBI base income';
+                                break;
+                            case 'QUANT_DEALS_01':
+                                const exposureRates = {
+                                    '130/30': { netBenefit: 0.035 },
+                                    '145/45': { netBenefit: 0.046 },
+                                    '175/75': { netBenefit: 0.069 },
+                                    '225/125': { netBenefit: 0.106 }
+                                };
+                                const exposure = exposureRates[clientData.dealsExposure] || exposureRates['175/75'];
+                                federalBenefit = inputValue * exposure.netBenefit * 0.35;
+                                stateBenefit = inputValue * exposure.netBenefit * (clientState === 'NY' ? 0.109 : 0.1075);
+                                specialConsiderations = `${clientData.dealsExposure || '175/75'} exposure level`;
+                                break;
+                            case 'CHAR_CLAT_01':
+                                federalBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.35;
+                                if (clientState === 'NY') {
+                                    stateBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.5 * 0.109;
+                                    specialConsiderations = 'NY allows 50% of federal charitable deduction';
+                                } else {
+                                    stateBenefit = 0;
+                                    specialConsiderations = 'NJ provides no state tax benefit for charitable deductions';
+                                }
+                                break;
+                            case 'OG_USENERGY_01':
+                                federalBenefit = inputValue * 0.70 * 0.35;
+                                if (clientState === 'NY') {
+                                    stateBenefit = inputValue * 0.70 * 0.109;
+                                } else {
+                                    stateBenefit = 0;
+                                    specialConsiderations = 'NJ provides no state deduction for oil & gas investments';
+                                }
+                                break;
+                            case 'FILM_SEC181_01':
+                                federalBenefit = inputValue * 0.35;
+                                if (clientState === 'NY') {
+                                    stateBenefit = inputValue * 0.109;
+                                } else {
+                                    stateBenefit = 0;
+                                    specialConsiderations = 'NJ provides no state deduction for film investments';
+                                }
+                                break;
+                            case 'QBI_FINAL_01':
+                                if (businessIncome > 0) {
+                                    federalBenefit = businessIncome * 0.20 * 0.35;
+                                    stateBenefit = 0;
+                                    specialConsiderations = 'Federal-only benefit, no state equivalent';
+                                }
+                                break;
+                            default:
+                                federalBenefit = inputValue * 0.25;
+                                stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.1075) * 0.5;
+                                specialConsiderations = 'Generic strategy calculation';
+                                break;
+                        }
+                        
+                        return {
+                            name: strategy.name,
+                            id: strategy.id,
+                            amount: inputValue,
+                            federalBenefit: federalBenefit,
+                            stateBenefit: stateBenefit,
+                            stateAddBack: stateAddBack,
+                            totalBenefit: federalBenefit + stateBenefit,
+                            specialConsiderations: specialConsiderations
+                        };
+                    });
+
+                    const prompt = `You are a senior tax strategist analyzing ${enabledStrategies.length} specific strategies for a ${stateDisplayName} resident in 2025. Generate a comprehensive, actionable analysis for printable report focusing on strategy interactions, risk assessment, and implementation guidance.
+
+**Client Profile:**
+- W2 Income: $${formatCurrencyNoDecimals(w2Income)}
+- Business Income: $${formatCurrencyNoDecimals(businessIncome)}
+- Short-term Capital Gains: $${formatCurrencyNoDecimals(shortTermGains)}
+- Long-term Capital Gains: $${formatCurrencyNoDecimals(longTermGains)}
+- State: ${stateDisplayName}
+- Total Annual Income: $${formatCurrencyNoDecimals(w2Income + businessIncome + shortTermGains + longTermGains)}
+
+**Current Tax Situation:**
+- Baseline Annual Tax: $${formatCurrencyNoDecimals(baselineTax)}
+- Optimized Annual Tax: $${formatCurrencyNoDecimals(optimizedTax)}
+- Current Year Savings: $${formatCurrencyNoDecimals(currentYearSavings)}
+- Total Multi-Year Savings: $${formatCurrencyNoDecimals(totalSavings)}
+
+**Strategy Analysis with ${stateDisplayName} Impact:**
+${strategyDetailsForAI.map(s => `- **${s.name}**: $${formatCurrencyNoDecimals(s.amount)} → Fed: $${formatCurrencyNoDecimals(s.federalBenefit)} | State: $${formatCurrencyNoDecimals(s.stateBenefit)}${s.stateAddBack > 0 ? ` | Add-back: $${formatCurrencyNoDecimals(s.stateAddBack)}` : ''} | Total: $${formatCurrencyNoDecimals(s.totalBenefit)}${s.specialConsiderations ? ` | ${s.specialConsiderations}` : ''}`).join('\n')}
+
+**For printable report format, provide analysis covering:**
+
+**Strategy Effectiveness Ranking**
+Rank strategies by total tax benefit and ROI.
+
+**${stateDisplayName} State Tax Optimization**
+Specific state impacts and optimization opportunities.
+
+**Implementation Strategy**
+Priority sequence for maximum benefit with specific timelines.
+
+**Risk Assessment**
+Categorize strategies by implementation complexity and audit risk.
+
+**Professional Guidance Requirements**
+Identify which strategies require CPA or attorney consultation.
+
+Keep analysis under 400 words, professional tone for client presentation. Focus on actionable implementation guidance for ${stateDisplayName} residents.`;
+
                     const chatHistory = []; 
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
                     const apiKey = process.env.REACT_APP_GEMINI_API_KEY || ""; 
-                    
-                    // API integration check removed
                     
                     if (!apiKey) {
                         setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
@@ -302,7 +460,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -324,7 +482,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         setInteractionExplanation(result.candidates[0].content.parts[0].text);
                     } else {
                         setInteractionError('Failed to generate interaction explanation.');
-                        console.error('Gemini API response structure unexpected:', result);
                     }
                 } catch (error) {
                     if (error.name === 'AbortError') {
@@ -332,7 +489,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     } else {
                         setInteractionError(`Error fetching interaction explanation: ${error.message}`);
                     }
-                    console.error('Error in Gemini API call:', error);
                 } finally {
                     setLoadingInteraction(false);
                 }
@@ -343,11 +499,10 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         };
 
         fetchInteractionExplanation();
-    }, [enabledStrategies]);
+    }, [enabledStrategies, scenario, results]);
 
     // Enhanced validation with better error handling
     if (!results || !scenario) {
-        // PrintableReport: Missing required props
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -364,7 +519,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
     }
 
     if (!results.cumulative || !results.projections || results.projections.length === 0) {
-        // PrintableReport: Missing calculation results
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -380,6 +534,20 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
         );
     }
 
+    // Additional validation for scenario data
+    if (!scenario.clientData) {
+        return (
+            <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
+                    Client Data Missing
+                </h1>
+                <p style={{ fontSize: '14pt', color: '#666' }}>
+                    Unable to generate report. Please ensure client data is provided.
+                </p>
+            </div>
+        );
+    }
+
     try {
         const { cumulative, projections, withStrategies } = results;
         
@@ -390,19 +558,13 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             totalSavings: cumulative?.totalSavings || 0,
             capitalAllocated: cumulative?.capitalAllocated || 0
         };
-
-        // Safe results extracted
         
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
         
-        // Enabled strategies for report
-        
         // Safe insights extraction with null checks
         const benefits = withStrategies?.insights?.filter(i => i?.type === 'success') || [];
         const considerations = withStrategies?.insights?.filter(i => i?.type === 'warning') || [];
-
-        // Insights extracted
         
         // Safe chart data preparation
         let taxBreakdownData = [];
@@ -410,8 +572,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             if (projections && projections.length > 0 && projections[0]) {
                 const baseline = projections[0].baseline || {};
                 const optimized = projections[0].withStrategies || {};
-                
-                // Chart data preparation
                 
                 taxBreakdownData = [
                     {
@@ -425,16 +585,10 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                         stateTax: optimized.stateTax || 0
                     }
                 ];
-                
-                // Generated chart data
-            } else {
-                // No projections data available for chart
             }
         } catch (e) {
             taxBreakdownData = [];
         }
-
-        // About to render report content with data
 
         return (
             <div ref={ref} style={styles.page}>
@@ -512,9 +666,9 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
 
                 {enabledStrategies.length > 1 && (
                     <section style={styles.section}>
-                        <h2 style={styles.sectionTitle}>Strategy Interactions and Combined Impact</h2>
+                        <h2 style={styles.sectionTitle}>Advanced Tax Strategy Analysis</h2>
                         {loadingInteraction ? (
-                            <p style={styles.loadingText}>Generating explanation of strategy interactions...</p>
+                            <p style={styles.loadingText}>Generating comprehensive strategy analysis including risk assessment and implementation guidance...</p>
                         ) : interactionError ? (
                             <div style={{...styles.loadingText, color: '#dc2626', backgroundColor: '#fef2f2', padding: '1rem', borderRadius: '4px', border: '1px solid #fecaca'}}>
                                 <strong>AI Analysis Unavailable:</strong> {interactionError}
@@ -664,7 +818,6 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             </div>
         );
     } catch (error) {
-        console.error('PrintableReport rendering error:', error);
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#dc2626', marginBottom: '1rem' }}>

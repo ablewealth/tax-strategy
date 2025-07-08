@@ -3,6 +3,7 @@ import React from 'react';
 const EnvTest = () => {
   const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
   
+  // eslint-disable-next-line no-console
   console.log('EnvTest component:', {
     apiKey,
     apiKeyLength: (apiKey || '').length,

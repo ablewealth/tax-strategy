@@ -2,6 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 import Section from './Section';
 
+// Function to format numbers without decimals
+const formatCurrency = (amount) => {
+    return Math.round(amount).toLocaleString();
+};
+
 // Function to format AI analysis text with professional styling
 const formatAIAnalysis = (text) => {
     if (!text) return null;
@@ -429,31 +434,33 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
                     };
                 });
 
-                const prompt = `You are a tax strategist analyzing ${enabledStrategies.length} specific strategies for a ${stateDisplayName} resident in 2025. Generate a concise, actionable analysis focusing on strategy interactions and optimal sequencing.
+                const prompt = `You are a senior tax strategist analyzing ${enabledStrategies.length} specific strategies for a ${stateDisplayName} resident in 2025. Generate a comprehensive, actionable analysis focusing on strategy interactions, risk assessment, and long-term optimization.
 
 **Client Profile:**
-- W2 Income: $${w2Income.toLocaleString()}
-- Business Income: $${businessIncome.toLocaleString()}
-- Short-term Capital Gains: $${shortTermGains.toLocaleString()}
-- Long-term Capital Gains: $${longTermGains.toLocaleString()}
+- W2 Income: $${formatCurrency(w2Income)}
+- Business Income: $${formatCurrency(businessIncome)}
+- Short-term Capital Gains: $${formatCurrency(shortTermGains)}
+- Long-term Capital Gains: $${formatCurrency(longTermGains)}
 - State: ${stateDisplayName}
+- Total Annual Income: $${formatCurrency(w2Income + businessIncome + shortTermGains + longTermGains)}
 
 **Current Tax Situation:**
-- Baseline Annual Tax: $${baselineTax.toLocaleString()}
-- Optimized Annual Tax: $${optimizedTax.toLocaleString()}
-- Current Year Savings: $${currentYearSavings.toLocaleString()}
-- Total Multi-Year Savings: $${totalSavings.toLocaleString()}
+- Baseline Annual Tax: $${formatCurrency(baselineTax)}
+- Optimized Annual Tax: $${formatCurrency(optimizedTax)}
+- Current Year Savings: $${formatCurrency(currentYearSavings)}
+- Total Multi-Year Savings: $${formatCurrency(totalSavings)}
+- Effective Tax Rate Reduction: ${((currentYearSavings / (w2Income + businessIncome + shortTermGains + longTermGains)) * 100).toFixed(1)}%
 
 **Strategy Analysis with ${stateDisplayName} Impact:**
-${strategyDetailsForAI.map(s => `- **${s.name}**: $${s.amount.toLocaleString()} → Fed: $${s.federalBenefit.toLocaleString()} | State: $${s.stateBenefit.toLocaleString()}${s.stateAddBack > 0 ? ` | Add-back: $${s.stateAddBack.toLocaleString()}` : ''} | Total: $${s.totalBenefit.toLocaleString()}${s.specialConsiderations ? ` | ${s.specialConsiderations}` : ''}`).join('\n')}
+${strategyDetailsForAI.map(s => `- **${s.name}**: $${formatCurrency(s.amount)} → Fed: $${formatCurrency(s.federalBenefit)} | State: $${formatCurrency(s.stateBenefit)}${s.stateAddBack > 0 ? ` | Add-back: $${formatCurrency(s.stateAddBack)}` : ''} | Total: $${formatCurrency(s.totalBenefit)}${s.specialConsiderations ? ` | ${s.specialConsiderations}` : ''}`).join('\n')}
 
 **CRITICAL: Use only ** for bold text. Never use ### or ## for headings. Provide specific analysis for 2025+ tax years:**
 
 **Strategy Effectiveness Ranking**
 
-Rank strategies by total tax benefit (federal + state):
-1. [Highest total benefit strategy] - $[amount] total savings
-2. [Second highest] - $[amount] total savings
+Rank strategies by total tax benefit and ROI (return on investment):
+1. [Highest total benefit strategy] - $${formatCurrency(Math.max(...strategyDetailsForAI.map(s => s.totalBenefit)))} total savings ([ROI percentage]%)
+2. [Second highest] - $[amount] total savings ([ROI percentage]%)
 3. [Continue for all strategies]
 
 **${stateDisplayName} State Tax Optimization**
@@ -462,29 +469,60 @@ ${clientState === 'NJ' ? 'New Jersey specific impacts:' : 'New York specific imp
 - ${clientState === 'NJ' ? 'Section 179 capped at $25,000 (add-back required above this)' : 'Section 179 fully deductible at state level'}
 - ${clientState === 'NJ' ? '401(k) deferrals are taxable (no state benefit)' : '401(k) deferrals are deductible'}
 - ${clientState === 'NJ' ? 'No state benefits for charitable, oil & gas, or film investments' : 'Partial state benefits for charitable (50%), full for oil & gas and film'}
-- Net state impact: $[calculate net state benefit vs. federal]
+- Net state impact: $${formatCurrency(strategyDetailsForAI.reduce((sum, s) => sum + s.stateBenefit, 0))} annual state savings
 
-**Strategy Sequencing for Maximum Benefit**
+**Advanced Strategy Interactions**
 
-Based on your $${totalSavings.toLocaleString()} potential savings:
-1. **Priority 1**: [Strategy with highest ROI] - implement first for [specific reason]
-2. **Priority 2**: [Strategy with timing benefits] - [timing consideration]
-3. **Priority 3**: [Strategy with interaction benefits] - [interaction with other strategies]
+**Positive Synergies:**
+- [Which strategies create compounding benefits when combined]
+- [How strategies reduce each other's taxable income base]
+- [Timing strategies that create maximum benefit overlap]
 
-**Critical Interactions**
+**Negative Interactions & Limitations:**
+- [Which strategies compete for the same tax benefits]
+- [Income phase-out thresholds that affect multiple strategies]
+- [AMT implications from combining strategies]
 
-- **Positive synergies**: [Which strategies work better together and why]
-- **Negative interactions**: [Which strategies reduce each other's effectiveness]
-- **Timing dependencies**: [Which strategies must be implemented in specific order]
+**Risk Assessment & Mitigation**
+
+**Low Risk Strategies:** [List strategies with minimal audit risk or complexity]
+**Medium Risk Strategies:** [List strategies requiring careful documentation]
+**High Risk Strategies:** [List strategies requiring professional oversight]
+
+**Long-term Optimization (2025-2027)**
+
+**Year 1 (2025):** Focus on [immediate impact strategies] for $${formatCurrency(currentYearSavings)} savings
+**Year 2-3 (2026-2027):** Build on [foundational strategies] for potential additional $[projected amount] savings
+**Multi-year considerations:** [Strategies that build value over time]
+
+**Implementation Priority Matrix**
+
+**Immediate (Q1 2025):** [Strategies with year-end deadlines or maximum current benefit]
+**Short-term (Q2-Q3 2025):** [Strategies requiring setup but with high ROI]
+**Long-term (Q4 2025+):** [Strategies requiring significant planning or multi-year commitment]
+
+**Professional Guidance Requirements**
+
+**Self-implementation:** [Strategies you can handle independently]
+**CPA consultation:** [Strategies requiring professional tax preparation]
+**Attorney consultation:** [Strategies requiring legal structure setup]
 
 **2025 Tax Year Action Plan**
 
-Your immediate next steps:
-1. [Most urgent action with deadline]
-2. [Second priority with timeline]
-3. [Third priority with implementation notes]
+Your immediate next steps with specific deadlines:
+1. [Most urgent action with exact deadline and specific steps]
+2. [Second priority with timeline and required documentation]
+3. [Third priority with implementation milestones]
 
-Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLocaleString()} savings and ${stateDisplayName} state rules.`;
+**Key Performance Indicators**
+
+Track these metrics to measure strategy success:
+- Quarterly tax savings vs. baseline
+- Strategy-specific ROI calculations
+- State vs. federal benefit optimization
+- Year-over-year improvement trends
+
+Keep analysis under 500 words. Focus on your specific $${formatCurrency(currentYearSavings)} savings and ${stateDisplayName} state rules with actionable implementation guidance.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -551,8 +589,8 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
 
     return (
         <Section 
-            title="🤖 Professional Tax Strategy Analysis" 
-            description="Comprehensive analysis of how your selected strategies work together, tailored to your state and financial profile"
+            title="🤖 Advanced Tax Strategy Analysis" 
+            description="Comprehensive professional analysis including strategy interactions, risk assessment, long-term optimization, and implementation guidance tailored to your state and financial profile"
         >
             {loadingInteraction ? (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -563,11 +601,11 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
                         </div>
                         <div className="ml-4">
                             <div className="text-lg font-semibold text-gray-900 mb-1">
-                                Professional Tax Analysis in Progress
+                                Advanced Tax Strategy Analysis in Progress
                             </div>
                             <div className="text-sm text-gray-600">
-                                Generating comprehensive strategy analysis for {scenario?.clientData?.state || 'your state'} residents...<br/>
-                                <span className="text-xs text-gray-500">This detailed analysis may take up to 30 seconds</span>
+                                Generating comprehensive analysis including risk assessment, long-term optimization, and implementation guidance for {scenario?.clientData?.state || 'your state'} residents...<br/>
+                                <span className="text-xs text-gray-500">This comprehensive analysis may take up to 30 seconds</span>
                             </div>
                         </div>
                     </div>
@@ -650,7 +688,7 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900">Professional Tax Strategy Analysis</h3>
+                                    <h3 className="text-xl font-bold text-gray-900">Advanced Tax Strategy Analysis</h3>
                                 </div>
                                 <button
                                     onClick={fetchInteractionExplanation}
@@ -665,7 +703,7 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
                                 </button>
                             </div>
                             <p className="text-gray-600 text-sm">
-                                Comprehensive professional analysis of how your selected tax strategies optimize your tax burden in {scenario?.clientData?.state || 'your state'}
+                                Advanced analysis including strategy interactions, risk assessment, long-term optimization, and implementation guidance for {scenario?.clientData?.state || 'your state'} residents
                             </p>
                             {strategiesChanged && (
                                 <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -709,9 +747,9 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Professional Tax Strategy Analysis</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Advanced Tax Strategy Analysis</h3>
                         <p className="text-gray-600 mb-6">
-                            Ready to generate a comprehensive, professional analysis of how your selected tax strategies work together for {scenario?.clientData?.state || 'your state'} residents, including specific dollar amounts and implementation guidance
+                            Ready to generate a comprehensive analysis including strategy interactions, risk assessment, long-term optimization, and implementation guidance for {scenario?.clientData?.state || 'your state'} residents with specific dollar amounts and actionable steps
                         </p>
                         
                         <button
@@ -738,7 +776,7 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
                             </div>
                             <div className="flex items-start">
                                 <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">3</span>
-                                <span>Get professional insights on optimization</span>
+                                <span>Get comprehensive analysis with risk assessment and implementation guidance</span>
                             </div>
                         </div>
                     </div>
