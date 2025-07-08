@@ -273,30 +273,29 @@ const StrategyInteractionAnalysis = ({ scenario }) => {
         return 'Regenerate Analysis';
     };
 
-    const fetchInteractionExplanation = async () => {
+    const fetchInteractionExplanation = async (retryCount = 0) => {
         if (enabledStrategies.length > 1) {
             setLoadingInteraction(true);
             setInteractionError('');
             try {
                 const strategyDetails = enabledStrategies.map(s => `${s.name}: ${s.description}`).join('\n');
                 const clientState = scenario?.clientData?.state || 'Not specified';
-                const prompt = `Analyze the following tax strategies for optimal tax optimization, specifically considering the taxpayer's State of Residence: ${clientState}.
+                const stateDisplayName = clientState === 'NJ' ? 'New Jersey' : 
+                                       clientState === 'NY' ? 'New York' : 
+                                       clientState;
+                
+                const prompt = `Analyze tax strategy interactions for a ${stateDisplayName} resident with ${enabledStrategies.length} strategies:
 
-Client Profile:
-- State of Residence: ${clientState}
-- Selected Tax Strategies: ${enabledStrategies.length}
-
-Tax Strategies to Analyze:
 ${strategyDetails}
 
-Please provide a comprehensive analysis that includes:
-1. **Strategy Interdependencies**: How these strategies work together or conflict
-2. **State-Specific Impact**: How ${clientState} tax laws affect the effectiveness of each strategy
-3. **Optimal Sequencing**: The recommended order for implementing these strategies
-4. **State Tax Considerations**: Specific ${clientState} tax implications for each strategy
-5. **Synergies & Conflicts**: Potential interactions between strategies in ${clientState}
+Provide analysis covering:
+1. **Strategy Interdependencies**: How these work together or conflict
+2. **${stateDisplayName} Tax Impact**: State-specific implications and opportunities  
+3. **Implementation Sequence**: Optimal order for maximum benefit
+4. **Key Synergies**: Primary interactions to leverage
+5. **Potential Conflicts**: Issues to avoid or mitigate
 
-Focus on practical, actionable advice for maximizing tax benefits while considering ${clientState}-specific regulations and opportunities.`;
+Focus on actionable advice for ${stateDisplayName} tax optimization.`;
 
                 const chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -312,7 +311,7 @@ Focus on practical, actionable advice for maximizing tax benefits while consider
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -339,7 +338,14 @@ Focus on practical, actionable advice for maximizing tax benefits while consider
                 }
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    setInteractionError('Request timed out. Strategy interaction analysis is unavailable.');
+                    if (retryCount < 1) {
+                        // Retry once with a simpler request
+                        return fetchInteractionExplanation(retryCount + 1);
+                    } else {
+                        setInteractionError('Request timed out after multiple attempts. The AI service may be experiencing high load. Please try again in a moment.');
+                    }
+                } else if (error.message.includes('429') || error.message.includes('503')) {
+                    setInteractionError('AI service is temporarily busy. Please try again in a few moments.');
                 } else {
                     setInteractionError(`Error fetching interaction explanation: ${error.message}`);
                 }
@@ -371,7 +377,8 @@ Focus on practical, actionable advice for maximizing tax benefits while consider
                                 AI Analysis in Progress
                             </div>
                             <div className="text-sm text-blue-700">
-                                Analyzing strategy interactions for {scenario?.clientData?.state || 'your state'}...
+                                Analyzing strategy interactions for {scenario?.clientData?.state || 'your state'}...<br/>
+                                <span className="text-xs opacity-75">This may take up to 30 seconds</span>
                             </div>
                         </div>
                     </div>

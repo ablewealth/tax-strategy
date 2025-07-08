@@ -181,7 +181,7 @@ export default function App() {
                 />, 
                 printContainer, 
                 () => {
-                    console.log('Print component rendered, starting print...');
+                    // Print component rendered, starting print
                     setTimeout(() => {
                         window.print();
                     }, 100);

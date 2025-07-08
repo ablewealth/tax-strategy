@@ -261,8 +261,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
     // Add error boundary logging
     useEffect(() => {
         // Debug environment variable loading
-        console.log('Environment variable debug:', {
-        });
+        // Environment variable debug logging removed
     }, [scenario, results, years]);
 
     const allStrategies = useMemo(() => [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES], []);
@@ -288,11 +287,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     const payload = { contents: chatHistory };
                     const apiKey = process.env.REACT_APP_GEMINI_API_KEY || ""; 
                     
-                    console.log('API integration check:', {
-                        apiKey: apiKey ? 'CONFIGURED' : 'NOT CONFIGURED',
-                        apiKeyLength: apiKey.length,
-                        payloadSize: JSON.stringify(payload).length
-                    });
+                    // API integration check removed
                     
                     if (!apiKey) {
                         setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
@@ -348,7 +343,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
 
     // Enhanced validation with better error handling
     if (!results || !scenario) {
-        console.warn('PrintableReport: Missing required props', { results: !!results, scenario: !!scenario });
+        // PrintableReport: Missing required props
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -365,12 +360,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
     }
 
     if (!results.cumulative || !results.projections || results.projections.length === 0) {
-        console.warn('PrintableReport: Missing calculation results', {
-            hasCumulative: !!results.cumulative,
-            hasProjections: !!results.projections,
-            projectionsLength: results.projections?.length || 0,
-            results: results
-        });
+        // PrintableReport: Missing calculation results
         return (
             <div ref={ref} style={{ ...styles.page, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', textAlign: 'center' }}>
                 <h1 style={{ fontSize: '24pt', fontWeight: 'bold', color: '#d97706', marginBottom: '1rem' }}>
@@ -397,19 +387,19 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
             capitalAllocated: cumulative?.capitalAllocated || 0
         };
 
-        console.log('Safe results extracted:', safeResults);
-
+        // Safe results extracted
+        
         const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         const savingsPercentage = safeResults.baselineTax > 0 ? safeResults.totalSavings / safeResults.baselineTax : 0;
         
-        console.log('Enabled strategies for report:', enabledStrategies.map(s => s.id));
-
+        // Enabled strategies for report
+        
         // Safe insights extraction with null checks
         const benefits = withStrategies?.insights?.filter(i => i?.type === 'success') || [];
         const considerations = withStrategies?.insights?.filter(i => i?.type === 'warning') || [];
 
-        console.log('Insights extracted:', { benefits: benefits.length, considerations: considerations.length });
-
+        // Insights extracted
+        
         // Safe chart data preparation
         let taxBreakdownData = [];
         try {
@@ -417,14 +407,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                 const baseline = projections[0].baseline || {};
                 const optimized = projections[0].withStrategies || {};
                 
-                console.log('Chart data preparation:', {
-                    hasBaseline: !!baseline,
-                    hasOptimized: !!optimized,
-                    baselineFedTax: baseline.fedTax,
-                    baselineStateTax: baseline.stateTax,
-                    optimizedFedTax: optimized.fedTax,
-                    optimizedStateTax: optimized.stateTax
-                });
+                // Chart data preparation
                 
                 taxBreakdownData = [
                     {
@@ -439,22 +422,15 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                     }
                 ];
                 
-                console.log('Generated chart data:', taxBreakdownData);
+                // Generated chart data
             } else {
-                console.warn('No projections data available for chart');
+                // No projections data available for chart
             }
         } catch (e) {
-            console.warn('Error preparing chart data:', e);
             taxBreakdownData = [];
         }
 
-        console.log('About to render report content with data:', {
-            safeResults,
-            enabledStrategiesCount: enabledStrategies.length,
-            benefitsCount: benefits.length,
-            considerationsCount: considerations.length,
-            taxBreakdownDataLength: taxBreakdownData.length
-        });
+        // About to render report content with data
 
         return (
             <div ref={ref} style={styles.page}>
@@ -639,7 +615,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                                 </tr>
                                             );
                                         } catch (e) {
-                                            console.warn('Error rendering projection row:', e, proj);
+                                            // Error rendering projection row
                                             return null;
                                         }
                                     }).filter(Boolean)}
@@ -679,7 +655,7 @@ const PrintableReport = forwardRef(({ scenario, results, years }, ref) => {
                                                 </tr>
                                             );
                                         } catch (e) {
-                                            console.warn('Error rendering cumulative savings row:', e, proj);
+                                            // Error rendering cumulative savings row
                                             return null;
                                         }
                                     }).filter(Boolean)}
