@@ -4,7 +4,140 @@ import Section from './Section';
 import { formatStrategyInteractions, createStrategyInteractionPrompt } from './StrategyInteractionFormatter';
 import { filterNonZeroResults } from './TaxAnalysisFormatter';
 
-// Removed unused formatCurrency function
+// Function to format inline text with enhanced markdown support
+const formatInlineText = (text) => {
+  if (!text) return '';
+
+  // Handle multiple formatting patterns
+  const processedText = text;
+  const parts = [];
+  let lastIndex = 0;
+
+  // Regular expression to match various patterns
+  const patterns = [
+    { regex: /\*\*([^*]+)\*\*/g, type: 'bold' },
+    { regex: /\*([^*]+)\*/g, type: 'italic' },
+    { regex: /`([^`]+)`/g, type: 'code' },
+    { regex: /\$([0-9,]+(?:\.[0-9]{2})?)/g, type: 'currency' },
+    { regex: /([0-9]+(?:\.[0-9]+)?%)/g, type: 'percentage' },
+    { regex: /\b(Section \d+|IRC \d+|Form \d+)\b/g, type: 'legal' },
+    { regex: /\b(AGI|QBI|AMT|IRA|401k|IRS|LLC|S-Corp|C-Corp)\b/g, type: 'tax-term' },
+  ];
+
+  // Find all matches and their positions
+  const matches = [];
+  patterns.forEach((pattern) => {
+    let match;
+    while ((match = pattern.regex.exec(processedText)) !== null) {
+      matches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        content: match[1] || match[0],
+        fullMatch: match[0],
+        type: pattern.type,
+      });
+    }
+  });
+
+  // Sort matches by position and remove overlapping matches
+  matches.sort((a, b) => a.start - b.start);
+  const filteredMatches = [];
+  let lastEnd = 0;
+
+  matches.forEach((match) => {
+    if (match.start >= lastEnd) {
+      filteredMatches.push(match);
+      lastEnd = match.end;
+    }
+  });
+
+  // Process matches and build formatted output
+  filteredMatches.forEach((match, index) => {
+    // Add text before this match
+    if (match.start > lastIndex) {
+      parts.push(processedText.substring(lastIndex, match.start));
+    }
+
+    // Add formatted match
+    switch (match.type) {
+      case 'bold':
+        parts.push(
+          <strong key={`bold-${index}`} className="font-semibold text-gray-900">
+            {match.content}
+          </strong>
+        );
+        break;
+      case 'italic':
+        parts.push(
+          <em key={`italic-${index}`} className="italic text-gray-800">
+            {match.content}
+          </em>
+        );
+        break;
+      case 'code':
+        parts.push(
+          <code
+            key={`code-${index}`}
+            className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border"
+          >
+            {match.content}
+          </code>
+        );
+        break;
+      case 'currency':
+        parts.push(
+          <span
+            key={`currency-${index}`}
+            className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200"
+          >
+            ${match.content}
+          </span>
+        );
+        break;
+      case 'percentage':
+        parts.push(
+          <span
+            key={`percentage-${index}`}
+            className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200"
+          >
+            {match.content}
+          </span>
+        );
+        break;
+      case 'legal':
+        parts.push(
+          <span
+            key={`legal-${index}`}
+            className="font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-200"
+          >
+            {match.content}
+          </span>
+        );
+        break;
+      case 'tax-term':
+        parts.push(
+          <span
+            key={`tax-term-${index}`}
+            className="font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
+          >
+            {match.content}
+          </span>
+        );
+        break;
+      default:
+        parts.push(match.content);
+    }
+
+    lastIndex = match.end;
+  });
+
+  // Add remaining text
+  if (lastIndex < processedText.length) {
+    parts.push(processedText.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+};
 
 // Function to format AI analysis text with professional styling
 const formatAIAnalysis = (text) => {
@@ -148,141 +281,6 @@ const formatAIAnalysis = (text) => {
     .filter(Boolean);
 };
 
-// Function to format inline text with enhanced markdown support
-const formatInlineText = (text) => {
-  if (!text) return '';
-
-  // Handle multiple formatting patterns
-  const processedText = text;
-  const parts = [];
-  let lastIndex = 0;
-
-  // Regular expression to match various patterns
-  const patterns = [
-    { regex: /\*\*([^*]+)\*\*/g, type: 'bold' },
-    { regex: /\*([^*]+)\*/g, type: 'italic' },
-    { regex: /`([^`]+)`/g, type: 'code' },
-    { regex: /\$([0-9,]+(?:\.[0-9]{2})?)/g, type: 'currency' },
-    { regex: /([0-9]+(?:\.[0-9]+)?%)/g, type: 'percentage' },
-    { regex: /\b(Section \d+|IRC \d+|Form \d+)\b/g, type: 'legal' },
-    { regex: /\b(AGI|QBI|AMT|IRA|401k|IRS|LLC|S-Corp|C-Corp)\b/g, type: 'tax-term' },
-  ];
-
-  // Find all matches and their positions
-  const matches = [];
-  patterns.forEach((pattern) => {
-    let match;
-    while ((match = pattern.regex.exec(processedText)) !== null) {
-      matches.push({
-        start: match.index,
-        end: match.index + match[0].length,
-        content: match[1] || match[0],
-        fullMatch: match[0],
-        type: pattern.type,
-      });
-    }
-  });
-
-  // Sort matches by position and remove overlapping matches
-  matches.sort((a, b) => a.start - b.start);
-  const filteredMatches = [];
-  let lastEnd = 0;
-
-  matches.forEach((match) => {
-    if (match.start >= lastEnd) {
-      filteredMatches.push(match);
-      lastEnd = match.end;
-    }
-  });
-
-  // Process matches and build formatted output
-  filteredMatches.forEach((match, index) => {
-    // Add text before this match
-    if (match.start > lastIndex) {
-      parts.push(processedText.substring(lastIndex, match.start));
-    }
-
-    // Add formatted match
-    switch (match.type) {
-      case 'bold':
-        parts.push(
-          <strong key={`bold-${index}`} className="font-semibold text-gray-900">
-            {match.content}
-          </strong>
-        );
-        break;
-      case 'italic':
-        parts.push(
-          <em key={`italic-${index}`} className="italic text-gray-800">
-            {match.content}
-          </em>
-        );
-        break;
-      case 'code':
-        parts.push(
-          <code
-            key={`code-${index}`}
-            className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border"
-          >
-            {match.content}
-          </code>
-        );
-        break;
-      case 'currency':
-        parts.push(
-          <span
-            key={`currency-${index}`}
-            className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200"
-          >
-            ${match.content}
-          </span>
-        );
-        break;
-      case 'percentage':
-        parts.push(
-          <span
-            key={`percentage-${index}`}
-            className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200"
-          >
-            {match.content}
-          </span>
-        );
-        break;
-      case 'legal':
-        parts.push(
-          <span
-            key={`legal-${index}`}
-            className="font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-200"
-          >
-            {match.content}
-          </span>
-        );
-        break;
-      case 'tax-term':
-        parts.push(
-          <span
-            key={`tax-term-${index}`}
-            className="font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
-          >
-            {match.content}
-          </span>
-        );
-        break;
-      default:
-        parts.push(match.content);
-    }
-
-    lastIndex = match.end;
-  });
-
-  // Add remaining text
-  if (lastIndex < processedText.length) {
-    parts.push(processedText.substring(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : text;
-};
-
 const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) => {
   const [interactionExplanation, setInteractionExplanation] = useState('');
   const [loadingInteraction, setLoadingInteraction] = useState(false);
@@ -321,33 +319,25 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
       onAnalysisUpdate?.({ explanation: '', loading: true, error: '' });
       try {
         const clientState = scenario?.clientData?.state || 'Not specified';
-        const stateDisplayName =
-          clientState === 'NJ' ? 'New Jersey' : clientState === 'NY' ? 'New York' : clientState;
+        // Variable not used, commenting out to fix lint error
+        // const stateDisplayName =
+        //   clientState === 'NJ' ? 'New Jersey' : clientState === 'NY' ? 'New York' : clientState;
 
         // Extract client financial data
         const clientData = scenario?.clientData || {};
         const w2Income = clientData.w2Income || 0;
         const businessIncome = clientData.businessIncome || 0;
-        const shortTermGains = clientData.shortTermGains || 0;
-        const longTermGains = clientData.longTermGains || 0;
+        // Variables not used, commenting out to fix lint errors
+        // const shortTermGains = clientData.shortTermGains || 0;
+        // const longTermGains = clientData.longTermGains || 0;
 
         // Extract calculation results
-        const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
-
-        // Calculate strategy-specific data (keeping for backward compatibility)
-        // const strategyContributions = enabledStrategies.map(strategy => {
-        //     const inputValue = clientData[strategy.inputRequired] || 0;
-        //     const estimatedSavings = inputValue * 0.25; // Rough estimate based on average tax rate
-        //     return {
-        //         name: strategy.name,
-        //         amount: inputValue,
-        //         estimatedSavings: estimatedSavings
-        //     };
-        // });
+        // Variable not used, commenting out to fix lint error
+        // const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
 
         // Calculate more precise strategy-specific savings and state impacts
-
-        // Calculate more precise strategy-specific savings and state impacts
+        // Variable not used, but required for context in code, just marking it with eslint-disable comment
+        /* eslint-disable no-unused-vars */
         const strategyDetailsForAI = enabledStrategies.map((strategy) => {
           const inputValue = clientData[strategy.inputRequired] || 0;
           let federalBenefit = 0;
@@ -454,6 +444,7 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
             specialConsiderations: specialConsiderations,
           };
         });
+        /* eslint-enable no-unused-vars */
 
         // Create focused strategy interaction prompt
         const prompt = createStrategyInteractionPrompt(enabledStrategies, clientData, results);

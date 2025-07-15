@@ -110,7 +110,7 @@ const ChartsSection = ({ results }) => {
           {' '}
           {/* Removed style={...styles.section, pageBreakBefore: 'always'} */}
           <h2 className="col-span-full text-sm sm:text-base font-semibold mb-4 text-center text-text-secondary">
-            Multi-Year Projections
+            {results.projections.length}-Year Projections
           </h2>{' '}
           {/* Removed style={styles.sectionTitle} */}
           {/* Annual Tax Comparison Table */}

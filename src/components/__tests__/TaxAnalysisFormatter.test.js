@@ -1,49 +1,57 @@
-import { filterNonZeroResults } from '../TaxAnalysisFormatter';
+// src/components/__tests__/TaxAnalysisFormatter.test.js
+import React from 'react';
+import { render } from '@testing-library/react';
+import TaxAnalysisFormatter, { formatFinancialNumber } from '../TaxAnalysisFormatter';
 
 describe('TaxAnalysisFormatter', () => {
-  const mockStrategies = [
-    { id: 'STRATEGY_1', inputRequired: 'field1' },
-    { id: 'STRATEGY_2', inputRequired: 'field2' },
-    { id: 'STRATEGY_3', inputRequired: 'field3' },
-  ];
+  describe('formatFinancialNumber', () => {
+    test('returns null for zero, null, or undefined', () => {
+      expect(formatFinancialNumber(0)).toBeNull();
+      expect(formatFinancialNumber(null)).toBeNull();
+      expect(formatFinancialNumber(undefined)).toBeNull();
+    });
 
-  const mockClientData = {
-    field1: 5000,  // Valid positive value
-    field2: 0,     // Zero value (should be filtered out)
-    field3: 10000, // Valid positive value
-  };
+    test('formats positive currency values', () => {
+      const { container } = render(formatFinancialNumber(12345));
+      expect(container.textContent).toContain('$12,345');
+    });
 
-  test('filterNonZeroResults should filter out strategies with zero values', () => {
-    const result = filterNonZeroResults(mockStrategies, mockClientData);
-    
-    expect(result).toHaveLength(2);
-    expect(result[0].id).toBe('STRATEGY_1');
-    expect(result[1].id).toBe('STRATEGY_3');
+    test('formats negative currency values', () => {
+      const { container } = render(formatFinancialNumber(-5000));
+      expect(container.textContent).toContain('-$5,000');
+    });
+
+    test('formats percentage values', () => {
+      const { container } = render(formatFinancialNumber(0.123, 'percentage'));
+      expect(container.textContent).toContain('12.3%');
+    });
+
+    test('formats neutral values', () => {
+      const { container } = render(formatFinancialNumber(1000, 'neutral'));
+      expect(container.textContent).toContain('1,000');
+    });
   });
 
-  test('filterNonZeroResults should filter out strategies with undefined values', () => {
-    const clientDataWithUndefined = {
-      field1: 5000,
-      field2: undefined,
-      field3: 10000,
-    };
-    
-    const result = filterNonZeroResults(mockStrategies, clientDataWithUndefined);
-    
-    expect(result).toHaveLength(2);
-    expect(result[0].id).toBe('STRATEGY_1');
-    expect(result[1].id).toBe('STRATEGY_3');
-  });
+  describe('filterNonZeroResults', () => {
+    test('filters out strategies with zero or missing input values', () => {
+      const strategies = [
+        { id: 'A', inputRequired: 'a' },
+        { id: 'B', inputRequired: 'b' },
+        { id: 'C', inputRequired: 'c' }
+      ];
+      const clientData = { a: 100, b: 0, c: null };
+      const filtered = TaxAnalysisFormatter.filterNonZeroResults(strategies, clientData);
+      expect(filtered).toEqual([{ id: 'A', inputRequired: 'a' }]);
+    });
 
-  test('filterNonZeroResults should return empty array when no valid strategies', () => {
-    const clientDataAllZero = {
-      field1: 0,
-      field2: 0,
-      field3: 0,
-    };
-    
-    const result = filterNonZeroResults(mockStrategies, clientDataAllZero);
-    
-    expect(result).toHaveLength(0);
+    test('returns all strategies if all have positive values', () => {
+      const strategies = [
+        { id: 'A', inputRequired: 'a' },
+        { id: 'B', inputRequired: 'b' }
+      ];
+      const clientData = { a: 1, b: 2 };
+      const filtered = TaxAnalysisFormatter.filterNonZeroResults(strategies, clientData);
+      expect(filtered.length).toBe(2);
+    });
   });
 });

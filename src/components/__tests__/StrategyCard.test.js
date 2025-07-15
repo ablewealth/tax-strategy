@@ -1,88 +1,131 @@
+// src/components/__tests__/StrategyCard.test.js
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import StrategyCard from '../StrategyCard';
 
-describe('StrategyCard Component', () => {
+describe('StrategyCard', () => {
   const mockStrategy = {
-    id: 'TEST_STRATEGY',
+    id: 'STRATEGY_01',
     name: 'Test Strategy',
+    category: 'Tax Optimization',
     description: 'This is a test strategy description',
-    inputRequired: 'testInput',
-    category: 'test',
+    inputRequired: 'testInput'
   };
 
   const mockScenario = {
     enabledStrategies: {
-      TEST_STRATEGY: false,
+      'STRATEGY_01': false
     },
+    clientData: {
+      testInput: 0
+    }
   };
 
-  const defaultProps = {
-    strategy: mockStrategy,
-    scenario: mockScenario,
-    toggleStrategy: jest.fn(),
-    updateClientData: jest.fn(),
-  };
+  const mockToggleStrategy = jest.fn();
+  const mockUpdateClientData = jest.fn();
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test('renders strategy card with name and description', () => {
-    render(<StrategyCard {...defaultProps} />);
+  test('renders strategy details correctly', () => {
+    render(
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={mockScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      />
+    );
 
     expect(screen.getByText('Test Strategy')).toBeInTheDocument();
+    expect(screen.getByText('Tax Optimization')).toBeInTheDocument();
     expect(screen.getByText('This is a test strategy description')).toBeInTheDocument();
   });
 
-  test('calls toggleStrategy when checkbox is clicked', () => {
-    const toggleStrategy = jest.fn();
-    render(<StrategyCard {...defaultProps} toggleStrategy={toggleStrategy} />);
-
-    const checkbox = screen.getByRole('checkbox');
-    fireEvent.click(checkbox);
-
-    expect(toggleStrategy).toHaveBeenCalledWith('TEST_STRATEGY');
-  });
-
-  test('checkbox is checked when strategy is enabled', () => {
-    const enabledScenario = {
-      enabledStrategies: {
-        TEST_STRATEGY: true,
-      },
-    };
-    render(<StrategyCard {...defaultProps} scenario={enabledScenario} />);
-
-    const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).toBeChecked();
-  });
-
-  test('checkbox is unchecked when strategy is disabled', () => {
-    render(<StrategyCard {...defaultProps} />);
+  test('checkbox is unchecked when strategy is not enabled', () => {
+    render(
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={mockScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      />
+    );
 
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).not.toBeChecked();
   });
 
-  test('renders children when provided', () => {
+  test('checkbox is checked when strategy is enabled', () => {
+    const activeScenario = {
+      ...mockScenario,
+      enabledStrategies: {
+        'STRATEGY_01': true
+      }
+    };
+
     render(
-      <StrategyCard {...defaultProps}>
-        <div>Test Children</div>
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={activeScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      />
+    );
+
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toBeChecked();
+  });
+
+  test('toggles strategy when checkbox is clicked', () => {
+    render(
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={mockScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      />
+    );
+
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+
+    expect(mockToggleStrategy).toHaveBeenCalledWith('STRATEGY_01');
+  });
+
+  test('renders children components', () => {
+    render(
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={mockScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      >
+        <div data-testid="child-component">Child Component</div>
       </StrategyCard>
     );
 
-    expect(screen.getByText('Test Children')).toBeInTheDocument();
+    expect(screen.getByTestId('child-component')).toBeInTheDocument();
+    expect(screen.getByText('Child Component')).toBeInTheDocument();
   });
 
   test('applies active styling when strategy is enabled', () => {
-    const enabledScenario = {
+    const activeScenario = {
+      ...mockScenario,
       enabledStrategies: {
-        TEST_STRATEGY: true,
-      },
+        'STRATEGY_01': true
+      }
     };
-    render(<StrategyCard {...defaultProps} scenario={enabledScenario} />);
 
-    // Check that the strategy name is still visible (active state)
+    render(
+      <StrategyCard
+        strategy={mockStrategy}
+        scenario={activeScenario}
+        toggleStrategy={mockToggleStrategy}
+        updateClientData={mockUpdateClientData}
+      />
+    );
+
+    // For styling tests, we can use container.innerHTML to verify the component rendered
+    // but we should avoid assertions on specific classes
     expect(screen.getByText('Test Strategy')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).toBeChecked();
   });
 });
