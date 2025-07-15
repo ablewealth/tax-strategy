@@ -1,9 +1,9 @@
-import { 
-  formatCurrency, 
-  formatPercentage, 
-  STRATEGY_LIBRARY, 
+import {
+  formatCurrency,
+  formatPercentage,
+  STRATEGY_LIBRARY,
   RETIREMENT_STRATEGIES,
-  DEALS_EXPOSURE_LEVELS
+  DEALS_EXPOSURE_LEVELS,
 } from '../constants';
 
 describe('Constants and Utilities', () => {
@@ -55,7 +55,7 @@ describe('Constants and Utilities', () => {
     });
 
     test('each strategy has required properties', () => {
-      STRATEGY_LIBRARY.forEach(strategy => {
+      STRATEGY_LIBRARY.forEach((strategy) => {
         expect(strategy).toHaveProperty('id');
         expect(strategy).toHaveProperty('name');
         expect(strategy).toHaveProperty('description');
@@ -65,7 +65,7 @@ describe('Constants and Utilities', () => {
     });
 
     test('strategy IDs are unique', () => {
-      const ids = STRATEGY_LIBRARY.map(s => s.id);
+      const ids = STRATEGY_LIBRARY.map((s) => s.id);
       const uniqueIds = [...new Set(ids)];
       expect(ids.length).toBe(uniqueIds.length);
     });
@@ -78,7 +78,7 @@ describe('Constants and Utilities', () => {
     });
 
     test('each retirement strategy has required properties', () => {
-      RETIREMENT_STRATEGIES.forEach(strategy => {
+      RETIREMENT_STRATEGIES.forEach((strategy) => {
         expect(strategy).toHaveProperty('id');
         expect(strategy).toHaveProperty('name');
         expect(strategy).toHaveProperty('description');
@@ -98,7 +98,7 @@ describe('Constants and Utilities', () => {
     });
 
     test('each exposure level has required properties', () => {
-      Object.values(DEALS_EXPOSURE_LEVELS).forEach(level => {
+      Object.values(DEALS_EXPOSURE_LEVELS).forEach((level) => {
         expect(level).toHaveProperty('shortTermLossRate');
         expect(level).toHaveProperty('longTermGainRate');
         expect(level).toHaveProperty('netBenefit');
@@ -107,7 +107,7 @@ describe('Constants and Utilities', () => {
     });
 
     test('exposure levels have correct types', () => {
-      Object.values(DEALS_EXPOSURE_LEVELS).forEach(level => {
+      Object.values(DEALS_EXPOSURE_LEVELS).forEach((level) => {
         expect(typeof level.shortTermLossRate).toBe('number');
         expect(typeof level.longTermGainRate).toBe('number');
         expect(typeof level.netBenefit).toBe('number');

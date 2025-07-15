@@ -21,7 +21,7 @@ jest.mock('recharts', () => ({
 describe('Tax Strategy Optimizer App', () => {
   test('renders the app without crashing', async () => {
     render(<App />);
-    
+
     // Wait for the app to render and check for a specific heading
     await waitFor(() => {
       const mainHeading = screen.getByText('Advanced Tax Strategy Optimizer');
@@ -31,7 +31,7 @@ describe('Tax Strategy Optimizer App', () => {
 
   test('renders main heading', async () => {
     render(<App />);
-    
+
     await waitFor(() => {
       const heading = screen.getByText('Advanced Tax Strategy Optimizer');
       expect(heading).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('Tax Strategy Optimizer App', () => {
 
   test('renders client input section', async () => {
     render(<App />);
-    
+
     await waitFor(() => {
       // Look for specific client profile heading
       const clientHeading = screen.getByText('📋 Client Profile & Projections');

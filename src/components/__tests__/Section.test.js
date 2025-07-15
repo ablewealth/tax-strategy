@@ -9,7 +9,7 @@ describe('Section Component', () => {
         <div>Section content</div>
       </Section>
     );
-    
+
     expect(screen.getByText('Test Section')).toBeInTheDocument();
     expect(screen.getByText('Section content')).toBeInTheDocument();
   });
@@ -20,7 +20,7 @@ describe('Section Component', () => {
         <div>Section content</div>
       </Section>
     );
-    
+
     expect(screen.getByText('Test Section')).toBeInTheDocument();
     expect(screen.getByText('Test description')).toBeInTheDocument();
     expect(screen.getByText('Section content')).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('Section Component', () => {
         <div>Section content</div>
       </Section>
     );
-    
+
     expect(screen.getByText('Test Section')).toBeInTheDocument();
     expect(screen.getByText('Section content')).toBeInTheDocument();
     // Should not have description text
@@ -47,7 +47,7 @@ describe('Section Component', () => {
         <span>Third child</span>
       </Section>
     );
-    
+
     expect(screen.getByText('First child')).toBeInTheDocument();
     expect(screen.getByText('Second child')).toBeInTheDocument();
     expect(screen.getByText('Third child')).toBeInTheDocument();

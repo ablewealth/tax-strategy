@@ -10,7 +10,13 @@
       "Bash(grep:*)",
       "Bash(touch:*)",
       "Bash(node:*)",
-      "Bash(npm run security:*)"
+      "Bash(npm run security:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

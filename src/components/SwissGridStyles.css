@@ -1,0 +1,360 @@
+/* Swiss Grid Design System for Tax Analysis */
+
+/* Base Typography */
+.swiss-grid-analysis {
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  letter-spacing: -0.01em;
+}
+
+/* Grid Layout System */
+.swiss-grid-analysis .grid-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.swiss-grid-analysis .grid-full {
+  grid-column: 1 / -1;
+}
+
+.swiss-grid-analysis .grid-half {
+  grid-column: span 6;
+}
+
+.swiss-grid-analysis .grid-third {
+  grid-column: span 4;
+}
+
+.swiss-grid-analysis .grid-quarter {
+  grid-column: span 3;
+}
+
+/* Section Styling */
+.swiss-grid-analysis .section {
+  margin-bottom: 3rem;
+  background: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+  border: 1px solid #e5e7eb;
+}
+
+.swiss-grid-analysis .section-header {
+  padding: 1.5rem 2rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafbfc;
+}
+
+.swiss-grid-analysis .section-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.swiss-grid-analysis .section-content {
+  padding: 2rem;
+}
+
+/* Card System */
+.swiss-grid-analysis .card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.15s ease;
+}
+
+.swiss-grid-analysis .card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.swiss-grid-analysis .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.swiss-grid-analysis .card-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.swiss-grid-analysis .card-content {
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Ranking System */
+.swiss-grid-analysis .ranking-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  margin: 0;
+}
+
+.swiss-grid-analysis .ranking-item:last-child {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.swiss-grid-analysis .ranking-item:nth-child(odd) {
+  background: #ffffff;
+}
+
+.swiss-grid-analysis .ranking-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.swiss-grid-analysis .ranking-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.swiss-grid-analysis .ranking-strategy {
+  font-weight: 500;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.swiss-grid-analysis .ranking-roi {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 0.5rem;
+}
+
+.swiss-grid-analysis .ranking-value {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-weight: 600;
+  color: #059669;
+  font-size: 0.875rem;
+  background: #ecfdf5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #d1fae5;
+}
+
+/* Risk Assessment */
+.swiss-grid-analysis .risk-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.swiss-grid-analysis .risk-card {
+  padding: 1.5rem;
+  border: 1px solid;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.swiss-grid-analysis .risk-low {
+  border-color: #d1fae5;
+  background: #f0fdf4;
+}
+
+.swiss-grid-analysis .risk-medium {
+  border-color: #fed7aa;
+  background: #fffbeb;
+}
+
+.swiss-grid-analysis .risk-high {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.swiss-grid-analysis .risk-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.swiss-grid-analysis .risk-low .risk-title {
+  color: #065f46;
+}
+
+.swiss-grid-analysis .risk-medium .risk-title {
+  color: #92400e;
+}
+
+.swiss-grid-analysis .risk-high .risk-title {
+  color: #991b1b;
+}
+
+.swiss-grid-analysis .risk-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.swiss-grid-analysis .risk-list li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.swiss-grid-analysis .risk-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #6b7280;
+  font-weight: bold;
+}
+
+.swiss-grid-analysis .risk-low .risk-list li {
+  color: #065f46;
+}
+
+.swiss-grid-analysis .risk-medium .risk-list li {
+  color: #92400e;
+}
+
+.swiss-grid-analysis .risk-high .risk-list li {
+  color: #991b1b;
+}
+
+/* Timeline */
+.swiss-grid-analysis .timeline-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.swiss-grid-analysis .timeline-card {
+  padding: 1.5rem;
+  border: 1px solid;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.swiss-grid-analysis .timeline-immediate {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.swiss-grid-analysis .timeline-short {
+  border-color: #c4b5fd;
+  background: #f3e8ff;
+}
+
+.swiss-grid-analysis .timeline-long {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.swiss-grid-analysis .timeline-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.swiss-grid-analysis .timeline-immediate .timeline-title {
+  color: #1e40af;
+}
+
+.swiss-grid-analysis .timeline-short .timeline-title {
+  color: #7c3aed;
+}
+
+.swiss-grid-analysis .timeline-long .timeline-title {
+  color: #4b5563;
+}
+
+.swiss-grid-analysis .timeline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.swiss-grid-analysis .timeline-list li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.swiss-grid-analysis .timeline-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #6b7280;
+  font-weight: bold;
+}
+
+.swiss-grid-analysis .timeline-immediate .timeline-list li {
+  color: #1e40af;
+}
+
+.swiss-grid-analysis .timeline-short .timeline-list li {
+  color: #7c3aed;
+}
+
+.swiss-grid-analysis .timeline-long .timeline-list li {
+  color: #4b5563;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .swiss-grid-analysis .grid-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .swiss-grid-analysis .grid-half,
+  .swiss-grid-analysis .grid-third,
+  .swiss-grid-analysis .grid-quarter {
+    grid-column: 1 / -1;
+  }
+  
+  .swiss-grid-analysis .risk-container,
+  .swiss-grid-analysis .timeline-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .swiss-grid-analysis .section-content {
+    padding: 1rem;
+  }
+  
+  .swiss-grid-analysis .ranking-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .swiss-grid-analysis .ranking-left {
+    width: 100%;
+  }
+}
