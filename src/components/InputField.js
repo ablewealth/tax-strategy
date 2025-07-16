@@ -8,13 +8,12 @@ const InputField = ({ label, value, onChange, placeholder }) => {
     isCurrencyField && value ? formatCurrencyForDisplay(value) : value || ''
   );
 
-  // For ensuring direct value control in inputs
-  // This handles both initial value and subsequent updates
   useEffect(() => {
+    // This effect now correctly syncs the display value when the external value prop changes.
     if (isCurrencyField) {
       setDisplayValue(value ? formatCurrencyForDisplay(value) : '');
     } else {
-      setDisplayValue(value !== null && value !== undefined ? value : '');
+      setDisplayValue(value || '');
     }
   }, [value, isCurrencyField]);
 
@@ -39,6 +38,9 @@ const InputField = ({ label, value, onChange, placeholder }) => {
     }
   };
 
+  // Ensure value is controlled
+  const controlledValue = value !== undefined ? value : '';
+
   return (
     <div className="flex flex-col gap-2">
       <label className="text-xs font-semibold text-text-primary uppercase tracking-wider">
@@ -46,7 +48,7 @@ const InputField = ({ label, value, onChange, placeholder }) => {
       </label>
       <input
         type="text"
-        value={displayValue}
+        value={isCurrencyField ? displayValue : controlledValue} // Use direct prop for non-currency fields
         onChange={handleInputChange}
         onBlur={handleBlur}
         placeholder={placeholder}

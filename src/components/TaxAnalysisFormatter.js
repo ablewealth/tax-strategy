@@ -18,7 +18,7 @@ const colors = {
 /**
  * Formats financial numbers with proper styling
  */
-export const formatFinancialNumber = (value, type = 'currency') => {
+const formatFinancialNumber = (value, type = 'currency') => {
   if (value === 0 || value === null || value === undefined) return null;
   
   const absValue = Math.abs(value);

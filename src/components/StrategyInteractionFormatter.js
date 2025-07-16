@@ -5,7 +5,6 @@
 
 import React from 'react';
 import './SwissGridStyles.css';
-import { AI_ANALYSIS_GUIDE } from '../../constants';
 
 /**
  * Formats financial numbers with proper styling
@@ -273,15 +272,7 @@ export const createStrategyInteractionPrompt = (enabledStrategies, clientData, r
     return `${s.name}: $${amount.toLocaleString()}`;
   }).join('\n');
   
-  return `You are an expert tax strategist AI. Your task is to analyze the interactions between the selected tax strategies for a specific client.
-
-**VERY IMPORTANT**: You MUST follow the instructions and data in the AI Tax Strategy Analysis Guide provided below.
-
----
-${AI_ANALYSIS_GUIDE}
----
-
-Now, based on the guide, analyze the following client scenario:
+  return `You are analyzing the tax strategy interactions for a specific client. Focus ONLY on how these strategies work together, their synergies, and specific impacts for this client.
 
 CLIENT PROFILE:
 - Location: ${stateDisplayName}
@@ -293,13 +284,64 @@ CLIENT PROFILE:
 SELECTED STRATEGIES (Investment/Contribution Amounts):
 ${strategyList}
 
-**ANALYSIS FOCUS:**
-1.  **Strategy Interactions**: Based on the guide, explain how these specific strategies enhance or conflict with each other for this client.
-2.  **State-Specific Impact**: Highlight the specific tax implications for the client's state (${stateDisplayName}), referencing the guide.
-3.  **Quantify When Possible**: Use the provided financial data to estimate the impact of these interactions.
-4.  **Prioritize**: Focus on the most significant 2-3 interactions.
+**IMPORTANT DATA CONTEXT:**
+- The amounts above are INVESTMENTS/CONTRIBUTIONS, NOT tax deductions
+- Section 179: Investment amount, creates depreciation deduction
+- 401(k)/Solo 401(k): Contribution amount, reduces taxable income dollar-for-dollar
+- Charitable: Contribution amount, may have percentage limitations
+- Oil & Gas: Investment amount, creates 70% deduction typically
+- Each strategy type has different tax treatment and deduction calculations
+- DO NOT sum these amounts - they represent different types of financial commitments
 
-Provide a concise, insightful analysis that is directly relevant to this client's situation, following the principles in the guide.`;
+ANALYSIS FOCUS:
+1. **Strategy Interactions**: How do these specific strategies enhance each other? For example:
+   - How does Section 179 depreciation interact with QBI deduction?
+   - How do retirement contributions affect the tax impact of other strategies?
+   - What are the compounding effects when strategies are combined?
+
+2. **Client-Specific Benefits**: Based on their income profile and ${stateDisplayName} residence:
+   - Which combination provides maximum benefit for their tax bracket?
+   - How does their state affect the strategy effectiveness?
+   - What are the specific dollar benefits of combining these strategies?
+
+3. **${stateDisplayName} Considerations**: State-specific impacts:
+   - How does ${stateDisplayName} tax law affect these strategies?
+   - Are there state-specific advantages or limitations?
+   - What are the net federal vs state benefits?
+   
+   **CRITICAL TAX LAW UPDATES for 2025:**
+   - New Jersey: Section 179 depreciation now requires a $975,000 add-back (not $25,000 as previously)
+   - New Jersey: 401(k) deferrals are subject to NJ state income tax
+   - New York: Generally allows federal deductions for Section 179 and retirement contributions
+   - Both states: QBI deduction is federal-only, no state equivalent
+
+IMPORTANT: 
+- Focus on INTERACTIONS and SYNERGIES between selected strategies
+- Provide specific dollar amounts and percentages where possible
+- Explain how strategies work together, not just individually
+- Keep under 300 words
+- Be specific to this client's situation
+- Don't include generic advice or broad recommendations
+
+**CRITICAL: VERIFY ALL NUMBERS BEFORE RESPONDING**
+- ONLY use the dollar amounts provided in the CLIENT PROFILE and SELECTED STRATEGIES sections above
+- DO NOT add up all strategy amounts to create a "total deduction" - this is mathematically incorrect
+- DO NOT calculate tax deductions manually - the system handles complex calculations
+- Each strategy amount represents a specific contribution/investment, not a tax deduction
+- Tax deductions are calculated differently for each strategy type with various limitations
+- If you mention any dollar figure, it MUST match exactly what was provided in the data
+- The "Current Tax Savings" figure is the actual calculated benefit - use this for savings discussions
+- Double-check that your calculations make sense relative to the client's income levels
+- If unsure about a calculation, acknowledge the limitation rather than guess
+- Focus on HOW strategies work together, not on recalculating the numbers
+
+Generate a focused analysis of how these ${nonZeroStrategies.length} strategies work together for this specific client scenario.
+
+**BEFORE SUBMITTING YOUR RESPONSE:**
+1. Re-read your response and verify every number matches the data provided above
+2. Ensure you haven't created any "total deduction" or summed incompatible amounts
+3. Confirm your analysis focuses on strategy interactions, not individual calculations
+4. Check that any savings references use the "Current Tax Savings" figure provided`;
 };
 
 export default {

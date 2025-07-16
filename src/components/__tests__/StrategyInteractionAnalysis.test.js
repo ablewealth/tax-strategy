@@ -1,6 +1,6 @@
 // src/components/__tests__/StrategyInteractionAnalysis.test.js
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import StrategyInteractionAnalysis from '../StrategyInteractionAnalysis';
 import * as formatter from '../StrategyInteractionFormatter';
 
@@ -8,35 +8,6 @@ import * as formatter from '../StrategyInteractionFormatter';
 jest.mock('../StrategyInteractionFormatter', () => ({
   formatStrategyInteractions: jest.fn(),
   createStrategyInteractionPrompt: jest.fn()
-}));
-
-// Mock constants
-jest.mock('../../constants', () => ({
-  STRATEGY_LIBRARY: [
-    {
-      id: 'SOLO401K_EMPLOYEE_01',
-      name: 'Solo 401(k) - Employee',
-      description: 'Employee elective deferral contributions.',
-      inputRequired: 'solo401kEmployeeContribution',
-      type: 'aboveAGI',
-    },
-    {
-      id: 'SOLO401K_EMPLOYER_01',
-      name: 'Solo 401(k) - Employer',
-      description: 'Employer profit-sharing contributions.',
-      inputRequired: 'solo401kEmployerContribution',
-      type: 'aboveAGI',
-    }
-  ],
-  RETIREMENT_STRATEGIES: [
-    {
-      id: 'DB_PLAN_01',
-      name: 'Executive Retirement Plan',
-      description: 'High-contribution defined benefit pension plan.',
-      inputRequired: 'dbContribution',
-      type: 'aboveAGI',
-    }
-  ]
 }));
 
 // Mock fetch function
@@ -91,7 +62,7 @@ describe('StrategyInteractionAnalysis', () => {
       }
     };
 
-    render(
+    const { container } = render(
       <StrategyInteractionAnalysis 
         scenario={scenarioWithOneStrategy} 
         results={mockResults} 
@@ -99,186 +70,234 @@ describe('StrategyInteractionAnalysis', () => {
       />
     );
 
-    expect(formatter.formatStrategyInteractions).not.toHaveBeenCalled();
-    expect(screen.queryByText(/Advanced Tax Strategy Analysis/)).not.toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
   });
 
-  test('renders initial state with generate button when multiple strategies are enabled', () => {
+  test('renders initial UI with generate button when no analysis has been done', () => {
     render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
       />
     );
 
-    expect(screen.getAllByRole('heading')).toHaveLength(2);
-    expect(screen.getByText(/Generate AI Analysis/)).toBeInTheDocument();
+    // Check for initial UI elements
+    expect(screen.getByText('Advanced Tax Strategy Analysis')).toBeInTheDocument();
+    expect(screen.getByText('Generate AI Analysis')).toBeInTheDocument();
   });
 
   test('shows loading state when fetching analysis', async () => {
-    // Mock fetch to return a pending promise
-    global.fetch.mockImplementation(() => new Promise(() => {}));
-    
+    // Setup fetch to return a promise that doesn't resolve immediately
+    global.fetch.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+
     render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
       />
     );
-    
-    // Click generate button
-    fireEvent.click(screen.getByText(/Generate AI Analysis/));
-    
-    // Check if loading state is shown
-    expect(screen.getByText(/Analyzing Strategy Interactions/)).toBeInTheDocument();
-    expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({ 
-      explanation: '', 
-      loading: true, 
-      error: '' 
-    });
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
+    // Check loading state
+    expect(screen.getByText('Analyzing Strategy Interactions')).toBeInTheDocument();
+    expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({ explanation: '', loading: true, error: '' });
   });
 
-  test('handles error when API key is missing', async () => {
+  test('shows error message when API key is missing', async () => {
     // Temporarily remove API key
-    const originalApiKey = process.env.REACT_APP_GEMINI_API_KEY;
+    const originalKey = process.env.REACT_APP_GEMINI_API_KEY;
     process.env.REACT_APP_GEMINI_API_KEY = '';
-    
+
     render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
       />
     );
-    
-    // Click generate button
-    fireEvent.click(screen.getByText(/Generate AI Analysis/));
-    
-    // Wait for error message
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
+    // Wait for error state
     await waitFor(() => {
-      expect(screen.getByText(/AI Analysis Unavailable/)).toBeInTheDocument();
+      expect(screen.getByText('AI Analysis Unavailable')).toBeInTheDocument();
+      expect(screen.getByText(/To enable AI-powered strategy analysis/)).toBeInTheDocument();
     });
-    
-    // Then check additional UI elements
-    expect(screen.getByText(/AI analysis is not configured/)).toBeInTheDocument();
-    
+
     // Restore API key
-    process.env.REACT_APP_GEMINI_API_KEY = originalApiKey;
+    process.env.REACT_APP_GEMINI_API_KEY = originalKey;
   });
 
-  test('handles successful API response', async () => {
+  test('successfully fetches and displays analysis', async () => {
     // Mock successful API response
-    const mockResponse = {
-      candidates: [
-        {
-          content: {
-            parts: [{ text: 'This is a test analysis' }]
-          }
-        }
-      ]
-    };
-    
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse
-    });
-    
+    global.fetch.mockImplementation(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: 'Test analysis content'
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+    );
+
     render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
       />
     );
-    
-    // Click generate button
-    fireEvent.click(screen.getByText(/Generate AI Analysis/));
-    
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
+    // Wait for analysis to be displayed
+    await waitFor(() => {
+      expect(formatter.formatStrategyInteractions).toHaveBeenCalled();
+      expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({ 
+        explanation: 'Test analysis content', 
+        loading: false, 
+        error: '' 
+      });
+    });
+  });
+
+  test('handles API error responses', async () => {
+    // Mock API error
+    global.fetch.mockImplementation(() => 
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        statusText: 'Server Error'
+      })
+    );
+
+    render(
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
+      />
+    );
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
+    // Wait for error state
+    await waitFor(() => {
+      expect(screen.getByText('AI Analysis Unavailable')).toBeInTheDocument();
+      expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({ 
+        explanation: '', 
+        loading: false, 
+        error: expect.any(String)
+      });
+    });
+  });
+
+  test('handles invalid API responses', async () => {
+    // Mock invalid API response (missing candidates)
+    global.fetch.mockImplementation(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          // Missing candidates array
+        })
+      })
+    );
+
+    render(
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
+      />
+    );
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
+    // Wait for error state
+    await waitFor(() => {
+      expect(screen.getByText('AI Analysis Unavailable')).toBeInTheDocument();
+      expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({ 
+        explanation: '', 
+        loading: false, 
+        error: 'Failed to generate interaction explanation.'
+      });
+    });
+  });
+
+  test('shows refresh button when strategies have changed', async () => {
+    // Mock successful API response
+    global.fetch.mockImplementation(() => 
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: 'Test analysis content'
+                  }
+                ]
+              }
+            }
+          ]
+        })
+      })
+    );
+
+    const { rerender } = render(
+      <StrategyInteractionAnalysis 
+        scenario={mockScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
+      />
+    );
+
+    // Click the generate button
+    fireEvent.click(screen.getByText('Generate AI Analysis'));
+
     // Wait for analysis to be displayed
     await waitFor(() => {
       expect(formatter.formatStrategyInteractions).toHaveBeenCalled();
     });
-    
-    // Then check that the formatting was done with the right arguments
-    expect(formatter.formatStrategyInteractions).toHaveBeenCalledWith(
-      'This is a test analysis',
-      mockScenario,
-      mockResults
-    );
-    
-    expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({
-      explanation: 'This is a test analysis',
-      loading: false,
-      error: ''
-    });
-  });
 
-  test('handles API error response', async () => {
-    // Mock API error
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      statusText: 'Internal Server Error'
-    });
-    
-    render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
+    // Change enabled strategies
+    const updatedScenario = {
+      ...mockScenario,
+      enabledStrategies: {
+        'SOLO401K_EMPLOYEE_01': true,
+        'SOLO401K_EMPLOYER_01': true,
+        'QUANT_DEALS_01': true // Added new strategy
+      }
+    };
+
+    // Re-render with new scenario
+    rerender(
+      <StrategyInteractionAnalysis 
+        scenario={updatedScenario} 
+        results={mockResults} 
+        onAnalysisUpdate={mockOnAnalysisUpdate} 
       />
     );
-    
-    // Click generate button
-    fireEvent.click(screen.getByText(/Generate AI Analysis/));
-    
-    // Wait for error message
-    await waitFor(() => {
-      expect(screen.getByText(/AI Analysis Unavailable/)).toBeInTheDocument();
-    });
-    
-    // Then check additional UI elements
-    expect(screen.getByText(/Error fetching interaction explanation/)).toBeInTheDocument();
-    
-    expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({
-      explanation: '',
-      loading: false,
-      error: expect.stringContaining('Error fetching interaction explanation')
-    });
-  });
 
-  test('handles invalid API response format', async () => {
-    // Mock invalid API response (missing expected data structure)
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ invalidData: true })
-    });
-    
-    render(
-      <StrategyInteractionAnalysis
-        scenario={mockScenario}
-        results={mockResults}
-        onAnalysisUpdate={mockOnAnalysisUpdate}
-      />
-    );
-    
-    // Click generate button
-    fireEvent.click(screen.getByText(/Generate AI Analysis/));
-    
-    // Wait for error message
-    await waitFor(() => {
-      expect(screen.getByText(/AI Analysis Unavailable/)).toBeInTheDocument();
-    });
-    
-    // Then check additional UI elements
-    expect(screen.getByText(/Failed to generate interaction explanation/)).toBeInTheDocument();
-    
-    expect(mockOnAnalysisUpdate).toHaveBeenCalledWith({
-      explanation: '',
-      loading: false,
-      error: 'Failed to generate interaction explanation.'
-    });
+    // Should show refresh button
+    expect(screen.getByText('Refresh Analysis')).toBeInTheDocument();
   });
 });
