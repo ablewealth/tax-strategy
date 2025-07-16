@@ -271,7 +271,7 @@ describe('StrategyInteractionAnalysis', () => {
     );
 
     // Click the generate button
-    fireEvent.click(screen.getByText('Generate AI Analysis'));
+    fireEvent.click(screen.getByText(/Generate AI Analysis|Refresh Analysis|Regenerate Analysis/));
 
     // Wait for analysis to be displayed
     await waitFor(() => {
