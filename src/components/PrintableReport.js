@@ -8,10 +8,6 @@ import {
 } from '../constants';
 import { formatPrintableTaxAnalysis } from './PrintableTaxAnalysisFormatter';
 
-// Function to format numbers without decimals for printable report
-const formatCurrencyNoDecimals = (amount) => {
-  return Math.round(amount).toLocaleString();
-};
 
 // --- Modern Style Definitions for Professional Reports ---
 const styles = {

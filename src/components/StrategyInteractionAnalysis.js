@@ -296,7 +296,6 @@ Maximum 500 words. Focus on quantified analysis, specific recommendations, and a
           if (!backendUrl) {
             throw new Error('Backend URL not configured. Please set REACT_APP_BACKEND_URL environment variable.');
           }
-          console.log('Calling backend at:', `${backendUrl}/api/gemini`);
 
           // Map enabled strategies to the format expected by backend
           const mappedStrategies = enabledStrategies.map((s) => ({
