@@ -23,7 +23,9 @@
       "Bash(npx eslint:*)",
       "Bash(timeout 30 npx react-scripts build:*)",
       "Bash(npx react-scripts build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(gtimeout 300 npm run build)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
