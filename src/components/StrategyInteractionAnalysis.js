@@ -379,20 +379,84 @@ ${
 Please provide specific state tax considerations for comprehensive analysis.`
 }
 
-**ANALYSIS REQUIREMENTS:**
-1. Use only ** for bold text. Write in complete professional sentences.
-2. Provide specific dollar amounts and percentages in all recommendations.
-3. Calculate exact tax savings based on marginal rates provided above.
-4. Address AMT, NIIT, and Section 199A implications for high-income taxpayers.
-5. Include detailed cash flow and timing considerations for each strategy.
-6. Focus on strategy interactions and synergies rather than individual benefits.
-7. Provide actionable implementation guidance with specific deadlines.
+**CRITICAL ANALYSIS REQUIREMENTS:**
+1. **MANDATORY MINIMUM LENGTH**: Your response must be AT LEAST 1,800-2,200 words. This is NOT optional.
+2. **COMPLETE SENTENCES ONLY**: Use only ** for bold text. Write ONLY in complete, professional sentences. Never use incomplete phrases or truncated text.
+3. **EXTENSIVE DETAIL REQUIRED**: Provide comprehensive explanations, not brief summaries. Each section must be thoroughly developed.
+4. **SPECIFIC CALCULATIONS**: Include exact dollar amounts and percentages in ALL recommendations with detailed calculations.
+5. **COMPREHENSIVE COVERAGE**: Address AMT, NIIT, Section 199A implications, and state-specific considerations in depth.
+6. **DETAILED CASH FLOW ANALYSIS**: Include extensive cash flow and timing considerations for each strategy.
+7. **STRATEGY SYNERGIES FOCUS**: Emphasize how strategies work together, not just individual benefits.
+8. **ACTIONABLE IMPLEMENTATION**: Provide specific, detailed implementation guidance with exact deadlines and steps.
 
-**COMPREHENSIVE ANALYSIS FRAMEWORK:**\n\n**Executive Summary**\nProvide a sophisticated 3-4 sentence analysis of the integrated tax strategy approach, highlighting the total optimization potential of $${totalSavings.toLocaleString()} and the strategic rationale for the recommended portfolio approach.\n\n**Strategy Synergies and Interactions**\nAnalyze how these strategies work together to create compound tax benefits:\n- **Complementary Strategies**: Which strategies amplify each other's effectiveness and why?\n- **Timing Interdependencies**: How does the implementation sequence affect overall benefits?\n- **Cash Flow Optimization**: How do the strategies' cash flow patterns create additional planning opportunities?\n- **Risk Mitigation**: How does diversifying across multiple strategies reduce overall tax planning risk?\n\n**Advanced Strategy Effectiveness Analysis**\nProvide detailed analysis for each strategy with specific calculations:\n${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}** - Federal: $${Math.round(s.federalBenefit).toLocaleString()}, State: $${Math.round(s.stateBenefit - s.stateAddBack).toLocaleString()}, Total: $${Math.round(s.totalBenefit).toLocaleString()}/year (${Math.round((s.totalBenefit/s.amount)*100)}% ROI)`).join('\\n')}\n\n**${stateDisplayName} State Tax Optimization Matrix**\nProvide comprehensive state-specific analysis:\n- **Maximum State Benefit Strategy**: Identify and explain the strategy providing the highest state tax savings\n- **State Tax Traps and Mitigation**: Analyze strategies that create add-backs or phantom income and provide mitigation strategies\n- **Federal-State Timing Arbitrage**: Identify opportunities to optimize timing differences between federal and state treatment\n- **State-Specific Implementation Sequence**: Recommend optimal order considering state tax implications\n\n**Strategic Integration Analysis**\nAnalyze how strategies interact across different tax areas:\n- **Income Character Optimization**: How do the strategies optimize the character of income (ordinary vs. capital gains)?\n- **Deduction Timing Strategies**: How can deduction timing be optimized across strategies?\n- **AMT and NIIT Considerations**: Detailed analysis of Alternative Minimum Tax and Net Investment Income Tax implications\n- **Section 199A QBI Interactions**: How do strategies affect qualified business income deductions?\n- **Multi-Year Tax Planning**: Strategic timing across multiple tax years for maximum benefit\n\n**Implementation Roadmap with Specific Deadlines**\n**Phase 1 - Immediate (Next 30 days):**\n- [Highest priority actions with specific dates and rationale]\n\n**Phase 2 - Short-term (Next 90 days):**\n- [Medium priority implementations with preparation requirements]\n\n**Phase 3 - Long-term (Remainder of 2025):**\n- [Strategic positioning moves with complex implementation]\n\n**Risk Assessment and Mitigation**\n- **Low Risk Strategies**: [Established precedent strategies with implementation details]\n- **Medium Risk Strategies**: [Strategies requiring careful documentation with specific compliance requirements]\n- **High Risk Strategies**: [Strategies with audit considerations and mitigation approaches]\n\n**Cash Flow and Economic Analysis**\n- **Total Capital Requirement**: $[sum of all strategy investments]\n- **Payback Analysis**: [Break-even timeline for each strategy]\n- **NPV Analysis**: [Net present value of the strategy portfolio]\n- **Sensitivity Analysis**: [How changes in tax rates or income affect strategy effectiveness]\n\n**2025 Tax Year Strategic Action Plan**\nProvide specific, actionable next steps with deadlines:\n1. [Most urgent action by specific date with detailed rationale and preparation steps]\n2. [Second priority by specific date with dependencies and requirements]\n3. [Third priority by specific date with long-term strategic considerations]\n\n**Professional Recommendations**\nProvide 3-5 specific professional recommendations for advisors (CPAs, attorneys, financial planners) and their roles in implementation.\n\n**Conclusion and Next Steps**\nSummarize the strategic approach and provide clear next steps for client action.\n\nTarget length: 1,200-1,500 words for comprehensive analysis. Focus on strategic insights, quantified benefits, specific implementation guidance, and professional-grade recommendations suitable for ultra-high-net-worth clients.`;
+**COMPREHENSIVE ANALYSIS FRAMEWORK (MINIMUM 1,800-2,200 WORDS):**
+
+**Executive Summary** (200-250 words)
+Provide a sophisticated, comprehensive analysis of the integrated tax strategy approach. Explain in detail the total optimization potential of $${totalSavings.toLocaleString()}, the strategic rationale for the recommended portfolio approach, and how these strategies work together to create compound benefits. Include specific discussion of risk mitigation, cash flow optimization, and long-term planning considerations.
+
+**Key Insights for Your Situation** (450-550 words - CRITICAL SECTION)
+This section is the most important and must be extensively detailed with complete sentences and comprehensive explanations. You must provide in-depth analysis of:
+
+✓ **Strategy-Specific Benefits**: For each strategy, explain exactly how it benefits your ${stateDisplayName} tax situation with detailed calculations showing federal and state tax implications.
+
+✓ **State Tax Implications**: Provide comprehensive analysis of how ${stateDisplayName} state tax rules affect each strategy's federal benefits, including specific add-back requirements, limitations, and timing considerations.
+
+✓ **Implementation Timing**: Detailed discussion of optimal timing for each strategy implementation, including specific dates, deadlines, and sequencing considerations.
+
+✓ **Cash Flow Analysis**: Comprehensive examination of cash flow implications, liquidity requirements, and how strategies affect your overall financial position.
+
+✓ **Risk Assessment**: Detailed analysis of audit risk, compliance requirements, and mitigation strategies specific to your situation.
+
+✓ **Integration Strategy**: Extensive discussion of how these strategies integrate with your overall wealth management approach and long-term financial goals.
+
+**Strategy Synergies and Interactions** (350-400 words)
+Provide comprehensive analysis of how these strategies work together:
+- **Complementary Strategies**: Detailed explanation of which strategies amplify each other's effectiveness and the specific mechanisms behind this amplification
+- **Timing Interdependencies**: Comprehensive analysis of how implementation sequence affects overall benefits with specific examples
+- **Cash Flow Optimization**: Detailed examination of how the strategies' cash flow patterns create additional planning opportunities
+- **Risk Mitigation**: Extensive discussion of how diversifying across multiple strategies reduces overall tax planning risk
+
+**Advanced Strategy Effectiveness Analysis** (300-350 words)
+Provide detailed analysis for each strategy with comprehensive calculations and explanations:
+${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}** - Federal: $${Math.round(s.federalBenefit).toLocaleString()}, State: $${Math.round(s.stateBenefit - s.stateAddBack).toLocaleString()}, Total: $${Math.round(s.totalBenefit).toLocaleString()}/year (${Math.round((s.totalBenefit/s.amount)*100)}% ROI) - Provide detailed explanation of calculation methodology, risk factors, and implementation considerations`).join('\\n')}
+
+**${stateDisplayName} State Tax Optimization Matrix** (250-300 words)
+Provide comprehensive state-specific analysis with extensive detail:
+- **Maximum State Benefit Strategy**: Detailed identification and explanation of the strategy providing the highest state tax savings with specific calculations
+- **State Tax Traps and Mitigation**: Comprehensive analysis of strategies that create add-backs or phantom income with detailed mitigation strategies
+- **Federal-State Timing Arbitrage**: Detailed identification of opportunities to optimize timing differences between federal and state treatment
+- **State-Specific Implementation Sequence**: Detailed recommendations for optimal order considering state tax implications
+
+**Strategic Integration Analysis** (200-250 words)
+Provide comprehensive analysis of how strategies interact across different tax areas:
+- **Income Character Optimization**: Detailed explanation of how strategies optimize the character of income (ordinary vs. capital gains)
+- **Deduction Timing Strategies**: Comprehensive analysis of how deduction timing can be optimized across strategies
+- **AMT and NIIT Considerations**: Extensive analysis of Alternative Minimum Tax and Net Investment Income Tax implications
+- **Section 199A QBI Interactions**: Detailed analysis of how strategies affect qualified business income deductions
+- **Multi-Year Tax Planning**: Comprehensive discussion of strategic timing across multiple tax years
+
+**Implementation Roadmap with Specific Deadlines** (150-200 words)
+Provide detailed, actionable implementation plan:
+**Phase 1 - Immediate (Next 30 days):** [Detailed highest priority actions with specific dates and comprehensive rationale]
+**Phase 2 - Short-term (Next 90 days):** [Detailed medium priority implementations with preparation requirements]
+**Phase 3 - Long-term (Remainder of 2025):** [Detailed strategic positioning moves with complex implementation]
+
+**Risk Assessment and Mitigation** (150-200 words)
+- **Low Risk Strategies**: [Detailed established precedent strategies with implementation details]
+- **Medium Risk Strategies**: [Comprehensive strategies requiring careful documentation with specific compliance requirements]
+- **High Risk Strategies**: [Detailed strategies with audit considerations and mitigation approaches]
+
+**Professional Recommendations** (100-150 words)
+Provide 3-5 specific, detailed professional recommendations for advisors (CPAs, attorneys, financial planners) and their specific roles in implementation.
+
+**Conclusion and Next Steps** (100-150 words)
+Provide comprehensive summary of the strategic approach and detailed next steps for client action.
+
+MANDATORY REQUIREMENTS: Your total response must be 1,800-2,200 words minimum. The 'Key Insights for Your Situation' section must be 450-550 words and contain complete, detailed sentences with no truncation. Do not provide abbreviated or truncated responses. Focus on comprehensive analysis, detailed strategic insights, quantified benefits, specific implementation guidance, and professional-grade recommendations suitable for ultra-high-net-worth clients.`;
 
         // Use the secure backend proxy instead of direct API call
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // Increased timeout for comprehensive analysis
+        const timeoutId = setTimeout(() => controller.abort(), 90000); // Extended timeout for comprehensive 1,800-2,200 word analysis
 
         try {
           // Call our backend API proxy
