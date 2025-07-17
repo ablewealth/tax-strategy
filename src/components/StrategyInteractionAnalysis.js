@@ -518,10 +518,11 @@ MANDATORY REQUIREMENTS: Your total response must be 1,800-2,200 words minimum. T
         }
         
         // Increment retry count
-        setRetryCount(prev => prev + 1);
+        const newRetryCount = retryCount + 1;
+        setRetryCount(newRetryCount);
         
-        // Show fallback analysis after 2 failed attempts
-        if (retryCount >= 1) {
+        // Show fallback analysis after 1 failed attempt
+        if (newRetryCount >= 1) {
           setShowFallbackAnalysis(true);
         }
       } finally {
@@ -592,19 +593,17 @@ MANDATORY REQUIREMENTS: Your total response must be 1,800-2,200 words minimum. T
                     Try Again
                   </button>
                   
-                  {retryCount >= 1 && (
-                    <button
-                      onClick={() => {
-                        const fallbackAnalysis = generateFallbackAnalysis();
-                        setInteractionExplanation(fallbackAnalysis);
-                        setShowFallbackAnalysis(true);
-                        setInteractionError('');
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                    >
-                      Show Basic Analysis
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      const fallbackAnalysis = generateFallbackAnalysis();
+                      setInteractionExplanation(fallbackAnalysis);
+                      setShowFallbackAnalysis(true);
+                      setInteractionError('');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Show Basic Analysis
+                  </button>
                 </div>
                 
                 {retryCount >= 1 && (
