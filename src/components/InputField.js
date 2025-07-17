@@ -55,11 +55,7 @@ const InputField = ({ label, value, onChange, placeholder }) => {
         {label}
       </label>
       <div className={`relative ${isCurrencyField || isPercentageField ? 'input-with-icon' : ''}`}>
-        {isCurrencyField && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500">$</span>
-          </div>
-        )}
+        {/* Remove the currency symbol from the input field */}
         <input
           type="text"
           value={isCurrencyField ? displayValue : controlledValue} // Use direct prop for non-currency fields
@@ -67,7 +63,7 @@ const InputField = ({ label, value, onChange, placeholder }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={`w-full h-12 sm:h-14 ${isCurrencyField ? 'pl-8' : 'px-4'} ${isPercentageField ? 'pr-8' : ''} 
+          className={`w-full h-12 sm:h-14 px-4 ${isPercentageField ? 'pr-8' : ''} 
             border rounded-lg text-base bg-white transition-all duration-200
             ${isFocused 
               ? 'border-blue-500 ring-2 ring-blue-200' 

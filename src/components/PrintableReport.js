@@ -37,9 +37,9 @@ const styles = {
     textTransform: 'uppercase',
   },
   header: {
-    borderBottom: '1px solid #111827', // Dark border for Swiss design
-    paddingBottom: '1.5rem',
-    marginBottom: '2.5rem',
+    borderBottom: '1px solid #3b82f6', // Blue border for modern look
+    paddingBottom: '1rem',
+    marginBottom: '2rem',
     position: 'relative',
     width: '100%', // Ensure full width
   },
@@ -50,35 +50,25 @@ const styles = {
     marginBottom: '1rem',
   },
   logo: {
-    height: '36px', // Slightly larger logo for professional look
+    height: '32px', // Slightly larger logo for professional look
   },
   reportTitle: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '24pt', // Larger title size for impact
+    fontSize: '18pt', // Slightly smaller title size
     fontWeight: '700',
     margin: 0,
-    color: '#111827', // Dark color for Swiss design
-    letterSpacing: '-0.02em', // Tighter letter spacing for modern look
-    textAlign: 'center',
+    color: '#1e40af', // Blue color for title
+    letterSpacing: '-0.01em', // Tighter letter spacing for modern look
+    textAlign: 'right',
   },
   headerText: {
     textAlign: 'right',
   },
   clientInfo: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '11pt',
-    color: '#374151', // Darker gray for better readability
-    lineHeight: 1.5,
-    letterSpacing: '0.01em',
-  },
-  confidentialLabel: {
-    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '8pt',
-    fontWeight: '600',
-    color: '#4B5563',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginTop: '0.5rem',
+    fontSize: '10pt',
+    color: '#4b5563', // Medium gray for better readability
+    lineHeight: 1.4,
   },
   section: {
     marginBottom: '1.5rem', // Slightly increased spacing between sections
@@ -493,118 +483,30 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
         {/* Confidential watermark */}
         <div style={styles.watermark}>CONFIDENTIAL</div>
         
-        <header style={{
-          marginBottom: '2rem',
-          position: 'relative',
-          width: '100%',
-          padding: '1rem 0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1rem'
-          }}>
-            <div style={{
-              flex: '0 0 auto',
-              marginRight: '2rem'
-            }}>
-              <img
-                src="https://ablewealth.com/AWM%20Logo%203.png"
-                alt="Able Wealth Management"
-                style={{ 
-                  width: '210px',
-                  height: 'auto',
-                  display: 'block'
-                }}
-              />
-            </div>
-            <div style={{
-              flex: '1',
-              textAlign: 'right'
-            }}>
-              <h1 style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '20pt',
-                fontWeight: '700',
-                margin: 0,
-                color: '#111827',
-                lineHeight: '1.0'
-              }}>
-                Tax Optimization Analysis
-              </h1>
-            </div>
-          </div>
-          
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '1.5rem'
-          }}>
-            <div style={{ flex: '1', marginRight: '2rem' }}>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                color: '#6B7280',
-                margin: 0,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                marginBottom: '0.25rem',
-                lineHeight: '1.0'
-              }}>
-                Prepared for:
-              </p>
-              <p style={{ 
-                fontWeight: '700', 
-                fontSize: '11pt', 
-                color: '#111827',
-                margin: 0,
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                lineHeight: '1.1'
-              }}>
-                {scenario.clientData?.clientName || 'John & Jane Doe'}
-              </p>
-            </div>
-            <div style={{ flex: '1' }}>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                color: '#6B7280',
-                margin: 0,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                marginBottom: '0.25rem',
-                lineHeight: '1.0'
-              }}>
-                Date of Analysis:
-              </p>
-              <p style={{ 
-                fontWeight: '600',
-                fontSize: '10pt',
-                margin: 0,
-                color: '#111827',
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                marginBottom: '0.5rem',
-                lineHeight: '1.1'
-              }}>
-                {today}
-              </p>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                fontWeight: '600',
-                color: '#6B7280',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                margin: 0,
-                lineHeight: '1.0'
-              }}>
-                CONFIDENTIAL - FOR CLIENT USE ONLY
-              </p>
-            </div>
-          </div>
+        <header style={styles.header}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td style={{ width: '20%', verticalAlign: 'top' }}>
+                  <img
+                    src="https://ablewealth.com/AWM%20Logo%203.png"
+                    alt="Able Wealth Management Logo"
+                    style={{ height: '32px' }}
+                  />
+                </td>
+                <td style={{ width: '80%', textAlign: 'right', verticalAlign: 'top' }}>
+                  <h1 style={styles.reportTitle}>Tax Optimization Analysis</h1>
+                  <p style={styles.clientInfo}>
+                    Prepared for: <strong>{scenario.clientData?.clientName || 'Client'}</strong>
+                    <br />
+                    Date of Analysis: {today}
+                    <br />
+                    <span style={{ fontSize: '8pt', color: '#555' }}>CONFIDENTIAL - FOR CLIENT USE ONLY</span>
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </header>
 
         <section style={styles.section}>
