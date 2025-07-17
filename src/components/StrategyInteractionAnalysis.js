@@ -186,109 +186,78 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
           (a, b) => b.totalBenefit - a.totalBenefit
         );
 
-        const prompt = `You are a professional tax advisor providing analysis for a high-net-worth client. Analyze the interaction between these tax strategies and provide actionable insights.
+        const prompt = `You are a senior tax strategist at a premier wealth management firm, providing sophisticated analysis for ultra-high-net-worth clients. Conduct a comprehensive analysis of the strategic interactions between these tax optimization strategies, emphasizing synergies, timing, and implementation priorities.
 
-**Client Profile:**
-- W2 Income: $${w2Income.toLocaleString()}
+**CLIENT WEALTH PROFILE:**
+- Total W2 Income: $${w2Income.toLocaleString()}
 - Business Income: $${businessIncome.toLocaleString()}
 - Short-term Capital Gains: $${shortTermGains.toLocaleString()}
 - Long-term Capital Gains: $${longTermGains.toLocaleString()}
-- State: ${stateDisplayName}
+- Tax Domicile: ${stateDisplayName}
+- Estimated Federal Marginal Rate: ${Math.round(businessIncome > 731200 ? 37 : businessIncome > 487450 ? 35 : businessIncome > 383900 ? 32 : 24)}%
+- Estimated State Marginal Rate: ${Math.round(clientState === 'NY' ? (businessIncome > 25000000 ? 10.9 : businessIncome > 5000000 ? 10.3 : businessIncome > 2155350 ? 9.65 : 6.85) : (businessIncome > 1000000 ? 10.75 : businessIncome > 500000 ? 8.97 : 6.37))}%
 
-**Current Tax Situation:**
-- Baseline Annual Tax: $${baselineTax.toLocaleString()}
-- Optimized Annual Tax: $${optimizedTax.toLocaleString()}
-- Current Year Savings: $${currentYearSavings.toLocaleString()}
-- Total Multi-Year Savings: $${totalSavings.toLocaleString()}
+**OPTIMIZATION RESULTS:**
+- Current Tax Liability (Baseline): $${baselineTax.toLocaleString()}
+- Optimized Tax Liability: $${optimizedTax.toLocaleString()}
+- Annual Tax Savings: $${currentYearSavings.toLocaleString()}
+- Multi-Year Cumulative Savings: $${totalSavings.toLocaleString()}
+- Effective Tax Rate Reduction: ${Math.round((currentYearSavings/baselineTax)*100)}%
 
-**Selected Tax Strategies (Ranked by Estimated Benefit):**
+**STRATEGIC PORTFOLIO ANALYSIS:**
 ${sortedStrategies
   .map(
     (s, i) =>
-      `${i + 1}. **${s.name}**: $${s.amount.toLocaleString()} (Est. benefit: $${Math.round(s.totalBenefit).toLocaleString()}/yr)${s.specialConsiderations ? ` - ${s.specialConsiderations}` : ''}`
+      `${i + 1}. **${s.name}**
+   - Capital Deployment: $${s.amount.toLocaleString()}
+   - Federal Tax Benefit: $${Math.round(s.federalBenefit).toLocaleString()}
+   - State Tax Impact: $${Math.round(s.stateBenefit - s.stateAddBack).toLocaleString()}
+   - Total Annual Benefit: $${Math.round(s.totalBenefit).toLocaleString()}
+   - ROI: ${Math.round((s.totalBenefit/s.amount)*100)}%
+   - Implementation Notes: ${s.specialConsiderations || 'Standard implementation'}
+`
   )
   .join('\n')}
 
-**${stateDisplayName} State Tax Considerations:**
+**${stateDisplayName.toUpperCase()} STATE TAX ENVIRONMENT:**
 ${
   clientState === 'NY'
-    ? '- New York generally conforms to federal tax treatment with some exceptions\n- NY limits Section 179 deductions and requires bonus depreciation add-backs\n- NY allows 50% of federal charitable deductions for high-income taxpayers\n- NY does not recognize the QBI deduction\n- NY has progressive tax rates up to 10.9% for income over $25M\n- NY allows full deduction for retirement plan contributions'
+    ? `**New York Tax Landscape:**
+- Generally conforms to federal tax treatment with strategic exceptions
+- Section 179 limitations create federal-state timing differences
+- Bonus depreciation add-backs require careful cash flow planning
+- 50% charitable deduction limitation for high-income taxpayers
+- No QBI deduction recognition creates planning opportunities
+- Progressive rates up to 10.9% for income over $25M
+- Full retirement plan deduction alignment with federal treatment`
     : clientState === 'NJ'
-      ? '- New Jersey has significant differences from federal tax treatment\n- NJ limits Section 179 to $975,000 (2025 tax year) and requires federal excess as add-back\n- NJ does not allow deductions for employee 401(k) contributions (add-back required)\n- NJ has no capital loss carryover (use-it-or-lose-it rule)\n- NJ does not allow charitable deductions (full add-back required)\n- NJ does not recognize the QBI deduction\n- NJ has progressive tax rates up to 10.75% for income over $1M'
-      : `- Please provide specific tax considerations for ${stateDisplayName}`
+      ? `**New Jersey Tax Landscape:**
+- Significant departures from federal tax treatment create complexity
+- Section 179 limitation to $975,000 (2025) with federal excess add-back
+- Employee 401(k) contribution add-back requirement
+- No capital loss carryover (use-it-or-lose-it) demands strategic timing
+- Full charitable deduction add-back requirement
+- No QBI deduction recognition
+- Progressive rates up to 10.75% for income over $1M
+- Aggressive state tax planning essential for optimization`
+      : `**${stateDisplayName} Tax Environment:**
+Please provide specific state tax considerations for comprehensive analysis.`
 }
 
-**CRITICAL FORMATTING INSTRUCTIONS:**
-1. Use only ** for bold text. No other markdown formatting.
-2. ALWAYS write in complete grammatical sentences with proper punctuation.
-3. For bullet points and insights, each point MUST be a complete sentence with proper punctuation.
-4. Avoid sentence fragments or incomplete thoughts.
-5. Provide specific analysis with dollar amounts when relevant.
-6. When describing benefits, always include "per year" or specify the time period.
-7. Be precise and professional - this is for a high-net-worth client.
-8. Calculate exact tax savings based on marginal rates, not estimates.
-9. Consider AMT implications for high-income taxpayers.
-10. Address cash flow and timing considerations for each strategy.
+**ANALYSIS REQUIREMENTS:**
+1. Use only ** for bold text. Write in complete professional sentences.
+2. Provide specific dollar amounts and percentages in all recommendations.
+3. Calculate exact tax savings based on marginal rates provided above.
+4. Address AMT, NIIT, and Section 199A implications for high-income taxpayers.
+5. Include detailed cash flow and timing considerations for each strategy.
+6. Focus on strategy interactions and synergies rather than individual benefits.
+7. Provide actionable implementation guidance with specific deadlines.
 
-**Required Analysis Structure:**
-
-**Executive Summary**
-
-Provide a 2-sentence summary of the optimal tax strategy approach and total annual savings potential of $${totalSavings.toLocaleString()}.
-
-**Strategy Effectiveness Analysis**
-
-Rank strategies by actual tax benefit calculation (federal + state), considering marginal tax rates:
-1. [Highest benefit strategy] - $[federal savings] + $[state savings] = $[total] per year
-2. [Second highest] - $[federal savings] + $[state savings] = $[total] per year
-3. [Continue for all strategies with positive benefit]
-
-**${stateDisplayName} State Tax Optimization**
-
-Critical state-specific analysis for ${clientState} residents:
-- **Highest state benefit**: [Strategy providing most state tax savings]
-- **State tax traps**: [Strategies creating add-backs or phantom income]
-- **Sequencing optimization**: [Order of implementation to minimize state liability]
-- **Cash flow impact**: [How state differences affect implementation timing]
-
-**Advanced Tax Considerations**
-
-- **AMT implications**: [How strategies affect Alternative Minimum Tax]
-- **Net Investment Income Tax**: [Impact on 3.8% NIIT if applicable]
-- **Section 199A interactions**: [How strategies affect QBI deduction]
-- **Multi-year planning**: [Timing strategies across tax years]
-
-**Implementation Priority Matrix**
-
-Based on ROI and implementation complexity:
-1. **Immediate (Q1 2025)**: [Highest ROI, easiest to implement]
-2. **Short-term (Q2-Q3 2025)**: [Good ROI, moderate complexity]
-3. **Long-term (Q4 2025+)**: [Strategic positioning, complex implementation]
-
-**Risk Assessment**
-
-- **Low risk**: [Strategies with established precedent]
-- **Medium risk**: [Strategies requiring careful documentation]
-- **High risk**: [Strategies with audit or legal considerations]
-
-**Cash Flow and Timing Analysis**
-
-- **Immediate cash outlay**: $[total upfront investment required]
-- **Break-even timeline**: [Months to recover investment through tax savings]
-- **Optimal implementation sequence**: [Order based on cash flow impact]
-
-**2025 Tax Year Action Plan**
-
-Your immediate next steps with specific deadlines:
-1. [Most urgent action by specific date with rationale]
-2. [Second priority by specific date with preparation requirements]
-3. [Third priority by specific date with dependencies]
-
-Maximum 500 words. Focus on quantified analysis, specific recommendations, and actionable timelines.`;
+**COMPREHENSIVE ANALYSIS FRAMEWORK:**\n\n**Executive Summary**\nProvide a sophisticated 3-4 sentence analysis of the integrated tax strategy approach, highlighting the total optimization potential of $${totalSavings.toLocaleString()} and the strategic rationale for the recommended portfolio approach.\n\n**Strategy Synergies and Interactions**\nAnalyze how these strategies work together to create compound tax benefits:\n- **Complementary Strategies**: Which strategies amplify each other's effectiveness and why?\n- **Timing Interdependencies**: How does the implementation sequence affect overall benefits?\n- **Cash Flow Optimization**: How do the strategies' cash flow patterns create additional planning opportunities?\n- **Risk Mitigation**: How does diversifying across multiple strategies reduce overall tax planning risk?\n\n**Advanced Strategy Effectiveness Analysis**\nProvide detailed analysis for each strategy with specific calculations:\n${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}** - Federal: $${Math.round(s.federalBenefit).toLocaleString()}, State: $${Math.round(s.stateBenefit - s.stateAddBack).toLocaleString()}, Total: $${Math.round(s.totalBenefit).toLocaleString()}/year (${Math.round((s.totalBenefit/s.amount)*100)}% ROI)`).join('\\n')}\n\n**${stateDisplayName} State Tax Optimization Matrix**\nProvide comprehensive state-specific analysis:\n- **Maximum State Benefit Strategy**: Identify and explain the strategy providing the highest state tax savings\n- **State Tax Traps and Mitigation**: Analyze strategies that create add-backs or phantom income and provide mitigation strategies\n- **Federal-State Timing Arbitrage**: Identify opportunities to optimize timing differences between federal and state treatment\n- **State-Specific Implementation Sequence**: Recommend optimal order considering state tax implications\n\n**Strategic Integration Analysis**\nAnalyze how strategies interact across different tax areas:\n- **Income Character Optimization**: How do the strategies optimize the character of income (ordinary vs. capital gains)?\n- **Deduction Timing Strategies**: How can deduction timing be optimized across strategies?\n- **AMT and NIIT Considerations**: Detailed analysis of Alternative Minimum Tax and Net Investment Income Tax implications\n- **Section 199A QBI Interactions**: How do strategies affect qualified business income deductions?\n- **Multi-Year Tax Planning**: Strategic timing across multiple tax years for maximum benefit\n\n**Implementation Roadmap with Specific Deadlines**\n**Phase 1 - Immediate (Next 30 days):**\n- [Highest priority actions with specific dates and rationale]\n\n**Phase 2 - Short-term (Next 90 days):**\n- [Medium priority implementations with preparation requirements]\n\n**Phase 3 - Long-term (Remainder of 2025):**\n- [Strategic positioning moves with complex implementation]\n\n**Risk Assessment and Mitigation**\n- **Low Risk Strategies**: [Established precedent strategies with implementation details]\n- **Medium Risk Strategies**: [Strategies requiring careful documentation with specific compliance requirements]\n- **High Risk Strategies**: [Strategies with audit considerations and mitigation approaches]\n\n**Cash Flow and Economic Analysis**\n- **Total Capital Requirement**: $[sum of all strategy investments]\n- **Payback Analysis**: [Break-even timeline for each strategy]\n- **NPV Analysis**: [Net present value of the strategy portfolio]\n- **Sensitivity Analysis**: [How changes in tax rates or income affect strategy effectiveness]\n\n**2025 Tax Year Strategic Action Plan**\nProvide specific, actionable next steps with deadlines:\n1. [Most urgent action by specific date with detailed rationale and preparation steps]\n2. [Second priority by specific date with dependencies and requirements]\n3. [Third priority by specific date with long-term strategic considerations]\n\n**Professional Recommendations**\nProvide 3-5 specific professional recommendations for advisors (CPAs, attorneys, financial planners) and their roles in implementation.\n\n**Conclusion and Next Steps**\nSummarize the strategic approach and provide clear next steps for client action.\n\nTarget length: 1,200-1,500 words for comprehensive analysis. Focus on strategic insights, quantified benefits, specific implementation guidance, and professional-grade recommendations suitable for ultra-high-net-worth clients.`;
 
         // Use the secure backend proxy instead of direct API call
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // Increased timeout for comprehensive analysis
 
         try {
           // Call our backend API proxy
