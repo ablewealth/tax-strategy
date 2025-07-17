@@ -13,109 +13,152 @@ const formatCurrencyNoDecimals = (amount) => {
   return Math.round(amount).toLocaleString();
 };
 
-// --- Compact Style Definitions for Dense Data Layout ---
+// --- Modern Style Definitions for Professional Reports ---
 const styles = {
   page: {
-    fontFamily: "'Roboto', sans-serif",
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     padding: '1.5cm', // Reduced padding for more content
-    color: '#333',
-    lineHeight: 1.3, // Tighter line spacing
-    fontSize: '9pt', // Smaller base font
+    color: '#1f2937', // Dark gray for better readability
+    lineHeight: 1.4, // Slightly increased line spacing for readability
+    fontSize: '10pt', // Professional font size
     backgroundColor: '#fff',
+    position: 'relative',
+  },
+  watermark: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%) rotate(-45deg)',
+    fontSize: '60pt',
+    color: 'rgba(0, 0, 0, 0.02)', // Lighter watermark
+    fontWeight: 'bold',
+    pointerEvents: 'none',
+    zIndex: 0,
+    textTransform: 'uppercase',
   },
   header: {
+    borderBottom: '1px solid #111827', // Dark border for Swiss design
+    paddingBottom: '1.5rem',
+    marginBottom: '2.5rem',
+    position: 'relative',
+    width: '100%', // Ensure full width
+  },
+  headerRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    borderBottom: '1px solid #333',
-    paddingBottom: '0.5rem', // Reduced padding
-    marginBottom: '1rem', // Reduced margin
+    alignItems: 'center',
+    marginBottom: '1rem',
   },
   logo: {
-    height: '20px', // Smaller logo
+    height: '36px', // Slightly larger logo for professional look
+  },
+  reportTitle: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '24pt', // Larger title size for impact
+    fontWeight: '700',
+    margin: 0,
+    color: '#111827', // Dark color for Swiss design
+    letterSpacing: '-0.02em', // Tighter letter spacing for modern look
+    textAlign: 'center',
   },
   headerText: {
     textAlign: 'right',
   },
-  reportTitle: {
-    fontFamily: "'Lato', sans-serif",
-    fontSize: '16pt', // Smaller title
-    fontWeight: '900',
-    margin: 0,
-    color: '#111',
-  },
   clientInfo: {
-    fontSize: '9pt',
-    color: '#555',
-    lineHeight: 1.3,
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '11pt',
+    color: '#374151', // Darker gray for better readability
+    lineHeight: 1.5,
+    letterSpacing: '0.01em',
+  },
+  confidentialLabel: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '8pt',
+    fontWeight: '600',
+    color: '#4B5563',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginTop: '0.5rem',
   },
   section: {
-    marginBottom: '1rem', // Reduced section spacing
+    marginBottom: '1.5rem', // Slightly increased spacing between sections
     pageBreakInside: 'avoid',
+    position: 'relative',
   },
   sectionTitle: {
-    fontFamily: "'Lato', sans-serif",
-    fontSize: '12pt', // Smaller section titles
-    fontWeight: '700',
-    borderBottom: '1px solid #ddd',
-    paddingBottom: '0.25rem', // Reduced padding
-    marginBottom: '0.5rem', // Reduced margin
-    color: '#111',
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '14pt', // Slightly larger section titles
+    fontWeight: '600',
+    borderBottom: '1px solid #e5e7eb', // Lighter border
+    paddingBottom: '0.5rem',
+    marginBottom: '1rem',
+    color: '#1e40af', // Blue color for section titles
+    position: 'relative',
   },
   summaryGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr 1fr', // 3 columns instead of 2
-    gap: '0.5rem 1rem', // Reduced gaps
+    gap: '0.75rem 1.25rem', // Slightly increased gaps for better spacing
   },
   metric: {
-    backgroundColor: '#f9f9f9',
-    border: '1px solid #eee',
-    padding: '0.5rem', // Reduced padding
-    borderRadius: '2px',
+    backgroundColor: '#f8fafc', // Lighter blue-gray background
+    border: '1px solid #e2e8f0', // Subtle border
+    padding: '0.75rem', // Increased padding for better spacing
+    borderRadius: '6px', // Rounded corners
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)', // Subtle shadow
   },
   metricLabel: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     fontSize: '8pt', // Smaller labels
-    color: '#666',
-    marginBottom: '0.15rem',
+    color: '#64748b', // Medium blue-gray for better contrast
+    marginBottom: '0.25rem',
     textTransform: 'uppercase',
     letterSpacing: '0.3px',
+    fontWeight: '500',
   },
   metricValue: {
-    fontSize: '12pt', // Smaller values
-    fontWeight: '700',
-    color: '#111',
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '13pt', // Slightly larger values for emphasis
+    fontWeight: '600',
+    color: '#1e40af', // Blue color for values
   },
   highlightMetric: {
-    backgroundColor: '#f0fdf0',
-    borderColor: '#d0e0d0',
+    backgroundColor: '#f0f9ff', // Light blue background
+    borderColor: '#bae6fd', // Light blue border
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Enhanced shadow
   },
   highlightValue: {
-    color: '#2e7d32',
+    color: '#0369a1', // Blue color for highlight values
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    fontSize: '8pt', // Smaller table font
+    fontSize: '9pt', // Slightly larger for better readability
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
   },
   th: {
     textAlign: 'left',
-    padding: '0.3rem 0.5rem', // Reduced padding
-    borderBottom: '1.5px solid #333',
-    fontFamily: "'Lato', sans-serif",
-    fontWeight: '700',
-    fontSize: '8pt',
+    padding: '0.5rem 0.75rem', // Increased padding for better spacing
+    borderBottom: '2px solid #3b82f6', // Blue border for headers
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontWeight: '600',
+    fontSize: '9pt',
+    backgroundColor: '#f0f9ff', // Light blue background for headers
+    color: '#1e40af', // Blue text for headers
   },
   td: {
     textAlign: 'left',
-    padding: '0.3rem 0.5rem', // Reduced padding
-    borderBottom: '1px solid #eee',
-    fontSize: '8pt',
+    padding: '0.5rem 0.75rem', // Increased padding for better spacing
+    borderBottom: '1px solid #e5e7eb', // Lighter border
+    fontSize: '9pt',
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
   },
   tdRight: {
     textAlign: 'right',
-    padding: '0.3rem 0.5rem', // Reduced padding
-    borderBottom: '1px solid #eee',
-    fontSize: '8pt',
+    padding: '0.5rem 0.75rem', // Increased padding for better spacing
+    borderBottom: '1px solid #e5e7eb', // Lighter border
+    fontSize: '9pt',
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
   },
   insightContainer: {
     display: 'grid',
@@ -447,19 +490,120 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
 
     return (
       <div ref={ref} style={styles.page}>
-        <header style={styles.header}>
-          <img
-            src="https://ablewealth.com/AWM%20Logo%203.png"
-            alt="Able Wealth Management Logo"
-            style={styles.logo}
-          />
-          <div style={styles.headerText}>
-            <h1 style={styles.reportTitle}>Tax Optimization Analysis</h1>
-            <p style={styles.clientInfo}>
-              Prepared for: <strong>{scenario.clientData?.clientName || 'Client'}</strong>
-              <br />
-              Date of Analysis: {today}
-            </p>
+        {/* Confidential watermark */}
+        <div style={styles.watermark}>CONFIDENTIAL</div>
+        
+        <header style={{
+          marginBottom: '2rem',
+          position: 'relative',
+          width: '100%',
+          padding: '1rem 0'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              flex: '0 0 auto',
+              marginRight: '2rem'
+            }}>
+              <img
+                src="https://ablewealth.com/AWM%20Logo%203.png"
+                alt="Able Wealth Management"
+                style={{ 
+                  width: '210px',
+                  height: 'auto',
+                  display: 'block'
+                }}
+              />
+            </div>
+            <div style={{
+              flex: '1',
+              textAlign: 'right'
+            }}>
+              <h1 style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: '20pt',
+                fontWeight: '700',
+                margin: 0,
+                color: '#111827',
+                lineHeight: '1.0'
+              }}>
+                Tax Optimization Analysis
+              </h1>
+            </div>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '1.5rem'
+          }}>
+            <div style={{ flex: '1', marginRight: '2rem' }}>
+              <p style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: '7pt',
+                color: '#6B7280',
+                margin: 0,
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+                marginBottom: '0.25rem',
+                lineHeight: '1.0'
+              }}>
+                Prepared for:
+              </p>
+              <p style={{ 
+                fontWeight: '700', 
+                fontSize: '11pt', 
+                color: '#111827',
+                margin: 0,
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                lineHeight: '1.1'
+              }}>
+                {scenario.clientData?.clientName || 'John & Jane Doe'}
+              </p>
+            </div>
+            <div style={{ flex: '1' }}>
+              <p style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: '7pt',
+                color: '#6B7280',
+                margin: 0,
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+                marginBottom: '0.25rem',
+                lineHeight: '1.0'
+              }}>
+                Date of Analysis:
+              </p>
+              <p style={{ 
+                fontWeight: '600',
+                fontSize: '10pt',
+                margin: 0,
+                color: '#111827',
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                marginBottom: '0.5rem',
+                lineHeight: '1.1'
+              }}>
+                {today}
+              </p>
+              <p style={{
+                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                fontSize: '7pt',
+                fontWeight: '600',
+                color: '#6B7280',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+                margin: 0,
+                lineHeight: '1.0'
+              }}>
+                CONFIDENTIAL - FOR CLIENT USE ONLY
+              </p>
+            </div>
           </div>
         </header>
 

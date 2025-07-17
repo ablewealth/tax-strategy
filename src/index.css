@@ -1,24 +1,70 @@
 /* Define the design system using CSS variables */
 :root {
+  /* Enhanced Color System with Gradients */
   --primary-navy: #0f172a;
+  --primary-navy-light: #1e293b;
+  --primary-navy-dark: #0a1122;
   --primary-blue: #1e40af;
+  --primary-blue-light: #3b82f6;
+  --primary-blue-dark: #1e3a8a;
+  
+  /* Gradient definitions */
+  --gradient-blue: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  --gradient-navy: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --gradient-gold: linear-gradient(135deg, #d4af37 0%, #f4e5a1 100%);
+  --gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --gradient-warning: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  
+  /* Enhanced accent colors */
   --accent-gold: #d4af37;
   --accent-gold-light: #f4e5a1;
+  --accent-gold-dark: #b7952e;
+  
+  /* Text colors with better contrast */
   --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --text-muted: #64748b;
+  
+  /* Background colors */
   --background-primary: #ffffff;
   --background-secondary: #f8fafc;
   --background-tertiary: #f1f5f9;
+  
+  /* Border colors */
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e1;
+  
+  /* Status colors with better contrast */
   --success: #059669;
+  --success-light: #d1fae5;
   --warning: #d97706;
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.02);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+  --warning-light: #fef3c7;
+  --error: #dc2626;
+  --error-light: #fee2e2;
+  --info: #2563eb;
+  --info-light: #dbeafe;
+  
+  /* Enhanced shadows for better depth */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  
+  /* Card shadows with subtle color tint */
+  --shadow-card: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+  --shadow-card-hover: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  
+  /* Border radius */
+  --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Animation speeds */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 350ms;
 }
 
 @tailwind base;
@@ -33,6 +79,25 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px; /* Prevent iOS zoom on form inputs */
+}
+
+/* Modern Card Design */
+.card {
+  background: var(--background-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal) ease, transform var(--transition-normal) ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-premium {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 /* Enhanced touch targets for mobile */
@@ -65,6 +130,52 @@ select {
   -moz-appearance: none;
   appearance: none;
   touch-action: manipulation;
+  height: 3rem; /* h-12 equivalent */
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-secondary);
+  padding: 0.75rem 1rem;
+  transition: border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+}
+
+/* Improved input fields with visual indicators for currency */
+.input-currency {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-currency::before {
+  content: "$";
+  position: absolute;
+  left: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.input-currency input {
+  padding-left: 2rem;
+}
+
+/* Better focus states for inputs */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Mobile-optimized inputs */
+@media (max-width: 639px) {
+  input[type='text'],
+  input[type='number'],
+  input[type='email'],
+  input[type='tel'],
+  select {
+    height: 3.5rem; /* h-14 equivalent */
+    font-size: 18px;
+  }
 }
 
 /* Better checkbox styling for mobile */
@@ -73,6 +184,14 @@ input[type='checkbox'] {
   min-height: 20px;
   touch-action: manipulation;
   cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-secondary);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
+}
+
+input[type='checkbox']:checked {
+  background-color: var(--primary-blue);
+  border-color: var(--primary-blue);
 }
 
 @media (min-width: 640px) {
@@ -128,14 +247,6 @@ input[type='number'] {
   }
 }
 
-/* Better focus states for accessibility and mobile */
-input:focus,
-select:focus,
-button:focus {
-  outline: 2px solid var(--primary-blue);
-  outline-offset: 2px;
-}
-
 /* Mobile-specific spacing utilities */
 .mobile-spacing {
   padding: 1rem;
@@ -179,8 +290,8 @@ button:focus {
 /* Mobile-optimized card layouts */
 @media (max-width: 639px) {
   .mobile-card {
-    border-radius: 8px;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
   }
 }
 
@@ -234,15 +345,11 @@ button:focus {
 /* Mobile-optimized shadows */
 @media (max-width: 639px) {
   .shadow-md {
-    box-shadow:
-      0 1px 3px 0 rgb(0 0 0 / 0.1),
-      0 1px 2px -1px rgb(0 0 0 / 0.1);
+    box-shadow: var(--shadow-sm);
   }
 
   .shadow-xl {
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -254,7 +361,182 @@ button:focus {
   }
 }
 
-/* Minimal Print Styles */
+/* Enhanced Dashboard Metrics */
+.metric-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem;
+  transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+  border: 1px solid var(--border-primary);
+  overflow: hidden;
+  position: relative;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-blue);
+  opacity: 0.8;
+}
+
+.metric-card.success::after {
+  background: var(--gradient-success);
+}
+
+.metric-card.warning::after {
+  background: var(--gradient-warning);
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.025em;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+
+.metric-value.success {
+  color: var(--success);
+}
+
+.metric-value.warning {
+  color: var(--warning);
+}
+
+/* Better Insights */
+.insight-card {
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+}
+
+.insight-card.success {
+  background-color: var(--success-light);
+  border-color: var(--success);
+}
+
+.insight-card.success::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--gradient-success);
+}
+
+.insight-card.warning {
+  background-color: var(--warning-light);
+  border-color: var(--warning);
+}
+
+.insight-card.warning::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--gradient-warning);
+}
+
+.insight-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.insight-title.success {
+  color: var(--success);
+}
+
+.insight-title.warning {
+  color: var(--warning);
+}
+
+.insight-content {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Premium Header */
+.premium-header {
+  background: var(--gradient-navy);
+  color: white;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-gold);
+}
+
+.premium-header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.premium-header-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(15, 23, 42, 0) 100%);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.premium-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+
+.premium-subtitle {
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Print Styles for Professional Report */
 @media print {
   /* Hide the main app, show print mount */
   body > #root {
@@ -269,6 +551,7 @@ button:focus {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   /* Page settings */
@@ -277,27 +560,85 @@ button:focus {
     size: A4;
   }
 
-  /* Basic visibility */
+  /* Professional typography for print */
   body {
-    background: white !important;
-    color: black !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.4 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Times New Roman", Times, serif !important;
+    color: #000000 !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Professional header with confidential watermark */
+  .print-header {
+    position: relative;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 1cm !important;
+    margin-bottom: 1cm !important;
+  }
+
+  .print-header::after {
+    content: "CONFIDENTIAL";
+    position: absolute;
+    top: 0.5cm;
+    right: 0;
+    font-size: 14pt;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.1) !important;
+    transform: rotate(-45deg);
+  }
+
+  /* Professional metric cards */
+  .print-metric {
+    border: 1px solid #000000 !important;
+    padding: 0.5cm !important;
+    margin-bottom: 0.5cm !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-metric-label {
+    font-size: 10pt !important;
+    font-weight: bold !important;
+    margin-bottom: 0.2cm !important;
+  }
+
+  .print-metric-value {
+    font-size: 14pt !important;
+    font-weight: bold !important;
   }
 
   /* Table improvements */
   table {
-    page-break-inside: avoid;
-    border-collapse: collapse;
+    width: 100% !important;
+    page-break-inside: avoid !important;
+    border-collapse: collapse !important;
+    margin-bottom: 1cm !important;
   }
 
-  th,
-  td {
-    border: 1px solid #333;
-    padding: 0.5rem;
+  th, td {
+    border: 1px solid #000000 !important;
+    padding: 0.3cm !important;
+    text-align: left !important;
   }
 
   th {
-    background: #f5f5f5;
-    font-weight: bold;
+    background: #f0f0f0 !important;
+    font-weight: bold !important;
+  }
+
+  /* Comprehensive legal disclaimer */
+  .print-disclaimer {
+    border-top: 1px solid #000000 !important;
+    margin-top: 1cm !important;
+    padding-top: 0.5cm !important;
+    font-size: 8pt !important;
+    color: #333333 !important;
   }
 
   /* Hide elements that shouldn't print */
@@ -308,46 +649,25 @@ button:focus {
     display: none !important;
   }
 
-  /* Ensure text is visible */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  span,
-  div {
-    color: black !important;
-  }
-
-  /* Force backgrounds to be visible */
-  .metric {
-    background: #f9f9f9 !important;
-    border: 1px solid #eee !important;
-  }
-
-  .highlightMetric {
-    background: #e8f5e9 !important;
-    border: 1px solid #a5d6a7 !important;
-  }
-
   /* Ensure sections break properly */
-  .section {
-    page-break-inside: avoid;
-    margin-bottom: 2rem;
+  .print-section {
+    page-break-inside: avoid !important;
+    margin-bottom: 1cm !important;
   }
 
-  /* Header and footer styling */
-  .header {
-    border-bottom: 1px solid #333 !important;
-    margin-bottom: 2rem !important;
+  /* Footer with page numbers */
+  .print-footer {
+    position: running(footer);
+    font-size: 8pt !important;
+    text-align: center !important;
+    border-top: 1px solid #cccccc !important;
+    padding-top: 0.3cm !important;
   }
 
-  .footer {
-    border-top: 1px solid #ccc !important;
-    margin-top: 2rem !important;
-    font-size: 7.5pt !important;
+  @page {
+    @bottom-center {
+      content: element(footer);
+    }
   }
 }
 
@@ -370,14 +690,16 @@ button:focus {
   font-weight: 700;
   color: #1e40af;
   letter-spacing: -0.025em;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .ai-analysis-content h3::after {
   content: '';
   position: absolute;
-  bottom: -4px;
+  bottom: 0;
   left: 0;
-  width: 40px;
+  width: 60px;
   height: 3px;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   border-radius: 2px;
@@ -387,24 +709,27 @@ button:focus {
   font-weight: 600;
   color: #1e40af;
   letter-spacing: -0.015em;
+  margin-bottom: 1rem;
 }
 
 .ai-analysis-content h5 {
   font-weight: 600;
   color: #1e40af;
   letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
 }
 
 /* Enhanced bullet points */
 .ai-analysis-content ul {
   list-style: none;
   padding-left: 0;
+  margin-bottom: 1.5rem;
 }
 
 .ai-analysis-content li {
   position: relative;
   padding-left: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .ai-analysis-content li::before {
@@ -473,5 +798,47 @@ button:focus {
   .ai-analysis-content h4,
   .ai-analysis-content h5 {
     color: #60a5fa;
+  }
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }

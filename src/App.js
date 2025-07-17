@@ -19,6 +19,7 @@ import InsightsSection from './components/InsightsSection'; // CORRECTED: Remove
 import ChartsSection from './components/ChartsSection';
 import AppFooter from './components/AppFooter';
 import StrategyInteractionAnalysis from './components/StrategyInteractionAnalysis';
+import StyleInjector from './components/StyleInjector';
 
 // --- Helper & Calculation Functions (Logic preserved) ---
 // Tax calculation functions are now imported from utils/taxCalculations.js
@@ -138,6 +139,7 @@ export default function App() {
 
   return (
     <div className="bg-background-secondary min-h-screen">
+      <StyleInjector />
       <Header onPrint={handlePrint} clientName={scenario.clientData.clientName} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8">
         <ClientInputSection scenario={scenario} updateClientData={handleUpdateClientData} />
@@ -146,7 +148,7 @@ export default function App() {
           toggleStrategy={handleToggleStrategy}
           updateClientData={handleUpdateClientData}
         />
-        <ResultsDashboard results={calculationResults} />
+        <ResultsDashboard results={calculationResults} scenario={scenario} />
         <InsightsSection insights={calculationResults?.withStrategies?.insights} />
         <StrategyInteractionAnalysis 
           scenario={scenario} 

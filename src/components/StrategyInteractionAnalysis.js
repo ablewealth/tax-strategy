@@ -1,274 +1,30 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RETIREMENT_STRATEGIES, STRATEGY_LIBRARY } from '../constants';
 import Section from './Section';
+import { formatAIAnalysis } from './AIAnalysisFormatter';
 
-// Function to format AI analysis text with professional styling
-const formatAIAnalysis = (text) => {
-    if (!text) return null;
-    
-    // Split text into paragraphs and format each part
-    const parts = text.split('\n').filter(part => part.trim());
-    
-    return parts.map((part, index) => {
-        const trimmedPart = part.trim();
-        
-        // Handle numbered sections (1., 2., etc.) with bold titles
-        if (/^\d+\.\s*\*\*/.test(trimmedPart)) {
-            const match = trimmedPart.match(/^(\d+\.\s*)(\*\*[^*]+\*\*)(.*)$/);
-            if (match) {
-                const [, number, title, content] = match;
-                return (
-                    <div key={index} className="mb-4 p-4 bg-white rounded border-l-4 border-blue-600">
-                        <h4 className="text-lg font-bold text-gray-900 mb-2 flex items-center">
-                            <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2 font-semibold">
-                                {number.replace('.', '')}
-                            </span>
-                            {title.replace(/\*\*/g, '')}
-                        </h4>
-                        <div className="text-gray-700 leading-relaxed pl-8">
-                            {formatInlineText(content)}
-                        </div>
-                    </div>
-                );
-            }
-        }
-        
-        // Handle main headings with **text** (but not headings with ### or ##)
-        if (/^\*\*[^*]+\*\*$/.test(trimmedPart) && !trimmedPart.includes(':') && !trimmedPart.startsWith('#')) {
-            return (
-                <div key={index} className="mb-4 mt-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 pb-2 border-b border-gray-300">
-                        {trimmedPart.replace(/\*\*/g, '')}
-                    </h3>
-                </div>
-            );
-        }
-        
-        // Handle markdown headings (###, ##) and convert them to styled headings
-        if (/^#{2,3}\s/.test(trimmedPart)) {
-            const level = trimmedPart.match(/^(#{2,3})/)[1].length;
-            const text = trimmedPart.replace(/^#{2,3}\s*/, '');
-            const headingClass = level === 2 ? 
-                "text-xl font-bold text-gray-900 mb-2 pb-2 border-b border-gray-300" :
-                "text-lg font-semibold text-gray-800 mb-2";
-            
-            return (
-                <div key={index} className={level === 2 ? "mb-4 mt-6" : "mb-3 mt-4"}>
-                    <h3 className={headingClass}>
-                        {text}
-                    </h3>
-                </div>
-            );
-        }
-        
-        // Handle subheadings with **text:** pattern
-        if (/^\*\*[^*]+:\*\*/.test(trimmedPart)) {
-            const content = trimmedPart.replace(/^\*\*([^*]+):\*\*\s*/, '');
-            const heading = trimmedPart.match(/^\*\*([^*]+):\*\*/)[1];
-            return (
-                <div key={index} className="mb-3 bg-gray-50 p-3 rounded border border-gray-200">
-                    <h5 className="text-base font-semibold text-gray-800 mb-2 flex items-center">
-                        <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
-                        {heading}:
-                    </h5>
-                    <div className="text-gray-700 leading-relaxed pl-4">
-                        {formatInlineText(content)}
-                    </div>
-                </div>
-            );
-        }
-        
-        // Handle quotes or important callouts (lines starting with ">")
-        if (trimmedPart.startsWith('>')) {
-            const content = trimmedPart.replace(/^>\s*/, '');
-            return (
-                <div key={index} className="mb-4 border-l-4 border-amber-400 bg-amber-50 p-4 rounded-r">
-                    <div className="flex items-start">
-                        <svg className="w-5 h-5 text-amber-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <div className="text-amber-800 leading-relaxed">
-                            {formatInlineText(content)}
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-        
-        // Handle bullet points with enhanced styling
-        if (trimmedPart.startsWith('*   ') || trimmedPart.startsWith('* ')) {
-            const content = trimmedPart.replace(/^\*\s*/, '');
-            return (
-                <div key={index} className="flex items-start mb-2 pl-3">
-                    <span className="text-blue-600 mr-3 mt-1">•</span>
-                    <div className="text-gray-700 leading-relaxed flex-1">
-                        {formatInlineText(content)}
-                    </div>
-                </div>
-            );
-        }
-        
-        // Handle numbered lists
-        if (/^\d+\.\s/.test(trimmedPart) && !trimmedPart.includes('**')) {
-            const match = trimmedPart.match(/^(\d+\.\s)(.*)$/);
-            if (match) {
-                const [, number, content] = match;
-                return (
-                    <div key={index} className="flex items-start mb-2 pl-3">
-                        <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5 font-medium">
-                            {number.replace('.', '')}
-                        </span>
-                        <div className="text-gray-700 leading-relaxed flex-1">
-                            {formatInlineText(content)}
-                        </div>
-                    </div>
-                );
-            }
-        }
-        
-        // Handle regular paragraphs with better spacing
-        if (trimmedPart.length > 0) {
-            return (
-                <div key={index} className="mb-3 p-3 bg-white rounded border border-gray-100">
-                    <p className="text-gray-700 leading-relaxed">
-                        {formatInlineText(trimmedPart)}
-                    </p>
-                </div>
-            );
-        }
-        
-        return null;
-    }).filter(Boolean);
-};
-
-// Function to format inline text with enhanced markdown support
-const formatInlineText = (text) => {
-    if (!text) return '';
-    
-    // Handle multiple formatting patterns
-    const processedText = text;
-    const parts = [];
-    let lastIndex = 0;
-    
-    // Regular expression to match various patterns
-    const patterns = [
-        { regex: /\*\*([^*]+)\*\*/g, type: 'bold' },
-        { regex: /\*([^*]+)\*/g, type: 'italic' },
-        { regex: /`([^`]+)`/g, type: 'code' },
-        { regex: /\$([0-9,]+(?:\.[0-9]{2})?)/g, type: 'currency' },
-        { regex: /([0-9]+(?:\.[0-9]+)?%)/g, type: 'percentage' },
-        { regex: /\b(Section \d+|IRC \d+|Form \d+)\b/g, type: 'legal' },
-        { regex: /\b(AGI|QBI|AMT|IRA|401k|IRS|LLC|S-Corp|C-Corp)\b/g, type: 'tax-term' }
-    ];
-    
-    // Find all matches and their positions
-    const matches = [];
-    patterns.forEach(pattern => {
-        let match;
-        while ((match = pattern.regex.exec(processedText)) !== null) {
-            matches.push({
-                start: match.index,
-                end: match.index + match[0].length,
-                content: match[1] || match[0],
-                fullMatch: match[0],
-                type: pattern.type
-            });
-        }
-    });
-    
-    // Sort matches by position and remove overlapping matches
-    matches.sort((a, b) => a.start - b.start);
-    const filteredMatches = [];
-    let lastEnd = 0;
-    
-    matches.forEach(match => {
-        if (match.start >= lastEnd) {
-            filteredMatches.push(match);
-            lastEnd = match.end;
-        }
-    });
-    
-    // Process matches and build formatted output
-    filteredMatches.forEach((match, index) => {
-        // Add text before this match
-        if (match.start > lastIndex) {
-            parts.push(processedText.substring(lastIndex, match.start));
-        }
-        
-        // Add formatted match
-        switch (match.type) {
-            case 'bold':
-                parts.push(
-                    <strong key={`bold-${index}`} className="font-semibold text-gray-900">
-                        {match.content}
-                    </strong>
-                );
-                break;
-            case 'italic':
-                parts.push(
-                    <em key={`italic-${index}`} className="italic text-gray-800">
-                        {match.content}
-                    </em>
-                );
-                break;
-            case 'code':
-                parts.push(
-                    <code key={`code-${index}`} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border">
-                        {match.content}
-                    </code>
-                );
-                break;
-            case 'currency':
-                parts.push(
-                    <span key={`currency-${index}`} className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
-                        ${match.content}
-                    </span>
-                );
-                break;
-            case 'percentage':
-                parts.push(
-                    <span key={`percentage-${index}`} className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
-                        {match.content}
-                    </span>
-                );
-                break;
-            case 'legal':
-                parts.push(
-                    <span key={`legal-${index}`} className="font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-200">
-                        {match.content}
-                    </span>
-                );
-                break;
-            case 'tax-term':
-                parts.push(
-                    <span key={`tax-term-${index}`} className="font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200">
-                        {match.content}
-                    </span>
-                );
-                break;
-            default:
-                parts.push(match.content);
-        }
-        
-        lastIndex = match.end;
-    });
-    
-    // Add remaining text
-    if (lastIndex < processedText.length) {
-        parts.push(processedText.substring(lastIndex));
-    }
-    
-    return parts.length > 0 ? parts : text;
-};
-
-const StrategyInteractionAnalysis = ({ scenario, results }) => {
+const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) => {
     const [interactionExplanation, setInteractionExplanation] = useState('');
     const [loadingInteraction, setLoadingInteraction] = useState(false);
     const [interactionError, setInteractionError] = useState('');
     const [hasAnalyzed, setHasAnalyzed] = useState(false);
     const [lastAnalyzedStrategies, setLastAnalyzedStrategies] = useState([]);
+    
+    // Update parent component state
+    useEffect(() => {
+        if (onAnalysisUpdate) {
+            onAnalysisUpdate({
+                explanation: interactionExplanation,
+                loading: loadingInteraction,
+                error: interactionError
+            });
+        }
+    }, [interactionExplanation, loadingInteraction, interactionError, onAnalysisUpdate]);
 
-    const allStrategies = useMemo(() => [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES], []);
+    const allStrategies = useMemo(() => {
+        return [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
+    }, []);
+
     const enabledStrategies = useMemo(() => {
         return allStrategies.filter(strategy => {
             const isEnabled = scenario?.enabledStrategies?.[strategy.id];
@@ -281,117 +37,107 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
     const strategiesChanged = useMemo(() => {
         const currentStrategyIds = enabledStrategies.map(s => s.id).sort();
         const lastStrategyIds = lastAnalyzedStrategies.map(s => s.id).sort();
+        
         return JSON.stringify(currentStrategyIds) !== JSON.stringify(lastStrategyIds);
     }, [enabledStrategies, lastAnalyzedStrategies]);
 
     const getButtonText = () => {
-        if (!hasAnalyzed) return 'Generate AI Analysis';
+        if (loadingInteraction) return 'Analyzing...';
+        if (hasAnalyzed && !strategiesChanged) return 'Analysis Complete';
         if (strategiesChanged) return 'Refresh Analysis';
-        return 'Regenerate Analysis';
+        return 'Generate AI Analysis';
     };
 
-    const fetchInteractionExplanation = async (retryCount = 0) => {
+    const fetchInteractionExplanation = async () => {
         if (enabledStrategies.length > 1) {
             setLoadingInteraction(true);
             setInteractionError('');
             try {
-                const clientState = scenario?.clientData?.state || 'Not specified';
-                const stateDisplayName = clientState === 'NJ' ? 'New Jersey' : 
-                                       clientState === 'NY' ? 'New York' : 
+                const clientState = scenario?.clientData?.state || 'Unknown';
+                const stateDisplayName = clientState === 'NY' ? 'New York' : 
+                                       clientState === 'NJ' ? 'New Jersey' : 
+                                       clientState === 'CA' ? 'California' : 
                                        clientState;
                 
                 // Extract client financial data
                 const clientData = scenario?.clientData || {};
                 const w2Income = clientData.w2Income || 0;
                 const businessIncome = clientData.businessIncome || 0;
-                const shortTermGains = clientData.shortTermGains || 0;
-                const longTermGains = clientData.longTermGains || 0;
+                const shortTermGains = clientData.shortTermCapitalGains || 0;
+                const longTermGains = clientData.longTermCapitalGains || 0;
                 
                 // Extract calculation results
                 const totalSavings = results?.cumulative?.totalSavings || 0;
+                const currentYearSavings = results?.withStrategies?.totalSavings || 0;
                 const baselineTax = results?.cumulative?.baselineTax || 0;
                 const optimizedTax = results?.cumulative?.optimizedTax || 0;
-                const currentYearSavings = results?.projections?.[0]?.totalSavings || 0;
                 
-                // Calculate strategy-specific data
-                const strategyContributions = enabledStrategies.map(strategy => {
-                    const inputValue = clientData[strategy.inputRequired] || 0;
-                    // Estimate individual strategy savings (simplified calculation)
-                    const estimatedSavings = inputValue * 0.25; // Rough estimate based on average tax rate
-                    return {
-                        name: strategy.name,
-                        amount: inputValue,
-                        estimatedSavings: estimatedSavings
-                    };
-                });
-                
-                // Calculate more precise strategy-specific savings and state impacts
-                
-                // Calculate more precise strategy-specific savings and state impacts
-                const strategyDetailsForAI = enabledStrategies.map(strategy => {
+                // Create a more detailed mapping of strategies with tax implications
+                const strategyTaxDetails = enabledStrategies.map(strategy => {
                     const inputValue = clientData[strategy.inputRequired] || 0;
                     let federalBenefit = 0;
                     let stateBenefit = 0;
                     let stateAddBack = 0;
                     let specialConsiderations = '';
                     
-                    // Calculate specific benefits based on strategy type and state
+                    // Calculate specific benefits based on strategy type
                     switch (strategy.id) {
                         case 'EQUIP_S179_01':
-                            federalBenefit = Math.min(inputValue, 1220000) * 0.35; // Rough federal tax benefit
+                            federalBenefit = inputValue * 0.35; // Approximate federal tax rate
                             if (clientState === 'NY') {
-                                stateBenefit = Math.min(inputValue, 1220000) * 0.109; // NY allows full deduction
-                            } else { // NJ
-                                stateBenefit = Math.min(inputValue, 25000) * 0.1075; // NJ caps at $25K
-                                stateAddBack = Math.max(0, inputValue - 25000);
-                                specialConsiderations = 'NJ caps Section 179 at $25,000 with required add-back';
+                                stateBenefit = inputValue * 0.05; // Partial conformity
+                                stateAddBack = inputValue * 0.04; // Bonus depreciation add-back
+                                specialConsiderations = 'NY decouples from federal bonus depreciation';
+                            } else if (clientState === 'NJ') {
+                                stateBenefit = Math.min(25000, inputValue) * 0.109; // NJ tax rate on limited amount
+                                stateAddBack = (inputValue - 25000) * 0.109; // NJ Section 179 limit is $25,000
+                                specialConsiderations = 'NJ has $25,000 Section 179 limit';
                             }
                             break;
-                        case 'SOLO401K_EMPLOYEE_01':
-                            federalBenefit = Math.min(inputValue, 23000) * 0.35;
+                        case 'SOLO401K_EE_01':
+                            federalBenefit = inputValue * 0.35;
                             if (clientState === 'NY') {
-                                stateBenefit = Math.min(inputValue, 23000) * 0.109;
-                            } else { // NJ
-                                stateBenefit = 0; // NJ taxes 401k deferrals
-                                stateAddBack = Math.min(inputValue, 23000);
-                                specialConsiderations = 'NJ taxes 401(k) deferrals - no state tax benefit';
+                                stateBenefit = inputValue * 0.109;
+                            } else if (clientState === 'NJ') {
+                                stateAddBack = inputValue * 0.109;
+                                specialConsiderations = 'NJ does not allow deduction for employee 401(k) deferrals';
                             }
                             break;
-                        case 'SOLO401K_EMPLOYER_01':
+                        case 'SOLO401K_ER_01':
                         case 'DB_PLAN_01':
                             federalBenefit = inputValue * 0.35;
-                            stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.1075);
+                            stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.075);
                             specialConsiderations = 'Reduces QBI base income';
                             break;
                         case 'QUANT_DEALS_01':
-                            const exposureRates = {
-                                '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.024, netBenefit: 0.035 },
-                                '145/45': { shortTermLossRate: 0.138, longTermGainRate: 0.033, netBenefit: 0.046 },
-                                '175/75': { shortTermLossRate: 0.206, longTermGainRate: 0.049, netBenefit: 0.069 },
-                                '225/125': { shortTermLossRate: 0.318, longTermGainRate: 0.076, netBenefit: 0.106 }
+                            // Different structures have different benefits
+                            const dealStructures = {
+                                '130/30': { shortTermLossRate: 0.10, longTermGainRate: 0.35 },
+                                '145/45': { shortTermLossRate: 0.12, longTermGainRate: 0.36 },
+                                '175/75': { shortTermLossRate: 0.15, longTermGainRate: 0.37 },
+                                '225/125': { shortTermLossRate: 0.18, longTermGainRate: 0.38 }
                             };
-                            const exposure = exposureRates[clientData.dealsExposure] || exposureRates['175/75'];
-                            federalBenefit = inputValue * exposure.netBenefit * 0.35;
-                            stateBenefit = inputValue * exposure.netBenefit * (clientState === 'NY' ? 0.109 : 0.1075);
-                            specialConsiderations = `${clientData.dealsExposure || '175/75'} exposure level - ${(exposure.netBenefit * 100).toFixed(1)}% annual benefit`;
+                            federalBenefit = inputValue * 0.35;
+                            stateBenefit = inputValue * (clientState === 'NY' ? 0.109 : 0.075);
+                            specialConsiderations = clientState === 'NJ' ? 'NJ has no capital loss carryover' : '';
                             break;
                         case 'CHAR_CLAT_01':
-                            federalBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.35;
+                            federalBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.3) * 0.35;
                             if (clientState === 'NY') {
-                                stateBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.30) * 0.5 * 0.109;
+                                stateBenefit = Math.min(inputValue, (w2Income + businessIncome) * 0.3) * 0.05;
                                 specialConsiderations = 'NY allows 50% of federal charitable deduction';
                             } else {
-                                stateBenefit = 0;
-                                specialConsiderations = 'NJ provides no state tax benefit for charitable deductions';
+                                stateAddBack = Math.min(inputValue, (w2Income + businessIncome) * 0.3) * 0.109;
+                                specialConsiderations = 'NJ does not allow charitable deductions';
                             }
                             break;
-                        case 'OG_USENERGY_01':
-                            federalBenefit = inputValue * 0.70 * 0.35;
+                        case 'ENERGY_IDC_01':
+                            federalBenefit = inputValue * 0.35;
                             if (clientState === 'NY') {
-                                stateBenefit = inputValue * 0.70 * 0.109;
+                                stateAddBack = inputValue * 0.109;
                             } else {
-                                stateBenefit = 0;
-                                specialConsiderations = 'NJ provides no state deduction for oil & gas investments';
+                                stateAddBack = inputValue * 0.109;
+                                specialConsiderations = 'Must be capitalized for state taxes';
                             }
                             break;
                         case 'FILM_SEC181_01':
@@ -400,15 +146,15 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
                                 stateBenefit = inputValue * 0.109;
                             } else {
                                 stateBenefit = 0;
-                                specialConsiderations = 'NJ provides no state deduction for film investments';
+                                specialConsiderations = 'Consider NJ film tax credits';
                             }
                             break;
                         case 'QBI_FINAL_01':
-                            if (businessIncome > 0) {
-                                federalBenefit = businessIncome * 0.20 * 0.35;
-                                stateBenefit = 0; // QBI is federal only
-                                specialConsiderations = 'Federal-only benefit, no state equivalent';
-                            }
+                            federalBenefit = inputValue * 0.35;
+                            specialConsiderations = 'Not recognized by states';
+                            break;
+                        default:
+                            federalBenefit = inputValue * 0.35;
                             break;
                     }
                     
@@ -424,7 +170,10 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
                     };
                 });
 
-                const prompt = `You are a tax strategist analyzing ${enabledStrategies.length} specific strategies for a ${stateDisplayName} resident in 2025. Generate a concise, actionable analysis focusing on strategy interactions and optimal sequencing.
+                // Sort strategies by total benefit for the prompt
+                const sortedStrategies = [...strategyTaxDetails].sort((a, b) => b.totalBenefit - a.totalBenefit);
+                
+                const prompt = `You are a professional tax advisor providing analysis for a high-net-worth client. Analyze the interaction between these tax strategies and provide actionable insights.
 
 **Client Profile:**
 - W2 Income: $${w2Income.toLocaleString()}
@@ -439,99 +188,120 @@ const StrategyInteractionAnalysis = ({ scenario, results }) => {
 - Current Year Savings: $${currentYearSavings.toLocaleString()}
 - Total Multi-Year Savings: $${totalSavings.toLocaleString()}
 
-**Strategy Analysis with ${stateDisplayName} Impact:**
-${strategyDetailsForAI.map(s => `- **${s.name}**: $${s.amount.toLocaleString()} → Fed: $${s.federalBenefit.toLocaleString()} | State: $${s.stateBenefit.toLocaleString()}${s.stateAddBack > 0 ? ` | Add-back: $${s.stateAddBack.toLocaleString()}` : ''} | Total: $${s.totalBenefit.toLocaleString()}${s.specialConsiderations ? ` | ${s.specialConsiderations}` : ''}`).join('\n')}
+**Selected Tax Strategies (Ranked by Estimated Benefit):**
+${sortedStrategies.map((s, i) => 
+  `${i+1}. **${s.name}**: $${s.amount.toLocaleString()} (Est. benefit: $${Math.round(s.totalBenefit).toLocaleString()}/yr)${s.specialConsiderations ? ` - ${s.specialConsiderations}` : ''}`
+).join('\n')}
 
-**CRITICAL: Use only ** for bold text. Never use ### or ## for headings. Provide specific analysis for 2025+ tax years:**
+**${stateDisplayName} State Tax Considerations:**
+${clientState === 'NY' 
+  ? '- New York generally conforms to federal tax treatment with some exceptions\n- NY limits Section 179 deductions and decouples from bonus depreciation\n- NY has limitations on charitable deductions for high-income taxpayers\n- NY does not recognize the QBI deduction'
+  : clientState === 'NJ'
+  ? '- New Jersey has significant differences from federal tax treatment\n- NJ limits Section 179 to $25,000 and does not allow bonus depreciation\n- NJ does not allow deductions for employee 401(k) contributions\n- NJ has no capital loss carryover (use-it-or-lose-it)\n- NJ does not allow charitable deductions\n- NJ does not recognize the QBI deduction'
+  : `- Please provide specific tax considerations for ${stateDisplayName}`
+}
 
-**Strategy Effectiveness Ranking**
+**CRITICAL FORMATTING INSTRUCTIONS:**
+1. Use only ** for bold text. No other markdown formatting.
+2. ALWAYS write in complete grammatical sentences with proper punctuation.
+3. For bullet points and insights, each point MUST be a complete sentence with proper punctuation.
+4. Avoid sentence fragments or incomplete thoughts.
+5. Provide specific analysis with dollar amounts when relevant.
+6. When describing benefits, always include "per year" or specify the time period.
+7. Be precise and professional - this is for a high-net-worth client.
+
+**Required Analysis Structure:**
+
+**Strategy Ranking**
 
 Rank strategies by total tax benefit (federal + state):
-1. [Highest total benefit strategy] - $[amount] total savings
-2. [Second highest] - $[amount] total savings
+1. [Highest total benefit strategy] - $[amount] savings per year
+2. [Second highest] - $[amount] savings per year
 3. [Continue for all strategies]
 
 **${stateDisplayName} State Tax Optimization**
 
-${clientState === 'NJ' ? 'New Jersey specific impacts:' : 'New York specific impacts:'}
-- ${clientState === 'NJ' ? 'Section 179 capped at $25,000 (add-back required above this)' : 'Section 179 fully deductible at state level'}
-- ${clientState === 'NJ' ? '401(k) deferrals are taxable (no state benefit)' : '401(k) deferrals are deductible'}
-- ${clientState === 'NJ' ? 'No state benefits for charitable, oil & gas, or film investments' : 'Partial state benefits for charitable (50%), full for oil & gas and film'}
-- Net state impact: $[calculate net state benefit vs. federal]
+Analyze state-specific benefits and considerations for ${clientState} residents. Focus on:
+- Which strategies provide the most state tax benefit
+- Which strategies create "phantom income" at the state level
+- How to sequence strategies to minimize state tax liability
 
-**Strategy Sequencing for Maximum Benefit**
+**Implementation Priority**
 
 Based on your $${totalSavings.toLocaleString()} potential savings:
-1. **Priority 1**: [Strategy with highest ROI] - implement first for [specific reason]
-2. **Priority 2**: [Strategy with timing benefits] - [timing consideration]
-3. **Priority 3**: [Strategy with interaction benefits] - [interaction with other strategies]
+1. **Priority 1**: [Strategy with highest impact and reason]
+2. **Priority 2**: [Strategy with second highest impact and reason]
+3. **Priority 3**: [Continue as needed]
 
 **Critical Interactions**
 
-- **Positive synergies**: [Which strategies work better together and why]
+- **Positive synergies**: [Which strategies work well together]
 - **Negative interactions**: [Which strategies reduce each other's effectiveness]
 - **Timing dependencies**: [Which strategies must be implemented in specific order]
 
 **2025 Tax Year Action Plan**
 
 Your immediate next steps:
-1. [Most urgent action with deadline]
+1. [Most urgent action item with deadline]
 2. [Second priority with timeline]
-3. [Third priority with implementation notes]
+3. [Third priority with notes]
 
-Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLocaleString()} savings and ${stateDisplayName} state rules.`;
+Keep analysis under 400 words total. Focus on accuracy, professionalism, and actionable advice.`;
 
-                const chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = process.env.REACT_APP_GEMINI_API_KEY || "";
-                
-                if (!apiKey) {
-                    setInteractionError('AI analysis is not configured. To enable strategy interaction analysis, please set up your Gemini API key in the .env file.');
-                    setLoadingInteraction(false);
-                    return;
-                }
-                
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
+                // Use the secure backend proxy instead of direct API call
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                
+                try {
+                    // Call our backend API proxy
+                    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3003';
+                    console.log('Calling backend at:', `${backendUrl}/api/gemini`);
+                    
+                    // Map enabled strategies to the format expected by backend
+                    const mappedStrategies = enabledStrategies.map(s => ({
+                        id: s.id,
+                        name: s.name,
+                        description: s.description
+                    }));
+                    
+                    const response = await fetch(`${backendUrl}/api/gemini`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            useFramework: true,
+                            clientState: scenario?.clientData,
+                            enabledStrategies: mappedStrategies,
+                            prompt: prompt // Also include the prompt as fallback
+                        }),
+                        signal: controller.signal
+                    });
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    signal: controller.signal
-                });
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    }
 
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-                }
-
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    setInteractionExplanation(result.candidates[0].content.parts[0].text);
-                    setHasAnalyzed(true);
-                    setLastAnalyzedStrategies([...enabledStrategies]);
-                } else {
-                    setInteractionError('Failed to generate interaction explanation.');
+                    const result = await response.json();
+                    if (result.response) {
+                        setInteractionExplanation(result.response);
+                        setHasAnalyzed(true);
+                        setLastAnalyzedStrategies([...enabledStrategies]);
+                    } else {
+                        throw new Error('No response received from analysis service.');
+                    }
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    throw error;
                 }
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    if (retryCount < 1) {
-                        // Retry once with a simpler request
-                        return fetchInteractionExplanation(retryCount + 1);
-                    } else {
-                        setInteractionError('Request timed out after multiple attempts. The AI service may be experiencing high load. Please try again in a moment.');
-                    }
-                } else if (error.message.includes('429') || error.message.includes('503')) {
-                    setInteractionError('AI service is temporarily busy. Please try again in a few moments.');
+                    setInteractionError('Request timed out. Please try again.');
                 } else {
-                    setInteractionError(`Error fetching interaction explanation: ${error.message}`);
+                    setInteractionError(`Analysis failed: ${error.message}`);
                 }
             } finally {
                 setLoadingInteraction(false);
@@ -539,203 +309,173 @@ Keep analysis under 300 words. Focus on your specific $${currentYearSavings.toLo
         }
     };
 
-    // Don't render if no strategies or only one strategy
+    // Don't render if no strategies enabled
     if (enabledStrategies.length <= 1) {
         return null;
     }
 
     return (
         <Section 
-            title="🤖 Professional Tax Strategy Analysis" 
-            description="Comprehensive analysis of how your selected strategies work together, tailored to your state and financial profile"
+            title="🧠 Advanced Tax Strategy Analysis" 
+            description="AI-powered analysis of strategy interactions and implementation guidance"
         >
             {loadingInteraction ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center justify-center py-8">
+                <div className="bg-white rounded-lg border border-gray-200 p-8">
+                    <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="relative">
-                            <div className="animate-spin rounded-full h-10 w-10 border-3 border-gray-200 border-t-blue-600"></div>
-                            <div className="absolute inset-0 rounded-full h-10 w-10 border-3 border-transparent border-t-blue-400 animate-spin" style={{animationDuration: '1.5s'}}></div>
+                            <div className="w-12 h-12 rounded-full bg-blue-100"></div>
+                            <div className="absolute inset-0 rounded-full h-12 w-12 border-4 border-transparent border-t-blue-400 animate-spin"></div>
                         </div>
-                        <div className="ml-4">
-                            <div className="text-lg font-semibold text-gray-900 mb-1">
-                                Professional Tax Analysis in Progress
-                            </div>
-                            <div className="text-sm text-gray-600">
-                                Generating comprehensive strategy analysis for {scenario?.clientData?.state || 'your state'} residents...<br/>
-                                <span className="text-xs text-gray-500">This detailed analysis may take up to 30 seconds</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-4 bg-gray-50 rounded p-4 border border-gray-100">
-                        <div className="text-sm text-gray-600 mb-3">
-                            <strong>Client Profile:</strong>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <span className="text-xs text-gray-500">State of Residence:</span>
-                                <div className="font-medium text-gray-800">
-                                    {scenario?.clientData?.state === 'NJ' ? 'New Jersey' : 
-                                     scenario?.clientData?.state === 'NY' ? 'New York' : 
-                                     scenario?.clientData?.state || 'Not specified'}
-                                </div>
-                            </div>
-                            <div>
-                                <span className="text-xs text-gray-500">Selected Strategies:</span>
-                                <div className="font-medium text-gray-800">{enabledStrategies.length}</div>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {enabledStrategies.map((strategy, index) => (
-                                <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-                                    {strategy.name}
-                                </span>
-                            ))}
+                        <div className="text-center">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                Analyzing Strategy Interactions
+                            </h3>
+                            <p className="text-gray-600">
+                                Analyzing {enabledStrategies.length} strategies for {scenario?.clientData?.state || 'your state'} residents
+                            </p>
                         </div>
                     </div>
                 </div>
             ) : interactionError ? (
-                <div className="bg-white border border-red-200 rounded-lg p-6">
+                <div className="bg-white rounded-lg border border-red-200 p-6">
                     <div className="flex items-start">
-                        <div className="flex-shrink-0 mr-4">
+                        <div className="flex-shrink-0">
                             <div className="bg-red-100 rounded-full p-3">
-                                <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
-                        <div className="flex-1">
-                            <h4 className="text-lg font-semibold text-red-900 mb-2">AI Analysis Unavailable</h4>
-                            <p className="text-red-800 mb-4 leading-relaxed">{interactionError}</p>
+                        <div className="ml-4 flex-1">
+                            <h4 className="text-lg font-semibold text-red-900">Analysis Error</h4>
+                            <p className="text-red-700 mt-1">{interactionError}</p>
                             
-                            {interactionError.includes('API key') && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                                    <h5 className="font-medium text-red-900 mb-2">Setup Required</h5>
-                                    <p className="text-sm text-red-800 mb-3">
-                                        To enable AI-powered strategy analysis, you'll need to configure your Gemini API key.
-                                    </p>
-                                    <div className="text-xs text-red-700 space-y-1">
-                                        <p>• Create a <code className="bg-red-200 px-1 rounded">.env</code> file in your project root</p>
-                                        <p>• Add: <code className="bg-red-200 px-1 rounded">REACT_APP_GEMINI_API_KEY=your_api_key_here</code></p>
-                                        <p>• Restart your development server</p>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                                <h5 className="font-medium text-gray-900 mb-2">Selected Strategies:</h5>
-                                <div className="flex flex-wrap gap-2">
-                                    {enabledStrategies.map((strategy, index) => (
-                                        <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm">
-                                            {strategy.name}
-                                        </span>
-                                    ))}
-                                </div>
+                            <div className="mt-4">
+                                <button
+                                    onClick={fetchInteractionExplanation}
+                                    disabled={loadingInteraction}
+                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50"
+                                >
+                                    Try Again
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             ) : interactionExplanation ? (
-                <div className="space-y-6">
-                    <div className="bg-white border border-gray-200 rounded-lg p-6">
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center">
-                                    <div className="bg-blue-600 rounded-full p-2 mr-3">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-xl font-bold text-gray-900">Professional Tax Strategy Analysis</h3>
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-gray-700 rounded-full p-3">
+                                    <svg className="w-6 h-6 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    </svg>
                                 </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-800">Tax Strategy Analysis</h3>
+                                    <p className="text-gray-600">
+                                        Professional insights and recommendations
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                {strategiesChanged && (
+                                    <div className="flex items-center text-amber-600 text-sm">
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                        </svg>
+                                        <span>Strategies updated</span>
+                                    </div>
+                                )}
                                 <button
                                     onClick={fetchInteractionExplanation}
                                     disabled={loadingInteraction}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                                         strategiesChanged 
-                                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            ? 'bg-amber-600 hover:bg-amber-700 text-white hover:shadow-md' 
+                                            : 'bg-slate-600 hover:bg-slate-700 text-white'
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    {loadingInteraction ? 'Analyzing...' : getButtonText()}
+                                    {getButtonText()}
                                 </button>
-                            </div>
-                            <p className="text-gray-600 text-sm">
-                                Comprehensive professional analysis of how your selected tax strategies optimize your tax burden in {scenario?.clientData?.state || 'your state'}
-                            </p>
-                            {strategiesChanged && (
-                                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                                    <div className="flex items-center text-orange-800">
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.064 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                        </svg>
-                                        <span className="text-sm font-medium">Strategies changed - refresh for updated analysis</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        
-                        <div className="prose prose-lg max-w-none">
-                            <div className="ai-analysis-content space-y-3">
-                                {formatAIAnalysis(interactionExplanation)}
                             </div>
                         </div>
                     </div>
-                    
-                    <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-3 rounded">
-                        <div className="flex items-center">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Analysis powered by Google Gemini AI</span>
+
+                    <div className="px-8 py-8 bg-white">
+                        <div className="max-w-none">
+                            {formatAIAnalysis(interactionExplanation)}
                         </div>
-                        <div className="flex items-center text-gray-400">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                            <span>Secure & Private</span>
+                    </div>
+
+                    <div className="bg-slate-50 px-8 py-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-6 text-sm text-slate-600">
+                                <div className="flex items-center">
+                                    <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Powered by AI</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span>Secure & Private</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Generated {new Date().toLocaleTimeString()}</span>
+                                </div>
+                            </div>
+                            <div className="text-sm text-slate-500">
+                                Analysis based on {enabledStrategies.length} selected strategies
+                            </div>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-                    <div className="mb-6">
-                        <div className="bg-blue-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-                            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a9 9 0 117.072 0l-.548.547A3.374 3.374 0 0014.846 21H9.154a3.374 3.374 0 00-2.953-1.382l-.548-.547z" />
+                <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-8 text-center">
+                    <div className="max-w-md mx-auto">
+                        <div className="bg-blue-600 rounded-full p-4 w-16 h-16 mx-auto mb-4">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Professional Tax Strategy Analysis</h3>
-                        <p className="text-gray-600 mb-6">
-                            Ready to generate a comprehensive, professional analysis of how your selected tax strategies work together for {scenario?.clientData?.state || 'your state'} residents, including specific dollar amounts and implementation guidance
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">Ready for Professional Analysis</h3>
+                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                            Enable multiple tax strategies to generate comprehensive analysis and implementation guidance.
                         </p>
-                        
                         <button
                             onClick={fetchInteractionExplanation}
                             disabled={loadingInteraction}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                            className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                                enabledStrategies.length >= 2 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
                         >
-                            {loadingInteraction ? 'Analyzing...' : getButtonText()}
+                            {loadingInteraction ? (
+                                <div className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Analyzing...
+                                </div>
+                            ) : (
+                                'Generate AI Analysis'
+                            )}
                         </button>
-                    </div>
-                    
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 max-w-md mx-auto">
-                        <div className="text-sm text-gray-600 mb-4">
-                            <strong>How it works:</strong>
-                        </div>
-                        <div className="space-y-3 text-sm text-gray-700">
-                            <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">1</span>
-                                <span>Choose 2 or more tax strategies</span>
-                            </div>
-                            <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">2</span>
-                                <span>Click to generate AI analysis</span>
-                            </div>
-                            <div className="flex items-start">
-                                <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mr-3 mt-0.5">3</span>
-                                <span>Get professional insights on optimization</span>
-                            </div>
-                        </div>
+                        
+                        {enabledStrategies.length < 2 && (
+                            <p className="text-sm text-gray-500 mt-4">
+                                Select at least 2 strategies to enable analysis.
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
