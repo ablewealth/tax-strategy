@@ -9,53 +9,90 @@ import {
 import { formatPrintableTaxAnalysis } from './PrintableTaxAnalysisFormatter';
 
 
-// --- Modern Style Definitions for Professional Reports ---
+// --- Modern High-End Financial Institution Styling ---
 const styles = {
   page: {
-    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    padding: '1.5cm', // Reduced padding for more content
-    color: '#1f2937', // Dark gray for better readability
-    lineHeight: 1.4, // Slightly increased line spacing for readability
+    fontFamily: "'Inter', 'Helvetica Neue', 'Segoe UI', Arial, sans-serif",
+    padding: '2cm 1.5cm', // Professional margins
+    color: '#1a202c', // Deep charcoal for readability
+    lineHeight: 1.5, // Optimal line spacing
     fontSize: '10pt', // Professional font size
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     position: 'relative',
+    minHeight: '100vh',
+    boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)',
   },
   watermark: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%) rotate(-45deg)',
-    fontSize: '60pt',
-    color: 'rgba(0, 0, 0, 0.02)', // Lighter watermark
-    fontWeight: 'bold',
+    fontSize: '72pt',
+    color: 'rgba(220, 38, 127, 0.025)', // Sophisticated burgundy watermark
+    fontWeight: '800',
     pointerEvents: 'none',
     zIndex: 0,
     textTransform: 'uppercase',
+    letterSpacing: '0.2em',
+    fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+  },
+  confidentialBanner: {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    backgroundColor: '#dc2626',
+    color: '#ffffff',
+    padding: '4px 12px',
+    fontSize: '8pt',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    borderRadius: '2px',
+    zIndex: 10,
+    boxShadow: '0 2px 4px rgba(220, 38, 38, 0.3)',
   },
   header: {
-    borderBottom: '1px solid #111827', // Dark border for Swiss design
-    paddingBottom: '1.5rem',
-    marginBottom: '2.5rem',
+    borderBottom: '3px solid #1e40af', // Strong blue accent
+    paddingBottom: '2rem',
+    marginBottom: '3rem',
     position: 'relative',
-    width: '100%', // Ensure full width
+    width: '100%',
+    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+    borderRadius: '8px 8px 0 0',
+    padding: '2rem',
+    marginTop: '-2rem',
+    marginLeft: '-1.5rem',
+    marginRight: '-1.5rem',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
   },
   headerRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem',
+    marginBottom: '1.5rem',
   },
   logo: {
-    height: '36px', // Slightly larger logo for professional look
+    height: '48px',
+    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
   },
   reportTitle: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '24pt', // Larger title size for impact
-    fontWeight: '700',
+    fontSize: '28pt',
+    fontWeight: '800',
     margin: 0,
-    color: '#111827', // Dark color for Swiss design
-    letterSpacing: '-0.02em', // Tighter letter spacing for modern look
+    color: '#1e40af',
+    letterSpacing: '-0.025em',
     textAlign: 'center',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+  },
+  reportSubtitle: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: '12pt',
+    fontWeight: '500',
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: '0.5rem',
+    letterSpacing: '0.02em',
   },
   headerText: {
     textAlign: 'right',
@@ -97,34 +134,66 @@ const styles = {
     gap: '0.75rem 1.25rem', // Slightly increased gaps for better spacing
   },
   metric: {
-    backgroundColor: '#f8fafc', // Lighter blue-gray background
-    border: '1px solid #e2e8f0', // Subtle border
-    padding: '0.75rem', // Increased padding for better spacing
-    borderRadius: '6px', // Rounded corners
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)', // Subtle shadow
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
+    padding: '1rem',
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    position: 'relative',
+    overflow: 'hidden',
+    transition: 'all 0.3s ease',
+  },
+  metricAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '4px',
+    height: '100%',
+    backgroundColor: '#1e40af',
+    borderRadius: '0 4px 4px 0',
   },
   metricLabel: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '8pt', // Smaller labels
-    color: '#64748b', // Medium blue-gray for better contrast
-    marginBottom: '0.25rem',
+    fontSize: '9pt',
+    color: '#64748b',
+    marginBottom: '0.5rem',
     textTransform: 'uppercase',
-    letterSpacing: '0.3px',
-    fontWeight: '500',
+    letterSpacing: '0.05em',
+    fontWeight: '600',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
   metricValue: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '13pt', // Slightly larger values for emphasis
-    fontWeight: '600',
-    color: '#1e40af', // Blue color for values
+    fontSize: '16pt',
+    fontWeight: '700',
+    color: '#1e40af',
+    lineHeight: 1.2,
   },
   highlightMetric: {
-    backgroundColor: '#f0f9ff', // Light blue background
-    borderColor: '#bae6fd', // Light blue border
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Enhanced shadow
+    backgroundColor: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+    borderColor: '#3b82f6',
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+    transform: 'translateY(-2px)',
   },
   highlightValue: {
-    color: '#0369a1', // Blue color for highlight values
+    color: '#0369a1',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+  },
+  successMetric: {
+    backgroundColor: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+    borderColor: '#22c55e',
+  },
+  successValue: {
+    color: '#059669',
+  },
+  warningMetric: {
+    backgroundColor: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+    borderColor: '#f59e0b',
+  },
+  warningValue: {
+    color: '#d97706',
   },
   table: {
     width: '100%',
@@ -167,38 +236,102 @@ const styles = {
     gap: '0.5rem', // Reduced gap
   },
   insightCard: {
-    border: '1px solid #eee',
-    borderRadius: '2px',
-    padding: '0.5rem', // Reduced padding
-    backgroundColor: '#fefefe',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    padding: '1rem',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: '1rem',
   },
   insightTitle: {
-    fontFamily: "'Lato', sans-serif",
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     fontWeight: '700',
-    fontSize: '8pt', // Smaller insight titles
+    fontSize: '10pt',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem',
-    marginBottom: '0.25rem',
+    gap: '0.5rem',
+    marginBottom: '0.5rem',
+    color: '#1e40af',
   },
   insightText: {
-    fontSize: '8pt', // Smaller insight text
-    color: '#444',
-    paddingLeft: '1rem', // Reduced padding
-    lineHeight: 1.2,
+    fontSize: '9pt',
+    color: '#374151',
+    lineHeight: 1.5,
+    paddingLeft: '1.5rem',
+  },
+  successInsightCard: {
+    backgroundColor: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+    borderColor: '#22c55e',
+    borderLeft: '4px solid #22c55e',
+  },
+  successInsightTitle: {
+    color: '#059669',
   },
   warningInsightCard: {
-    backgroundColor: '#fffdf0',
-    borderColor: '#f0e0c0',
+    backgroundColor: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+    borderColor: '#f59e0b',
+    borderLeft: '4px solid #f59e0b',
+  },
+  warningInsightTitle: {
+    color: '#d97706',
+  },
+  errorInsightCard: {
+    backgroundColor: 'linear-gradient(135deg, #fef2f2 0%, #fecaca 100%)',
+    borderColor: '#ef4444',
+    borderLeft: '4px solid #ef4444',
+  },
+  errorInsightTitle: {
+    color: '#dc2626',
   },
   footer: {
-    marginTop: '1rem', // Reduced margin
-    paddingTop: '0.5rem', // Reduced padding
-    borderTop: '1px solid #ccc',
-    fontSize: '6pt', // Smaller footer text
-    color: '#777',
-    lineHeight: 1.2,
-    pageBreakBefore: 'auto', // Allow natural page breaks for compact layout
+    marginTop: '3rem',
+    paddingTop: '2rem',
+    borderTop: '2px solid #e2e8f0',
+    fontSize: '8pt',
+    color: '#64748b',
+    lineHeight: 1.4,
+    pageBreakBefore: 'auto',
+    backgroundColor: '#f8fafc',
+    padding: '2rem',
+    marginLeft: '-1.5rem',
+    marginRight: '-1.5rem',
+    marginBottom: '-2rem',
+  },
+  legalDisclaimer: {
+    backgroundColor: '#f1f5f9',
+    border: '1px solid #cbd5e1',
+    borderRadius: '6px',
+    padding: '1.5rem',
+    marginTop: '2rem',
+    fontSize: '8pt',
+    color: '#475569',
+    lineHeight: 1.5,
+  },
+  disclaimerTitle: {
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '1rem',
+    fontSize: '9pt',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  disclaimerText: {
+    marginBottom: '0.75rem',
+  },
+  printOptimized: {
+    '@media print': {
+      backgroundColor: '#ffffff !important',
+      color: '#000000 !important',
+      boxShadow: 'none !important',
+      border: 'none !important',
+      fontSize: '10pt !important',
+      lineHeight: '1.4 !important',
+      pageBreakAfter: 'auto',
+      pageBreakBefore: 'auto',
+      pageBreakInside: 'avoid',
+    },
   },
   strategyDetail: {
     marginBottom: '0.75rem', // Reduced margin
@@ -488,60 +621,26 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
       <div ref={ref} style={styles.page}>
         {/* Confidential watermark */}
         <div style={styles.watermark}>CONFIDENTIAL</div>
+        
+        {/* Confidential Banner */}
+        <div style={styles.confidentialBanner}>CONFIDENTIAL</div>
 
-        <header
-          style={{
-            marginBottom: '1.5rem',
-            position: 'relative',
-            width: '100%',
-            padding: '0.75rem 0',
-            borderBottom: '1px solid #e5e7eb',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              marginBottom: '0.75rem',
-            }}
-          >
-            <div
-              style={{
-                flex: '0 0 auto',
-                marginRight: '1.5rem',
-              }}
-            >
+        <header style={styles.header}>
+          <div style={styles.headerRow}>
+            <div style={{ flex: '0 0 auto', marginRight: '2rem' }}>
               <img
                 src="https://ablewealth.com/AWM%20Logo%203.png"
                 alt="Able Wealth Management"
-                style={{
-                  width: '180px',
-                  height: 'auto',
-                  display: 'block',
-                }}
+                style={styles.logo}
               />
             </div>
-            <div
-              style={{
-                flex: '1',
-                textAlign: 'right',
-                paddingTop: '0.25rem',
-              }}
-            >
-              <h1
-                style={{
-                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                  fontSize: '16pt',
-                  fontWeight: '600',
-                  margin: 0,
-                  color: '#1f2937',
-                  lineHeight: '0.9',
-                  letterSpacing: '-0.01em',
-                }}
-              >
+            <div style={{ flex: '1', textAlign: 'center' }}>
+              <h1 style={styles.reportTitle}>
                 Tax Optimization Analysis
               </h1>
+              <p style={styles.reportSubtitle}>
+                Comprehensive Strategic Financial Planning Report
+              </p>
             </div>
           </div>
 
@@ -655,7 +754,8 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               </div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Tax Residence</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>📍 Tax Residence</div>
               <div style={styles.metricValue}>
                 {scenario.clientData?.state === 'NJ'
                   ? 'New Jersey'
@@ -665,13 +765,15 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               </div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Filing Status</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>👥 Filing Status</div>
               <div style={styles.metricValue}>
                 {scenario.clientData?.filingStatus || 'Not specified'}
               </div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Projection Years</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>📊 Projection Years</div>
               <div style={styles.metricValue}>{scenario.clientData?.projectionYears || 5}</div>
             </div>
           </div>
@@ -681,30 +783,45 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
           <h2 style={styles.sectionTitle}>Executive Summary</h2>
           <div style={styles.summaryGrid}>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Baseline Tax</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>🏦 Baseline Tax</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.baselineTax)}</div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Optimized Tax</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>⚡ Optimized Tax</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
             </div>
-            <div style={{ ...styles.metric, ...styles.highlightMetric }}>
-              <div style={{ ...styles.metricLabel, color: '#2e7d32' }}>Total Savings</div>
-              <div style={{ ...styles.metricValue, ...styles.highlightValue }}>
+            <div style={{ ...styles.metric, ...styles.successMetric }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#22c55e' }}></div>
+              <div style={{ ...styles.metricLabel, color: '#059669' }}>💰 Total Savings</div>
+              <div style={{ ...styles.metricValue, ...styles.successValue }}>
                 {formatCurrency(safeResults.totalSavings)}
               </div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Tax Rate Reduction</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>📉 Tax Rate Reduction</div>
               <div style={styles.metricValue}>{formatPercentage(savingsPercentage)}</div>
             </div>
             <div style={styles.metric}>
-              <div style={styles.metricLabel}>Capital Allocated</div>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>💼 Capital Allocated</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.capitalAllocated)}</div>
             </div>
-            <div style={styles.metric}>
-              <div style={styles.metricLabel}>ROI on Strategies</div>
-              <div style={styles.metricValue}>
+            <div style={safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.5 ? 
+              { ...styles.metric, ...styles.successMetric } : 
+              safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.2 ? 
+              { ...styles.metric, ...styles.warningMetric } : styles.metric}>
+              <div style={styles.metricAccent}></div>
+              <div style={styles.metricLabel}>📈 ROI on Strategies</div>
+              <div style={{
+                ...styles.metricValue,
+                ...(safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.5 ? 
+                  styles.successValue : 
+                  safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.2 ? 
+                  styles.warningValue : {})
+              }}>
                 {safeResults.capitalAllocated > 0
                   ? formatPercentage(safeResults.totalSavings / safeResults.capitalAllocated)
                   : 'N/A'}
@@ -1089,19 +1206,83 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
           </section>
         )}
 
-        <footer style={styles.footer}>
-          <p>
-            <strong>Disclaimer:</strong> The Advanced Tax Strategy Optimizer is a proprietary
+        {/* Comprehensive Legal Disclaimers */}
+        <div style={styles.legalDisclaimer}>
+          <h3 style={styles.disclaimerTitle}>Important Legal Disclaimers & Disclosures</h3>
+          
+          <div style={styles.disclaimerText}>
+            <strong>Professional Advisory Tool:</strong> The Advanced Tax Strategy Optimizer is a proprietary
             modeling tool developed by Able Wealth Management LLC ("AWM") for internal use by its
-            advisors and planning professionals. This tool presents hypothetical tax optimization
-            scenarios using inputs provided by the user and applies assumptions and tax rules in
-            effect as of May 2025. The outputs generated are for illustrative purposes only and are
-            intended to demonstrate the potential impact of various tax planning strategies under
-            assumed conditions. The results are not a guarantee of future tax savings. Tax laws are
-            complex and subject to change. AWM does not provide legal or tax advice. Please consult
-            with your qualified professional tax advisor and legal counsel before implementing any
-            strategy.
-          </p>
+            advisors and planning professionals. This analysis is provided for informational purposes only
+            and represents hypothetical scenarios based on current tax laws and regulations.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>No Guarantee of Results:</strong> The projections and analyses contained in this report
+            are based on assumptions about future tax laws, market conditions, and personal circumstances.
+            Actual results may vary significantly due to changes in tax legislation, economic conditions,
+            investment performance, and individual circumstances.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>Tax Law Complexity:</strong> Tax laws are complex and subject to frequent changes.
+            The strategies analyzed may have different tax implications depending on individual circumstances,
+            timing of implementation, and changes in federal, state, and local tax laws. Some strategies
+            may be subject to IRS scrutiny or challenge.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>Professional Consultation Required:</strong> This analysis does not constitute legal,
+            tax, or investment advice. Before implementing any strategy, you should consult with qualified
+            professionals including certified public accountants, tax attorneys, and financial advisors
+            who can provide personalized advice based on your specific circumstances.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>Confidentiality:</strong> This report contains confidential and proprietary information.
+            It is intended solely for the use of the named recipient(s) and should not be shared with
+            unauthorized parties without written consent from Able Wealth Management LLC.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>Risk Disclosure:</strong> Investment strategies involve risk including potential loss
+            of principal. Past performance does not guarantee future results. The value of investments
+            and the income from them can fluctuate and may be worth less than originally invested.
+          </div>
+
+          <div style={styles.disclaimerText}>
+            <strong>Regulatory Compliance:</strong> Able Wealth Management LLC is a registered investment
+            adviser. Advisory services are only offered to clients or prospective clients where AWM and
+            its representatives are properly licensed or exempt from licensure.
+          </div>
+        </div>
+
+        <footer style={styles.footer}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            borderTop: '1px solid #cbd5e1',
+            paddingTop: '1rem',
+            marginTop: '1rem'
+          }}>
+            <div>
+              <p style={{ fontSize: '8pt', color: '#64748b', margin: 0 }}>
+                © 2025 Able Wealth Management LLC. All rights reserved.
+              </p>
+              <p style={{ fontSize: '7pt', color: '#9ca3af', margin: 0, marginTop: '0.25rem' }}>
+                Generated: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
+              </p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '8pt', color: '#64748b', margin: 0 }}>
+                Able Wealth Management LLC
+              </p>
+              <p style={{ fontSize: '7pt', color: '#9ca3af', margin: 0, marginTop: '0.25rem' }}>
+                Investment Adviser • SEC Registered
+              </p>
+            </div>
+          </div>
         </footer>
       </div>
     );
@@ -1135,35 +1316,69 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
 
 const InteractionAnalysisDisplay = ({ loading, error, explanation }) => {
   if (loading) {
-    return <p style={styles.loadingText}>Generating explanation of strategy interactions...</p>;
+    return (
+      <div style={{
+        ...styles.insightCard,
+        backgroundColor: '#f0f9ff',
+        borderColor: '#3b82f6',
+        borderLeft: '4px solid #3b82f6',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem'
+      }}>
+        <div style={{
+          width: '20px',
+          height: '20px',
+          border: '2px solid #3b82f6',
+          borderTop: '2px solid transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <div>
+          <div style={{...styles.insightTitle, color: '#1e40af'}}>
+            🤖 AI Analysis in Progress
+          </div>
+          <div style={styles.insightText}>
+            Generating comprehensive strategy interaction analysis...
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div
-        style={{
-          ...styles.loadingText,
-          color: '#dc2626',
-          backgroundColor: '#fef2f2',
-          padding: '1rem',
-          borderRadius: '4px',
-          border: '1px solid #fecaca',
-        }}
-      >
-        <strong>AI Analysis Unavailable:</strong> {error}
-        {error.includes('API key') && (
-          <div style={{ marginTop: '0.5rem', fontSize: '9pt', color: '#991b1b' }}>
-            To enable AI-powered strategy analysis, configure your Gemini API key in the .env file.
-          </div>
-        )}
+      <div style={{
+        ...styles.insightCard,
+        ...styles.errorInsightCard
+      }}>
+        <div style={{...styles.insightTitle, ...styles.errorInsightTitle}}>
+          ⚠️ AI Analysis Unavailable
+        </div>
+        <div style={styles.insightText}>
+          <strong>Error:</strong> {error}
+          {error.includes('API key') && (
+            <div style={{ marginTop: '0.5rem', fontSize: '8pt', color: '#991b1b' }}>
+              Configure your Gemini API key in the .env file to enable AI-powered analysis.
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
-    <p style={styles.interactionText}>
-      {explanation || 'No specific interactions to highlight for the selected strategies.'}
-    </p>
+    <div style={{
+      ...styles.insightCard,
+      ...styles.successInsightCard
+    }}>
+      <div style={{...styles.insightTitle, ...styles.successInsightTitle}}>
+        🧠 AI Strategy Analysis
+      </div>
+      <div style={styles.insightText}>
+        {explanation || 'No specific interactions to highlight for the selected strategies.'}
+      </div>
+    </div>
   );
 };
 
