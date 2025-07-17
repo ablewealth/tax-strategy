@@ -25,7 +25,8 @@
       "Bash(npx react-scripts build:*)",
       "Bash(find:*)",
       "Bash(gtimeout 300 npm run build)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
