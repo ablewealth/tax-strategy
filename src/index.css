@@ -688,6 +688,155 @@ input[type='number'] {
   }
 }
 
+/* Modern Application Styling Fallbacks */
+.bg-gradient-to-br {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+}
+
+.bg-white\/80 {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+.border-white\/50 {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
+.bg-blue-200\/20 {
+  background: rgba(191, 219, 254, 0.2);
+}
+
+.blur-3xl {
+  filter: blur(64px);
+}
+
+/* Header Styling */
+.bg-gradient-to-r.from-slate-50.to-blue-50 {
+  background: linear-gradient(to right, #f8fafc, #eff6ff);
+}
+
+.border-b-2.border-blue-600 {
+  border-bottom: 2px solid #2563eb;
+}
+
+.bg-gradient-to-r.from-blue-600.to-blue-700 {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.hover\\:from-blue-700:hover {
+  background: linear-gradient(to right, #1d4ed8, #1e40af);
+}
+
+.bg-gradient-to-br.from-blue-50.to-indigo-50 {
+  background: linear-gradient(135deg, #eff6ff, #eef2ff);
+}
+
+.border-blue-200 {
+  border-color: #bfdbfe;
+}
+
+.bg-gradient-to-br.from-green-50.to-emerald-50 {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+}
+
+.border-green-200 {
+  border-color: #bbf7d0;
+}
+
+.bg-gradient-to-br.from-yellow-50.to-amber-50 {
+  background: linear-gradient(135deg, #fefce8, #fffbeb);
+}
+
+.border-yellow-200 {
+  border-color: #fde68a;
+}
+
+.text-green-700 {
+  color: #15803d;
+}
+
+.text-yellow-700 {
+  color: #a16207;
+}
+
+.text-blue-700 {
+  color: #1d4ed8;
+}
+
+.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.bg-yellow-500 {
+  background-color: #eab308;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.bg-red-600 {
+  background-color: #dc2626;
+}
+
+.text-blue-900 {
+  color: #1e3a8a;
+}
+
+.text-blue-600 {
+  color: #2563eb;
+}
+
+.text-slate-600 {
+  color: #475569;
+}
+
+.text-slate-700 {
+  color: #334155;
+}
+
+.bg-blue-50\/50 {
+  background-color: rgba(239, 246, 255, 0.5);
+}
+
+.bg-gray-50\/50 {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.ring-blue-100 {
+  box-shadow: 0 0 0 3px rgba(219, 234, 254, 0.5);
+}
+
+.transform {
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\\:-translate-y-0\\.5:hover {
+  --tw-translate-y: -0.125rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\\:-translate-y-1:hover {
+  --tw-translate-y: -0.25rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
 /* Enhanced AI Analysis Formatting */
 .ai-analysis-content {
   /* Typography improvements */
