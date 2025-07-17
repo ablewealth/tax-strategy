@@ -51,22 +51,13 @@ const InputField = React.memo(({ label, value, onChange, placeholder }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-        {isCurrencyField && <span className="text-green-600">💰</span>}
-        {isPercentageField && <span className="text-blue-600">📈</span>}
-        {!isCurrencyField && !isPercentageField && <span className="text-slate-500">📝</span>}
+      <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
         {label}
       </label>
-      <div className={`relative ${isCurrencyField || isPercentageField ? 'input-with-icon' : ''} group`}>
-        {/* Visual accent bar */}
-        <div className={`absolute left-0 top-0 w-1 h-full rounded-l-lg transition-all duration-300 ${
-          isFocused ? 'bg-blue-500' : 'bg-gray-300 group-hover:bg-gray-400'
-        }`}></div>
+      <div className={`relative ${isCurrencyField || isPercentageField ? 'input-with-icon' : ''}`}>
         {isCurrencyField && (
-          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-            <span className={`font-semibold transition-colors duration-200 ${
-              isFocused ? 'text-blue-600' : 'text-slate-500'
-            }`}>$</span>
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-gray-500">$</span>
           </div>
         )}
         <input
@@ -76,14 +67,14 @@ const InputField = React.memo(({ label, value, onChange, placeholder }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={`w-full h-12 sm:h-14 ${isCurrencyField ? 'pl-10' : 'pl-6'} ${isPercentageField ? 'pr-8' : 'pr-4'} 
-            border rounded-lg text-base bg-white transition-all duration-200 font-medium
+          className={`w-full h-12 sm:h-14 ${isCurrencyField ? 'pl-8' : 'px-4'} ${isPercentageField ? 'pr-8' : ''} 
+            border rounded-lg text-base bg-white transition-all duration-200
             ${
               isFocused
-                ? 'border-blue-500 ring-2 ring-blue-100 bg-blue-50/50 shadow-lg'
-                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/50'
+                ? 'border-blue-500 ring-2 ring-blue-200'
+                : 'border-gray-300 hover:border-gray-400'
             }
-            focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500
+            focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500
             touch-manipulation`}
         />
 

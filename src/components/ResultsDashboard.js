@@ -111,7 +111,7 @@ const ResultsDashboard = React.memo(({ results, scenario }) => {
             label="Baseline Tax Liability"
             value={formatCurrency(baselineTax)}
             subtext="Pre-optimization scenario"
-            icon="🏦"
+            icon={null}
             cardType="default"
             delay={0}
           />
@@ -125,7 +125,7 @@ const ResultsDashboard = React.memo(({ results, scenario }) => {
             label="Total Tax Optimization"
             value={formatCurrency(totalSavings)}
             subtext={`${formatPercentage(savingsPercentage)} effective reduction`}
-            icon="💰"
+            icon={null}
             cardType="success"
             delay={200}
           />
@@ -133,7 +133,7 @@ const ResultsDashboard = React.memo(({ results, scenario }) => {
             label="Strategy ROI"
             value={formatPercentage(roi)}
             subtext={`On ${formatCurrency(capitalAllocated)} capital allocated`}
-            icon="📈"
+            icon={null}
             cardType={roi > 0.5 ? 'success' : roi > 0.2 ? 'warning' : 'default'}
             delay={300}
           />

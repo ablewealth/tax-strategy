@@ -360,73 +360,82 @@ Maximum 500 words. Focus on quantified analysis, specific recommendations, and a
       description="AI-powered analysis of strategy interactions and implementation guidance"
     >
       {loadingInteraction ? (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
           <div className="flex flex-col items-center justify-center space-y-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
-                <span className="text-white text-2xl">🤖</span>
-              </div>
-              <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-blue-400 animate-spin"></div>
+              <div className="w-12 h-12 rounded-full bg-blue-100"></div>
+              <div className="absolute inset-0 rounded-full h-12 w-12 border-4 border-transparent border-t-blue-400 animate-spin"></div>
             </div>
             <div className="text-center">
-              <h3 className="text-xl font-bold text-blue-900 mb-2">
-                AI Analysis in Progress
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Analyzing Strategy Interactions
               </h3>
-              <p className="text-blue-700 font-medium">
+              <p className="text-gray-600">
                 Analyzing {enabledStrategies.length} strategies for{' '}
                 {scenario?.clientData?.state || 'your state'} residents
               </p>
-              <div className="mt-4 flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-              </div>
             </div>
           </div>
         </div>
       ) : interactionError ? (
-        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg border border-red-200 p-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+        <div className="bg-white rounded-lg border border-red-200 p-6">
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-full p-3 shadow-lg">
-                <span className="text-white text-xl">⚠️</span>
+              <div className="bg-red-100 rounded-full p-3">
+                <svg
+                  className="w-6 h-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
               </div>
             </div>
             <div className="ml-4 flex-1">
-              <h4 className="text-xl font-bold text-red-900 mb-2">AI Analysis Unavailable</h4>
-              <p className="text-red-700 mb-4 leading-relaxed">{interactionError}</p>
+              <h4 className="text-lg font-semibold text-red-900">Analysis Error</h4>
+              <p className="text-red-700 mt-1">{interactionError}</p>
 
               <div className="mt-4">
                 <button
                   onClick={fetchInteractionExplanation}
                   disabled={loadingInteraction}
-                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-lg text-sm font-semibold disabled:opacity-50 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50"
                 >
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Retry Analysis
-                  </span>
+                  Try Again
                 </button>
               </div>
             </div>
           </div>
         </div>
       ) : interactionExplanation ? (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-8 py-6 border-b border-green-200">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-full p-3 shadow-lg">
-                  <span className="text-white text-xl">🧠</span>
+                <div className="bg-gray-700 rounded-full p-3">
+                  <svg
+                    className="w-6 h-6 text-gray-100"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-green-900">AI Tax Strategy Analysis</h3>
-                  <p className="text-green-700 font-medium">Professional insights and recommendations</p>
+                  <h3 className="text-xl font-bold text-gray-800">Tax Strategy Analysis</h3>
+                  <p className="text-gray-600">Professional insights and recommendations</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
