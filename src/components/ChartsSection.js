@@ -15,8 +15,6 @@ import { formatCurrency } from '../constants'; // Ensure formatCurrency is impor
 
 // Removed 'styles' from props, as it's not needed for the main UI component
 const ChartsSection = React.memo(({ results }) => {
-  if (!results || !results.projections || results.projections.length === 0) return null;
-
   const CustomTooltip = useCallback(({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -36,6 +34,8 @@ const ChartsSection = React.memo(({ results }) => {
     }
     return null;
   }, []);
+
+  if (!results || !results.projections || results.projections.length === 0) return null;
 
   // Prepare data for the tax breakdown chart
   const firstProjection = results.projections[0];
