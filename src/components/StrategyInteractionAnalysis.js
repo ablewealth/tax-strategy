@@ -439,11 +439,9 @@ Please provide specific state tax considerations for comprehensive analysis.`
           }
         } catch (error) {
           clearTimeout(timeoutId);
-          console.error('AI Analysis Error:', error);
           throw error;
         }
       } catch (error) {
-        console.error('Strategy Analysis Error:', error);
         
         if (error.name === 'AbortError') {
           setInteractionError('AI analysis timed out. The service may be busy. Please try again in a few moments.');
