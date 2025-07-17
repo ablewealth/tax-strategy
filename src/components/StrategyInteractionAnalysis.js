@@ -9,6 +9,8 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
   const [interactionError, setInteractionError] = useState('');
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [lastAnalyzedStrategies, setLastAnalyzedStrategies] = useState([]);
+  const [retryCount, setRetryCount] = useState(0);
+  const [showFallbackAnalysis, setShowFallbackAnalysis] = useState(false);
 
   // Update parent component state
   useEffect(() => {
@@ -46,6 +48,139 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
     if (hasAnalyzed && !strategiesChanged) return 'Analysis Complete';
     if (strategiesChanged) return 'Refresh Analysis';
     return 'Generate AI Analysis';
+  };
+
+  // Generate fallback analysis when AI service is unavailable
+  const generateFallbackAnalysis = () => {
+    const clientData = scenario?.clientData || {};
+    const w2Income = clientData.w2Income || 0;
+    const businessIncome = clientData.businessIncome || 0;
+    const clientState = clientData.state || 'Unknown';
+    const stateDisplayName = clientState === 'NY' ? 'New York' : clientState === 'NJ' ? 'New Jersey' : clientState === 'CA' ? 'California' : clientState;
+    
+    const totalSavings = results?.cumulative?.totalSavings || 0;
+    const currentYearSavings = results?.withStrategies?.totalSavings || 0;
+    const baselineTax = results?.cumulative?.baselineTax || 0;
+    const optimizedTax = results?.cumulative?.optimizedTax || 0;
+    const capitalAllocated = results?.cumulative?.capitalAllocated || 0;
+    
+    const federalMarginalRate = businessIncome > 731200 ? 37 : businessIncome > 487450 ? 35 : businessIncome > 383900 ? 32 : 24;
+    const stateMarginalRate = clientState === 'NY' ? 
+      (businessIncome > 25000000 ? 10.9 : businessIncome > 5000000 ? 10.3 : businessIncome > 2155350 ? 9.65 : 6.85) :
+      (businessIncome > 1000000 ? 10.75 : businessIncome > 500000 ? 8.97 : 6.37);
+    
+    const roi = capitalAllocated > 0 ? (totalSavings / capitalAllocated) * 100 : 0;
+    const savingsPercentage = baselineTax > 0 ? (currentYearSavings / baselineTax) * 100 : 0;
+    
+    const sortedStrategies = enabledStrategies
+      .map(strategy => {
+        const inputValue = clientData[strategy.inputRequired] || 0;
+        const federalBenefit = inputValue * (federalMarginalRate / 100);
+        const stateBenefit = inputValue * (stateMarginalRate / 100);
+        return {
+          name: strategy.name,
+          amount: inputValue,
+          federalBenefit,
+          stateBenefit,
+          totalBenefit: federalBenefit + stateBenefit,
+          roi: inputValue > 0 ? ((federalBenefit + stateBenefit) / inputValue) * 100 : 0
+        };
+      })
+      .sort((a, b) => b.totalBenefit - a.totalBenefit);
+    
+    const fallbackAnalysis = `**Executive Summary**
+
+Based on your ${enabledStrategies.length} selected tax strategies, our comprehensive analysis reveals a total optimization potential of $${totalSavings.toLocaleString()} with an effective tax rate reduction of ${Math.round(savingsPercentage)}%. Your strategic portfolio demonstrates strong ROI potential of ${Math.round(roi)}% on $${capitalAllocated.toLocaleString()} in capital allocated. This diversified approach to tax optimization provides multiple pathways to reduce your overall tax burden while managing risk across different strategy types.
+
+**Strategy Portfolio Analysis**
+
+Your tax optimization strategy consists of ${enabledStrategies.length} carefully selected approaches that work together to create substantial tax savings:
+
+${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}**
+   - Capital Deployment: $${s.amount.toLocaleString()}
+   - Federal Tax Benefit: $${Math.round(s.federalBenefit).toLocaleString()}
+   - State Tax Benefit: $${Math.round(s.stateBenefit).toLocaleString()}
+   - Total Annual Benefit: $${Math.round(s.totalBenefit).toLocaleString()}
+   - Strategy ROI: ${Math.round(s.roi)}%
+   - Implementation Notes: This strategy provides ${s.roi > 30 ? 'excellent' : s.roi > 20 ? 'strong' : 'moderate'} returns and ${s.totalBenefit > 100000 ? 'significant' : 'meaningful'} tax savings.`).join('\n\n')}
+
+**Strategy Synergies and Interactions**
+
+Your selected strategies work together in several important ways:
+
+• **Income Reduction Strategies**: ${enabledStrategies.filter(s => s.id.includes('SOLO401K') || s.id.includes('DB_PLAN')).length > 0 ? 'Your retirement plan contributions directly reduce taxable income at both federal and state levels, creating a foundation for additional deductions.' : 'Consider adding retirement plan strategies to create a foundation of income reduction.'}
+
+• **Deduction Amplification**: ${enabledStrategies.filter(s => s.id.includes('EQUIP_S179') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY')).length > 0 ? 'Your business deduction strategies (Section 179, film financing, energy investments) work together to maximize deductions against your highest marginal tax rates.' : 'Business deduction strategies can provide immediate tax relief.'}
+
+• **Capital Management**: ${enabledStrategies.filter(s => s.id.includes('QUANT_DEALS') || s.id.includes('CHAR_CLAT')).length > 0 ? 'Your capital-based strategies provide flexibility in timing and can offset gains from other investments while providing ongoing tax benefits.' : 'Capital management strategies can provide timing flexibility.'}
+
+**${stateDisplayName} State Tax Optimization**
+
+As a ${stateDisplayName} resident with a ${Math.round(federalMarginalRate)}% federal marginal rate and ${Math.round(stateMarginalRate)}% state marginal rate, your tax planning requires careful consideration of state-specific rules and limitations.
+
+${clientState === 'NY' ? 
+  `**New York Tax Environment**: New York generally follows federal tax treatment with some strategic exceptions. Key considerations for your strategies include Section 179 limitations that may require timing adjustments, bonus depreciation add-backs that affect cash flow planning, and the 50% charitable deduction limitation for high-income taxpayers. Your retirement plan contributions receive full state deduction benefits, making them particularly valuable in New York's high-tax environment.` : 
+  clientState === 'NJ' ? 
+  `**New Jersey Tax Environment**: New Jersey has significant departures from federal tax treatment that create both challenges and opportunities. Critical considerations include the $975,000 Section 179 limitation (meaning federal excess requires add-backs), employee 401(k) contribution add-backs that reduce state benefits, no capital loss carryover provisions (use-it-or-lose-it), and full charitable deduction add-backs. However, employer retirement plan contributions and certain business investments maintain their deductibility, making strategic selection crucial.` : 
+  `**State Tax Considerations**: Your state tax environment should be carefully reviewed with your tax advisor to ensure optimal strategy implementation. State-specific limitations and add-backs can significantly impact the effectiveness of federal strategies.`
+}
+
+**Implementation Roadmap**
+
+**Phase 1 - Immediate Implementation (Next 30 days)**
+${sortedStrategies.slice(0, 3).map(s => `• **${s.name}**: Begin implementation immediately due to ${s.roi > 25 ? 'excellent ROI' : 'strong benefits'} and ${s.totalBenefit > 50000 ? 'significant tax impact' : 'material savings'}.`).join('\n')}
+
+**Phase 2 - Short-term Implementation (Next 90 days)**
+${sortedStrategies.slice(3, 6).map(s => `• **${s.name}**: Prepare documentation and coordinate with advisors for systematic implementation.`).join('\n')}
+
+**Phase 3 - Long-term Strategic Positioning (Remainder of 2025)**
+${sortedStrategies.slice(6).map(s => `• **${s.name}**: Position for optimal timing and maximum benefit realization.`).join('\n')}
+
+**Risk Assessment and Mitigation**
+
+**Low Risk Strategies** (Established precedent, minimal audit exposure):
+${sortedStrategies.filter(s => s.id.includes('SOLO401K') || s.id.includes('DB_PLAN')).map(s => `• ${s.name}: Well-established retirement planning with clear regulatory framework.`).join('\n') || '• No low-risk strategies selected in current portfolio.'}
+
+**Medium Risk Strategies** (Require careful documentation):
+${sortedStrategies.filter(s => s.id.includes('EQUIP_S179') || s.id.includes('CHAR_CLAT')).map(s => `• ${s.name}: Requires proper documentation and compliance with regulatory requirements.`).join('\n') || '• No medium-risk strategies selected in current portfolio.'}
+
+**Higher Risk Strategies** (Require enhanced documentation and professional oversight):
+${sortedStrategies.filter(s => s.id.includes('QUANT_DEALS') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY')).map(s => `• ${s.name}: Requires comprehensive documentation and ongoing compliance monitoring.`).join('\n') || '• No higher-risk strategies selected in current portfolio.'}
+
+**Key Performance Metrics**
+
+• **Total Tax Savings**: $${totalSavings.toLocaleString()} over the projection period
+• **Annual Tax Reduction**: $${Math.round(totalSavings / 5).toLocaleString()} average per year
+• **Effective Tax Rate**: Reduced from ${Math.round((baselineTax / (w2Income + businessIncome)) * 100)}% to ${Math.round((optimizedTax / (w2Income + businessIncome)) * 100)}%
+• **Strategy Portfolio ROI**: ${Math.round(roi)}% return on invested capital
+• **Capital Efficiency**: ${Math.round(totalSavings / capitalAllocated)}x multiplier on deployed capital
+
+**Professional Recommendations**
+
+1. **Tax Advisor Coordination**: Engage a qualified tax professional familiar with ${stateDisplayName} tax law for strategy implementation and ongoing compliance.
+
+2. **Annual Review Process**: Establish annual review meetings to assess strategy effectiveness and make adjustments based on changing tax law and personal circumstances.
+
+3. **Documentation Standards**: Maintain comprehensive records for all strategies, particularly those with higher audit risk profiles.
+
+4. **Cash Flow Management**: Coordinate strategy implementation with your financial advisor to ensure adequate liquidity for optimal timing.
+
+**Next Steps for Implementation**
+
+1. **Immediate Action Required**: Begin implementation of your top 3 highest-ROI strategies within the next 30 days to maximize 2025 tax benefits.
+
+2. **Professional Consultation**: Schedule meetings with your tax advisor and financial planner to coordinate strategy implementation and ensure compliance.
+
+3. **Documentation Preparation**: Gather all necessary documentation for strategy implementation, including business records, investment documentation, and compliance materials.
+
+4. **Monitoring Protocol**: Establish quarterly review processes to track strategy performance and make necessary adjustments.
+
+**Important Disclaimer**: This analysis is based on current tax law and your provided information. Tax laws may change, and individual circumstances vary significantly. This analysis should not be considered as tax advice, and you should consult with a qualified tax professional before implementing any strategies. The calculations shown are estimates based on current marginal tax rates and may not reflect actual tax savings due to various factors including Alternative Minimum Tax, Net Investment Income Tax, and other limitations.
+
+---
+*This analysis was generated when the AI service was temporarily unavailable. For more detailed insights about strategy interactions, timing considerations, and advanced planning opportunities, please try the full AI analysis when the service is restored.*`;
+    
+    return fallbackAnalysis;
   };
 
   const fetchInteractionExplanation = async () => {
@@ -304,13 +439,28 @@ Please provide specific state tax considerations for comprehensive analysis.`
           }
         } catch (error) {
           clearTimeout(timeoutId);
+          console.error('AI Analysis Error:', error);
           throw error;
         }
       } catch (error) {
+        console.error('Strategy Analysis Error:', error);
+        
         if (error.name === 'AbortError') {
-          setInteractionError('Request timed out. Please try again.');
+          setInteractionError('AI analysis timed out. The service may be busy. Please try again in a few moments.');
+        } else if (error.message.includes('503') || error.message.includes('busy')) {
+          setInteractionError('AI service is temporarily busy. Please try again in a few moments.');
+        } else if (error.message.includes('Backend URL')) {
+          setInteractionError('AI analysis service is not configured. Please contact support.');
         } else {
-          setInteractionError(`Analysis failed: ${error.message}`);
+          setInteractionError(`AI analysis temporarily unavailable: ${error.message}`);
+        }
+        
+        // Increment retry count
+        setRetryCount(prev => prev + 1);
+        
+        // Show fallback analysis after 2 failed attempts
+        if (retryCount >= 1) {
+          setShowFallbackAnalysis(true);
         }
       } finally {
         setLoadingInteraction(false);
@@ -370,24 +520,56 @@ Please provide specific state tax considerations for comprehensive analysis.`
               <h4 className="text-lg font-semibold text-red-900">Analysis Error</h4>
               <p className="text-red-700 mt-1">{interactionError}</p>
 
-              <div className="mt-4">
-                <button
-                  onClick={fetchInteractionExplanation}
-                  disabled={loadingInteraction}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50"
-                >
-                  Try Again
-                </button>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={fetchInteractionExplanation}
+                    disabled={loadingInteraction}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50"
+                  >
+                    Try Again
+                  </button>
+                  
+                  {retryCount >= 1 && (
+                    <button
+                      onClick={() => {
+                        const fallbackAnalysis = generateFallbackAnalysis();
+                        setInteractionExplanation(fallbackAnalysis);
+                        setShowFallbackAnalysis(true);
+                        setInteractionError('');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    >
+                      Show Basic Analysis
+                    </button>
+                  )}
+                </div>
+                
+                {retryCount >= 1 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                    <div className="flex">
+                      <svg className="w-5 h-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <div>
+                        <h4 className="text-sm font-medium text-yellow-800">AI Service Temporarily Unavailable</h4>
+                        <p className="text-sm text-yellow-700 mt-1">
+                          The AI analysis service is experiencing high demand. You can try again in a few minutes or view a basic analysis of your selected strategies.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       ) : interactionExplanation ? (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
+          <div className={`px-8 py-6 border-b border-gray-200 ${showFallbackAnalysis ? 'bg-yellow-50' : 'bg-gray-50'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-gray-700 rounded-full p-3">
+                <div className={`rounded-full p-3 ${showFallbackAnalysis ? 'bg-yellow-600' : 'bg-gray-700'}`}>
                   <svg
                     className="w-6 h-6 text-gray-100"
                     fill="none"
@@ -403,8 +585,19 @@ Please provide specific state tax considerations for comprehensive analysis.`
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">Tax Strategy Analysis</h3>
-                  <p className="text-gray-600">Professional insights and recommendations</p>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-gray-800">
+                      {showFallbackAnalysis ? 'Basic Tax Strategy Analysis' : 'Tax Strategy Analysis'}
+                    </h3>
+                    {showFallbackAnalysis && (
+                      <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        Fallback Mode
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-600">
+                    {showFallbackAnalysis ? 'Fundamental insights and recommendations' : 'Professional insights and recommendations'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -426,22 +619,60 @@ Please provide specific state tax considerations for comprehensive analysis.`
                     <span>Strategies updated</span>
                   </div>
                 )}
-                <button
-                  onClick={fetchInteractionExplanation}
-                  disabled={loadingInteraction}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    strategiesChanged
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white hover:shadow-md'
-                      : 'bg-slate-600 hover:bg-slate-700 text-white'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {getButtonText()}
-                </button>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={fetchInteractionExplanation}
+                    disabled={loadingInteraction}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      strategiesChanged
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white hover:shadow-md'
+                        : 'bg-slate-600 hover:bg-slate-700 text-white'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {getButtonText()}
+                  </button>
+                  {showFallbackAnalysis && (
+                    <button
+                      onClick={() => {
+                        setShowFallbackAnalysis(false);
+                        setRetryCount(0);
+                        fetchInteractionExplanation();
+                      }}
+                      disabled={loadingInteraction}
+                      className="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Try Full AI Analysis
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           <div className="px-8 py-8 bg-white">
+            {showFallbackAnalysis && (
+              <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Basic Analysis Mode
+                    </h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <p>
+                        This analysis was generated using our fallback system while the AI service was temporarily unavailable. 
+                        While comprehensive, it provides fundamental insights rather than the advanced AI-powered analysis. 
+                        For more detailed strategy interactions and personalized recommendations, please try the full AI analysis above.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="max-w-none">{formatAIAnalysis(interactionExplanation)}</div>
           </div>
 
@@ -462,7 +693,7 @@ Please provide specific state tax considerations for comprehensive analysis.`
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span>Powered by AI</span>
+                  <span>{showFallbackAnalysis ? 'Basic Analysis' : 'Powered by AI'}</span>
                 </div>
                 <div className="flex items-center">
                   <svg

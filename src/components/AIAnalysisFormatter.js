@@ -8,15 +8,15 @@ import React from 'react';
 export const formatAIAnalysis = (text) => {
   if (!text) return null;
 
-  // Split text into lines and process each line
-  const lines = text.split('\n').filter(line => line.trim());
+  // Split text into blocks separated by double line breaks to preserve paragraph structure
+  const blocks = text.split('\n\n').filter(block => block.trim());
   
-  const formattedContent = lines.map((line, index) => {
-    const trimmedLine = line.trim();
+  const formattedContent = blocks.map((block, index) => {
+    const trimmedBlock = block.trim();
     
     // Handle headers (lines starting with **)
-    if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
-      const headerText = trimmedLine.slice(2, -2);
+    if (trimmedBlock.startsWith('**') && trimmedBlock.endsWith('**')) {
+      const headerText = trimmedBlock.slice(2, -2);
       
       // Different styles for different header types
       if (headerText === 'Executive Summary') {
@@ -40,31 +40,71 @@ export const formatAIAnalysis = (text) => {
       }
     }
     
-    // Handle bullet points
-    if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('" ')) {
-      const bulletText = trimmedLine.substring(2);
+    // Handle bullet point blocks (multiple lines starting with bullet points)
+    if (trimmedBlock.includes('\n') && (trimmedBlock.startsWith('- ') || trimmedBlock.startsWith('• '))) {
+      const bulletLines = trimmedBlock.split('\n').filter(line => line.trim());
       return (
-        <li key={index} className="text-gray-700 leading-relaxed mb-2">
-          {formatInlineText(bulletText)}
-        </li>
+        <ul key={index} className="list-disc list-inside space-y-2 mb-4">
+          {bulletLines.map((line, lineIndex) => {
+            const bulletText = line.trim().replace(/^[-•]\s/, '');
+            return (
+              <li key={`${index}-${lineIndex}`} className="text-gray-700 leading-relaxed">
+                {formatInlineText(bulletText)}
+              </li>
+            );
+          })}
+        </ul>
       );
     }
     
-    // Handle numbered lists
-    if (/^\d+\.\s/.test(trimmedLine)) {
-      const numberText = trimmedLine.replace(/^\d+\.\s/, '');
+    // Handle numbered list blocks
+    if (trimmedBlock.includes('\n') && /^\d+\.\s/.test(trimmedBlock)) {
+      const numberLines = trimmedBlock.split('\n').filter(line => line.trim());
       return (
-        <li key={index} className="text-gray-700 leading-relaxed mb-2">
-          {formatInlineText(numberText)}
-        </li>
+        <ol key={index} className="list-decimal list-inside space-y-2 mb-4">
+          {numberLines.map((line, lineIndex) => {
+            const numberText = line.trim().replace(/^\d+\.\s/, '');
+            return (
+              <li key={`${index}-${lineIndex}`} className="text-gray-700 leading-relaxed">
+                {formatInlineText(numberText)}
+              </li>
+            );
+          })}
+        </ol>
       );
     }
     
-    // Handle regular paragraphs
-    if (trimmedLine.length > 0) {
+    // Handle single line bullet points
+    if (trimmedBlock.startsWith('- ') || trimmedBlock.startsWith('• ')) {
+      const bulletText = trimmedBlock.substring(2);
+      return (
+        <ul key={index} className="list-disc list-inside mb-4">
+          <li className="text-gray-700 leading-relaxed">
+            {formatInlineText(bulletText)}
+          </li>
+        </ul>
+      );
+    }
+    
+    // Handle single line numbered items
+    if (/^\d+\.\s/.test(trimmedBlock)) {
+      const numberText = trimmedBlock.replace(/^\d+\.\s/, '');
+      return (
+        <ol key={index} className="list-decimal list-inside mb-4">
+          <li className="text-gray-700 leading-relaxed">
+            {formatInlineText(numberText)}
+          </li>
+        </ol>
+      );
+    }
+    
+    // Handle regular paragraphs (preserve line breaks within paragraphs)
+    if (trimmedBlock.length > 0) {
+      // Replace single line breaks with spaces to keep sentences together
+      const paragraphText = trimmedBlock.replace(/\n/g, ' ').replace(/\s+/g, ' ');
       return (
         <p key={index} className="text-gray-700 leading-relaxed mb-4">
-          {formatInlineText(trimmedLine)}
+          {formatInlineText(paragraphText)}
         </p>
       );
     }
