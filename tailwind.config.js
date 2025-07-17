@@ -6,33 +6,62 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Enhanced primary colors
         'primary-navy': 'var(--primary-navy)',
+        'primary-navy-light': 'var(--primary-navy-light)',
+        'primary-navy-dark': 'var(--primary-navy-dark)',
         'primary-blue': 'var(--primary-blue)',
+        'primary-blue-light': 'var(--primary-blue-light)',
+        'primary-blue-dark': 'var(--primary-blue-dark)',
+        
+        // Enhanced accent colors
         'accent-gold': 'var(--accent-gold)',
         'accent-gold-light': 'var(--accent-gold-light)',
+        'accent-gold-dark': 'var(--accent-gold-dark)',
+        
+        // Text colors
         'text-primary': 'var(--text-primary)',
         'text-secondary': 'var(--text-secondary)',
         'text-muted': 'var(--text-muted)',
+        
+        // Background colors
         'background-primary': 'var(--background-primary)',
         'background-secondary': 'var(--background-secondary)',
         'background-tertiary': 'var(--background-tertiary)',
+        
+        // Border colors
         'border-primary': 'var(--border-primary)',
         'border-secondary': 'var(--border-secondary)',
+        
+        // Status colors
         'success': 'var(--success)',
+        'success-light': 'var(--success-light)',
         'warning': 'var(--warning)',
+        'warning-light': 'var(--warning-light)',
+        'error': 'var(--error)',
+        'error-light': 'var(--error-light)',
+        'info': 'var(--info)',
+        'info-light': 'var(--info-light)',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         serif: ['"Playfair Display"', 'serif'],
+        'times': ['"Times New Roman"', 'Times', 'serif'],
       },
       boxShadow: {
+        'sm': 'var(--shadow-sm)',
         'md': 'var(--shadow-md)',
         'lg': 'var(--shadow-lg)',
+        'xl': 'var(--shadow-xl)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
       },
       borderRadius: {
+        'sm': 'var(--radius-sm)',
         'md': 'var(--radius-md)',
         'lg': 'var(--radius-lg)',
         'xl': 'var(--radius-xl)',
+        'full': 'var(--radius-full)',
       },
       spacing: {
         '18': '4.5rem',
@@ -55,7 +84,41 @@ module.exports = {
         '2xl': ['1.5rem', { lineHeight: '1.3' }],
         '3xl': ['1.875rem', { lineHeight: '1.3' }],
         '4xl': ['2.25rem', { lineHeight: '1.2' }],
-      }
+      },
+      backgroundImage: {
+        'gradient-blue': 'var(--gradient-blue)',
+        'gradient-navy': 'var(--gradient-navy)',
+        'gradient-gold': 'var(--gradient-gold)',
+        'gradient-success': 'var(--gradient-success)',
+        'gradient-warning': 'var(--gradient-warning)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.5s ease-in-out',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        pulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+      },
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
+      },
+      transitionDuration: {
+        '250': '250ms',
+        '350': '350ms',
+      },
     },
     screens: {
       'xs': '475px',
