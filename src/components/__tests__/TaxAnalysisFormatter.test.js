@@ -37,7 +37,7 @@ describe('TaxAnalysisFormatter', () => {
       const strategies = [
         { id: 'A', inputRequired: 'a' },
         { id: 'B', inputRequired: 'b' },
-        { id: 'C', inputRequired: 'c' }
+        { id: 'C', inputRequired: 'c' },
       ];
       const clientData = { a: 100, b: 0, c: null };
       const filtered = formatter.filterNonZeroResults(strategies, clientData);
@@ -47,7 +47,7 @@ describe('TaxAnalysisFormatter', () => {
     test('returns all strategies if all have positive values', () => {
       const strategies = [
         { id: 'A', inputRequired: 'a' },
-        { id: 'B', inputRequired: 'b' }
+        { id: 'B', inputRequired: 'b' },
       ];
       const clientData = { a: 1, b: 2 };
       const filtered = formatter.filterNonZeroResults(strategies, clientData);

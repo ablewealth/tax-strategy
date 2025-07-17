@@ -1,17 +1,17 @@
 import React from 'react';
 
-const Header = ({ onPrint, clientName }) => {
+const Header = React.memo(({ onPrint, clientName }) => {
   const today = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       {/* Blue accent line */}
       <div className="h-1 bg-gradient-to-r from-primary-blue to-primary-blue-light"></div>
-      
+
       <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
           {/* Logo and Company Info */}
@@ -64,6 +64,6 @@ const Header = ({ onPrint, clientName }) => {
       </div>
     </div>
   );
-};
+});
 
 export default Header;

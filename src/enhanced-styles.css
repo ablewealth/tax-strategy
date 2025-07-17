@@ -14,13 +14,13 @@
   --success-light: #d1fae5;
   --warning: #d97706;
   --warning-light: #fef3c7;
-  
+
   /* Light backgrounds */
   --bg-white: #ffffff;
   --bg-gray-50: #f9fafb;
   --bg-gray-100: #f3f4f6;
   --bg-blue-50: #eff6ff;
-  
+
   /* Text colors */
   --text-dark: #111827;
   --text-medium: #4b5563;
@@ -31,7 +31,9 @@
 .card {
   background: var(--bg-white);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
@@ -39,13 +41,17 @@
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .card-premium {
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   border: 1px solid #e5e7eb;
   position: relative;
@@ -71,7 +77,9 @@
   margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   border: 1px solid #e5e7eb;
 }
 
@@ -89,7 +97,9 @@
 .metric-card {
   background: var(--bg-white);
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06);
   padding: 1.25rem;
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
@@ -99,7 +109,9 @@
 
 .metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .metric-card::after {
@@ -155,7 +167,9 @@
 
 .insight-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .insight-card.success {
@@ -232,7 +246,7 @@
 }
 
 .input-currency::before {
-  content: "$";
+  content: '$';
   position: absolute;
   left: 1rem;
   top: 50%;
@@ -255,13 +269,23 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Light Header Override */
@@ -269,7 +293,9 @@ header {
   background: var(--bg-white) !important;
   color: var(--text-dark) !important;
   padding: 1rem !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
   border-bottom: 1px solid #e5e7eb !important;
 }
 
@@ -302,7 +328,9 @@ header button:hover {
 .section {
   background: var(--bg-white) !important;
   border-radius: 0.75rem !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
   overflow: hidden !important;
   margin-bottom: 1.5rem !important;
   border: 1px solid #e5e7eb !important;
@@ -337,7 +365,9 @@ header button:hover {
   color: var(--text-dark) !important;
   border-radius: 0.75rem !important;
   padding: 1.5rem !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
   border: 1px solid #e5e7eb !important;
 }
 
@@ -355,19 +385,19 @@ header button:hover {
 /* Print Styles */
 @media print {
   body {
-    font-family: "Times New Roman", Times, serif !important;
+    font-family: 'Times New Roman', Times, serif !important;
     color: black !important;
   }
-  
+
   .print-header {
     position: relative !important;
     border-bottom: 2px solid black !important;
     padding-bottom: 1cm !important;
     margin-bottom: 1cm !important;
   }
-  
+
   .print-header::after {
-    content: "CONFIDENTIAL" !important;
+    content: 'CONFIDENTIAL' !important;
     position: absolute !important;
     top: 0.5cm !important;
     right: 0 !important;

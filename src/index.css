@@ -7,33 +7,33 @@
   --primary-blue: #1e40af;
   --primary-blue-light: #3b82f6;
   --primary-blue-dark: #1e3a8a;
-  
+
   /* Gradient definitions */
   --gradient-blue: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
   --gradient-navy: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   --gradient-gold: linear-gradient(135deg, #d4af37 0%, #f4e5a1 100%);
   --gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
   --gradient-warning: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-  
+
   /* Enhanced accent colors */
   --accent-gold: #d4af37;
   --accent-gold-light: #f4e5a1;
   --accent-gold-dark: #b7952e;
-  
+
   /* Text colors with better contrast */
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
-  
+
   /* Background colors */
   --background-primary: #ffffff;
   --background-secondary: #f8fafc;
   --background-tertiary: #f1f5f9;
-  
+
   /* Border colors */
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e1;
-  
+
   /* Status colors with better contrast */
   --success: #059669;
   --success-light: #d1fae5;
@@ -43,24 +43,25 @@
   --error-light: #fee2e2;
   --info: #2563eb;
   --info-light: #dbeafe;
-  
+
   /* Enhanced shadows for better depth */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
-  
+
   /* Card shadows with subtle color tint */
   --shadow-card: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
-  --shadow-card-hover: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
-  
+  --shadow-card-hover:
+    0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+
   /* Border radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
-  
+
   /* Animation speeds */
   --transition-fast: 150ms;
   --transition-normal: 250ms;
@@ -86,7 +87,9 @@ body {
   background: var(--background-primary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  transition: box-shadow var(--transition-normal) ease, transform var(--transition-normal) ease;
+  transition:
+    box-shadow var(--transition-normal) ease,
+    transform var(--transition-normal) ease;
 }
 
 .card:hover {
@@ -134,7 +137,9 @@ select {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-secondary);
   padding: 0.75rem 1rem;
-  transition: border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+  transition:
+    border-color var(--transition-fast) ease,
+    box-shadow var(--transition-fast) ease;
 }
 
 /* Improved input fields with visual indicators for currency */
@@ -145,7 +150,7 @@ select {
 }
 
 .input-currency::before {
-  content: "$";
+  content: '$';
   position: absolute;
   left: 1rem;
   color: var(--text-secondary);
@@ -186,7 +191,9 @@ input[type='checkbox'] {
   cursor: pointer;
   border-radius: var(--radius-sm);
   border: 2px solid var(--border-secondary);
-  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  transition:
+    background-color var(--transition-fast) ease,
+    border-color var(--transition-fast) ease;
 }
 
 input[type='checkbox']:checked {
@@ -367,7 +374,9 @@ input[type='number'] {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 1.25rem;
-  transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+  transition:
+    transform var(--transition-normal) ease,
+    box-shadow var(--transition-normal) ease;
   border: 1px solid var(--border-primary);
   overflow: hidden;
   position: relative;
@@ -428,7 +437,9 @@ input[type='number'] {
   position: relative;
   overflow: hidden;
   border: 1px solid transparent;
-  transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+  transition:
+    transform var(--transition-normal) ease,
+    box-shadow var(--transition-normal) ease;
 }
 
 .insight-card:hover {
@@ -562,15 +573,20 @@ input[type='number'] {
 
   /* Professional typography for print */
   body {
-    font-family: "Times New Roman", Times, serif !important;
+    font-family: 'Times New Roman', Times, serif !important;
     font-size: 12pt !important;
     line-height: 1.4 !important;
     color: #000000 !important;
     background: #ffffff !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: "Times New Roman", Times, serif !important;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Times New Roman', Times, serif !important;
     color: #000000 !important;
     page-break-after: avoid !important;
   }
@@ -584,7 +600,7 @@ input[type='number'] {
   }
 
   .print-header::after {
-    content: "CONFIDENTIAL";
+    content: 'CONFIDENTIAL';
     position: absolute;
     top: 0.5cm;
     right: 0;
@@ -621,7 +637,8 @@ input[type='number'] {
     margin-bottom: 1cm !important;
   }
 
-  th, td {
+  th,
+  td {
     border: 1px solid #000000 !important;
     padding: 0.3cm !important;
     text-align: left !important;
@@ -835,7 +852,8 @@ input[type='number'] {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

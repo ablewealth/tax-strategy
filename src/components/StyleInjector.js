@@ -4,7 +4,7 @@ const StyleInjector = () => {
   useEffect(() => {
     // Create a style element
     const styleElement = document.createElement('style');
-    
+
     // Add our enhanced CSS
     styleElement.textContent = `
       /* Enhanced Color System with Gradients */
@@ -122,16 +122,16 @@ const StyleInjector = () => {
         pointer-events: none;
       }
     `;
-    
+
     // Append the style element to the head
     document.head.appendChild(styleElement);
-    
+
     // Clean up function to remove the style element when the component unmounts
     return () => {
       document.head.removeChild(styleElement);
     };
   }, []);
-  
+
   return null; // This component doesn't render anything
 };
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrencyForDisplay, parseCurrencyInput } from '../constants';
 
-const InputField = ({ label, value, onChange, placeholder }) => {
+const InputField = React.memo(({ label, value, onChange, placeholder }) => {
   // State for display value is now only for currency fields
   const isCurrencyField = label !== 'Client Name' && label !== 'Income Growth Rate (%)';
   const isPercentageField = label === 'Income Growth Rate (%)';
-  
+
   const [displayValue, setDisplayValue] = useState(
     isCurrencyField && value ? formatCurrencyForDisplay(value) : value || ''
   );
@@ -69,14 +69,15 @@ const InputField = ({ label, value, onChange, placeholder }) => {
           placeholder={placeholder}
           className={`w-full h-12 sm:h-14 ${isCurrencyField ? 'pl-8' : 'px-4'} ${isPercentageField ? 'pr-8' : ''} 
             border rounded-lg text-base bg-white transition-all duration-200
-            ${isFocused 
-              ? 'border-blue-500 ring-2 ring-blue-200' 
-              : 'border-gray-300 hover:border-gray-400'
+            ${
+              isFocused
+                ? 'border-blue-500 ring-2 ring-blue-200'
+                : 'border-gray-300 hover:border-gray-400'
             }
             focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500
             touch-manipulation`}
         />
-        
+
         {isPercentageField && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
             <span className="text-gray-500">%</span>
@@ -85,6 +86,6 @@ const InputField = ({ label, value, onChange, placeholder }) => {
       </div>
     </div>
   );
-};
+});
 
 export default InputField;

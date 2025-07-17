@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   CartesianGrid,
   XAxis,
@@ -14,10 +14,10 @@ import Section from './Section';
 import { formatCurrency } from '../constants'; // Ensure formatCurrency is imported
 
 // Removed 'styles' from props, as it's not needed for the main UI component
-const ChartsSection = ({ results }) => {
+const ChartsSection = React.memo(({ results }) => {
   if (!results || !results.projections || results.projections.length === 0) return null;
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = useCallback(({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 sm:p-4 rounded-lg border-2 border-gray-300 shadow-xl max-w-xs">
@@ -35,7 +35,7 @@ const ChartsSection = ({ results }) => {
       );
     }
     return null;
-  };
+  }, []);
 
   // Prepare data for the tax breakdown chart
   const firstProjection = results.projections[0];
@@ -181,6 +181,6 @@ const ChartsSection = ({ results }) => {
       )}
     </Section>
   );
-};
+});
 
 export default ChartsSection;

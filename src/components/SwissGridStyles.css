@@ -2,7 +2,12 @@
 
 /* Base Typography */
 .swiss-grid-analysis {
-  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Inter',
+    'Roboto',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: #1f2937;
@@ -332,28 +337,28 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .swiss-grid-analysis .grid-half,
   .swiss-grid-analysis .grid-third,
   .swiss-grid-analysis .grid-quarter {
     grid-column: 1 / -1;
   }
-  
+
   .swiss-grid-analysis .risk-container,
   .swiss-grid-analysis .timeline-container {
     grid-template-columns: 1fr;
   }
-  
+
   .swiss-grid-analysis .section-content {
     padding: 1rem;
   }
-  
+
   .swiss-grid-analysis .ranking-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .swiss-grid-analysis .ranking-left {
     width: 100%;
   }

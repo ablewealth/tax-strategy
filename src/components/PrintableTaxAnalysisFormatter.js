@@ -128,7 +128,7 @@ const printStyles = {
  */
 const formatPrintCurrency = (value) => {
   if (value === 0 || value === null || value === undefined) return null;
-  
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -143,16 +143,16 @@ const formatPrintCurrency = (value) => {
 const extractPrintStrategyRankings = (text) => {
   const rankingSection = text.match(/\\*\\*Strategy Effectiveness Ranking\\*\\*(.*?)(?=\\*\\*|$)/s);
   if (!rankingSection) return null;
-  
+
   const rankings = [];
-  const lines = rankingSection[1].split('\\n').filter(line => line.trim());
-  
-  lines.forEach(line => {
+  const lines = rankingSection[1].split('\\n').filter((line) => line.trim());
+
+  lines.forEach((line) => {
     const match = line.match(/(\\d+)\\.\\ *(.+?)\\ *-\\ *\\$([0-9,]+)/);
     if (match) {
       const [, rank, strategy, amount] = match;
       const numericAmount = parseInt(amount.replace(/,/g, ''));
-      
+
       // Only include if amount > 0
       if (numericAmount > 0) {
         rankings.push({
@@ -164,7 +164,7 @@ const extractPrintStrategyRankings = (text) => {
       }
     }
   });
-  
+
   return rankings.length > 0 ? rankings : null;
 };
 
@@ -174,23 +174,35 @@ const extractPrintStrategyRankings = (text) => {
 const extractPrintRiskAssessment = (text) => {
   const riskSection = text.match(/\\*\\*Risk Assessment.*?\\*\\*(.*?)(?=\\*\\*|$)/s);
   if (!riskSection) return null;
-  
+
   const riskData = {
     low: [],
     medium: [],
     high: [],
   };
-  
+
   const content = riskSection[1];
-  
+
   const lowRisk = content.match(/\\*\\*Low Risk Strategies:\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
   const mediumRisk = content.match(/\\*\\*Medium Risk Strategies:\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
   const highRisk = content.match(/\\*\\*High Risk Strategies:\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
-  
-  if (lowRisk) riskData.low = lowRisk.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  if (mediumRisk) riskData.medium = mediumRisk.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  if (highRisk) riskData.high = highRisk.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  
+
+  if (lowRisk)
+    riskData.low = lowRisk
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+  if (mediumRisk)
+    riskData.medium = mediumRisk
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+  if (highRisk)
+    riskData.high = highRisk
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+
   return riskData;
 };
 
@@ -200,23 +212,35 @@ const extractPrintRiskAssessment = (text) => {
 const extractPrintImplementationPlan = (text) => {
   const planSection = text.match(/\\*\\*Implementation Priority Matrix\\*\\*(.*?)(?=\\*\\*|$)/s);
   if (!planSection) return null;
-  
+
   const timeline = {
     immediate: [],
     shortTerm: [],
     longTerm: [],
   };
-  
+
   const content = planSection[1];
-  
+
   const immediate = content.match(/\\*\\*Immediate.*?\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
   const shortTerm = content.match(/\\*\\*Short-term.*?\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
   const longTerm = content.match(/\\*\\*Long-term.*?\\*\\*(.*?)(?=\\*\\*|$)/s)?.[1];
-  
-  if (immediate) timeline.immediate = immediate.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  if (shortTerm) timeline.shortTerm = shortTerm.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  if (longTerm) timeline.longTerm = longTerm.split('\\n').filter(line => line.trim().startsWith('-')).map(line => line.trim().substring(1).trim());
-  
+
+  if (immediate)
+    timeline.immediate = immediate
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+  if (shortTerm)
+    timeline.shortTerm = shortTerm
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+  if (longTerm)
+    timeline.longTerm = longTerm
+      .split('\\n')
+      .filter((line) => line.trim().startsWith('-'))
+      .map((line) => line.trim().substring(1).trim());
+
   return timeline;
 };
 
@@ -225,11 +249,11 @@ const extractPrintImplementationPlan = (text) => {
  */
 export const formatPrintableTaxAnalysis = (text) => {
   if (!text) return null;
-  
+
   const rankings = extractPrintStrategyRankings(text);
   const riskAssessment = extractPrintRiskAssessment(text);
   const implementationPlan = extractPrintImplementationPlan(text);
-  
+
   return (
     <div style={printStyles.container}>
       {/* Strategy Rankings */}
@@ -250,15 +274,13 @@ export const formatPrintableTaxAnalysis = (text) => {
                     )}
                   </div>
                 </div>
-                <div style={printStyles.currencyValue}>
-                  {formatPrintCurrency(ranking.amount)}
-                </div>
+                <div style={printStyles.currencyValue}>{formatPrintCurrency(ranking.amount)}</div>
               </div>
             ))}
           </div>
         </div>
       )}
-      
+
       {/* Risk Assessment */}
       {riskAssessment && (
         <div style={printStyles.section}>
@@ -300,7 +322,7 @@ export const formatPrintableTaxAnalysis = (text) => {
           </div>
         </div>
       )}
-      
+
       {/* Implementation Timeline */}
       {implementationPlan && (
         <div style={printStyles.section}>

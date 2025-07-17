@@ -81,15 +81,6 @@ export default function App() {
   const handlePrint = () => {
     const printContainer = document.getElementById('print-mount');
     if (!printContainer) {
-      logger.error('Print container not found');
-      alert('Print functionality is not available. Please refresh the page and try again.');
-      return;
-    }
-
-    // Validate required data
-    if (!scenario || !calculationResults) {
-      logger.error('Required data not available for printing');
-      alert('Cannot generate report: Required data is missing. Please ensure all fields are completed.');
       return;
     }
 
@@ -98,6 +89,8 @@ export default function App() {
 
     try {
       // Check if analysis is available
+
+      // Check if we have analysis or if it's still loading
       if (strategyAnalysis.loading) {
         alert(
           'Analysis is still generating. Please wait for the analysis to complete before printing.'
@@ -117,50 +110,31 @@ export default function App() {
 
       // Print component rendered, starting print
       setTimeout(() => {
-        try {
-          window.print();
-        } catch (printError) {
-          logger.error('Error during print:', printError);
-          alert('Print failed. Please try again or use your browser\'s print function.');
-        }
+        window.print();
       }, 100);
     } catch (error) {
       logger.error('Error rendering PrintableReport:', error);
-      
-      // Validate fallback data
-      const safeClientName = scenario?.clientData?.clientName || 'Unknown Client';
-      const safeBaselineTax = calculationResults?.cumulative?.baselineTax || 0;
-      const safeOptimizedTax = calculationResults?.cumulative?.optimizedTax || 0;
-      const safeTotalSavings = calculationResults?.cumulative?.totalSavings || 0;
-      
       // Fallback: create a simple HTML report
       printContainer.innerHTML = `
                 <div style="padding: 2cm; font-family: Arial, sans-serif;">
                     <h1>Tax Optimization Report</h1>
-                    <p><strong>Client:</strong> ${safeClientName}</p>
+                    <p><strong>Client:</strong> ${scenario.clientData.clientName}</p>
                     <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
                     
                     <h2>Summary</h2>
-                    <p>Baseline Tax: ${formatCurrency(safeBaselineTax)}</p>
-                    <p>Optimized Tax: ${formatCurrency(safeOptimizedTax)}</p>
-                    <p>Total Savings: ${formatCurrency(safeTotalSavings)}</p>
+                    <p>Baseline Tax: ${formatCurrency(calculationResults?.cumulative?.baselineTax || 0)}</p>
+                    <p>Optimized Tax: ${formatCurrency(calculationResults?.cumulative?.optimizedTax || 0)}</p>
+                    <p>Total Savings: ${formatCurrency(calculationResults?.cumulative?.totalSavings || 0)}</p>
                     
+                    <p>Charts Section: [Charts would be here in full report]</p>
                     <p style="margin-top: 2rem; font-size: 0.8rem; color: #666;">
-                        This is a simplified report due to a rendering error. For full details, please refresh the page and try again.
-                    </p>
-                    <p style="font-size: 0.8rem; color: #666;">
-                        Error: ${error.message || 'Unknown error occurred'}
+                        This is a simplified report. For full details, please ensure all data is properly loaded.
                     </p>
                 </div>
             `;
 
       setTimeout(() => {
-        try {
-          window.print();
-        } catch (printError) {
-          logger.error('Error during fallback print:', printError);
-          alert('Print failed. Please try copying the report content manually.');
-        }
+        window.print();
       }, 100);
     }
   };

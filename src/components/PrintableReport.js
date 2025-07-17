@@ -334,7 +334,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
   const interactionExplanation = strategyAnalysis?.explanation || '';
   const loadingInteraction = strategyAnalysis?.loading || false;
   const interactionError = strategyAnalysis?.error || '';
-  
+
   // Analysis is provided from the main app component via props
 
   // Add error boundary logging
@@ -492,115 +492,142 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
       <div ref={ref} style={styles.page}>
         {/* Confidential watermark */}
         <div style={styles.watermark}>CONFIDENTIAL</div>
-        
-        <header style={{
-          marginBottom: '2rem',
-          position: 'relative',
-          width: '100%',
-          padding: '1rem 0'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1rem'
-          }}>
-            <div style={{
-              flex: '0 0 auto',
-              marginRight: '2rem'
-            }}>
+
+        <header
+          style={{
+            marginBottom: '1.5rem',
+            position: 'relative',
+            width: '100%',
+            padding: '0.75rem 0',
+            borderBottom: '1px solid #e5e7eb',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              marginBottom: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                flex: '0 0 auto',
+                marginRight: '1.5rem',
+              }}
+            >
               <img
                 src="https://ablewealth.com/AWM%20Logo%203.png"
                 alt="Able Wealth Management"
-                style={{ 
-                  width: '210px',
+                style={{
+                  width: '180px',
                   height: 'auto',
-                  display: 'block'
+                  display: 'block',
                 }}
               />
             </div>
-            <div style={{
-              flex: '1',
-              textAlign: 'right'
-            }}>
-              <h1 style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '20pt',
-                fontWeight: '700',
-                margin: 0,
-                color: '#111827',
-                lineHeight: '1.0'
-              }}>
+            <div
+              style={{
+                flex: '1',
+                textAlign: 'right',
+                paddingTop: '0.25rem',
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  fontSize: '16pt',
+                  fontWeight: '600',
+                  margin: 0,
+                  color: '#1f2937',
+                  lineHeight: '0.9',
+                  letterSpacing: '-0.01em',
+                }}
+              >
                 Tax Optimization Analysis
               </h1>
             </div>
           </div>
-          
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '1.5rem'
-          }}>
-            <div style={{ flex: '1', marginRight: '2rem' }}>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                color: '#6B7280',
-                margin: 0,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                marginBottom: '0.25rem',
-                lineHeight: '1.0'
-              }}>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginTop: '1rem',
+              paddingTop: '0.5rem',
+            }}
+          >
+            <div style={{ flex: '1', marginRight: '1.5rem' }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  fontSize: '6pt',
+                  color: '#6b7280',
+                  margin: 0,
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.2rem',
+                  lineHeight: '0.9',
+                }}
+              >
                 Prepared for:
               </p>
-              <p style={{ 
-                fontWeight: '700', 
-                fontSize: '11pt', 
-                color: '#111827',
-                margin: 0,
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                lineHeight: '1.1'
-              }}>
+              <p
+                style={{
+                  fontWeight: '700',
+                  fontSize: '10pt',
+                  color: '#111827',
+                  margin: 0,
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  lineHeight: '0.95',
+                }}
+              >
                 {scenario.clientData?.clientName || 'John & Jane Doe'}
               </p>
             </div>
-            <div style={{ flex: '1' }}>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                color: '#6B7280',
-                margin: 0,
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                marginBottom: '0.25rem',
-                lineHeight: '1.0'
-              }}>
+            <div style={{ flex: '1', textAlign: 'right' }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  fontSize: '6pt',
+                  color: '#6b7280',
+                  margin: 0,
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.2rem',
+                  lineHeight: '0.9',
+                }}
+              >
                 Date of Analysis:
               </p>
-              <p style={{ 
-                fontWeight: '600',
-                fontSize: '10pt',
-                margin: 0,
-                color: '#111827',
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                marginBottom: '0.5rem',
-                lineHeight: '1.1'
-              }}>
+              <p
+                style={{
+                  fontWeight: '600',
+                  fontSize: '9pt',
+                  margin: 0,
+                  color: '#111827',
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  marginBottom: '0.3rem',
+                  lineHeight: '0.95',
+                }}
+              >
                 {today}
               </p>
-              <p style={{
-                fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                fontSize: '7pt',
-                fontWeight: '600',
-                color: '#6B7280',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em',
-                margin: 0,
-                lineHeight: '1.0'
-              }}>
+              <p
+                style={{
+                  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+                  fontSize: '6pt',
+                  fontWeight: '600',
+                  color: '#9ca3af',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  margin: 0,
+                  lineHeight: '0.9',
+                }}
+              >
                 CONFIDENTIAL - FOR CLIENT USE ONLY
               </p>
             </div>
@@ -612,23 +639,40 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
           <div style={styles.summaryGrid}>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Annual W2 Income</div>
-              <div style={styles.metricValue}>{formatCurrency(scenario.clientData?.w2Income || 0)}</div>
+              <div style={styles.metricValue}>
+                {formatCurrency(scenario.clientData?.w2Income || 0)}
+              </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Business Income</div>
-              <div style={styles.metricValue}>{formatCurrency(scenario.clientData?.businessIncome || 0)}</div>
+              <div style={styles.metricValue}>
+                {formatCurrency(scenario.clientData?.businessIncome || 0)}
+              </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Capital Gains</div>
-              <div style={styles.metricValue}>{formatCurrency((scenario.clientData?.shortTermGains || 0) + (scenario.clientData?.longTermGains || 0))}</div>
+              <div style={styles.metricValue}>
+                {formatCurrency(
+                  (scenario.clientData?.shortTermGains || 0) +
+                    (scenario.clientData?.longTermGains || 0)
+                )}
+              </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Tax Residence</div>
-              <div style={styles.metricValue}>{scenario.clientData?.state === 'NJ' ? 'New Jersey' : scenario.clientData?.state === 'NY' ? 'New York' : scenario.clientData?.state || 'Not specified'}</div>
+              <div style={styles.metricValue}>
+                {scenario.clientData?.state === 'NJ'
+                  ? 'New Jersey'
+                  : scenario.clientData?.state === 'NY'
+                    ? 'New York'
+                    : scenario.clientData?.state || 'Not specified'}
+              </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Filing Status</div>
-              <div style={styles.metricValue}>{scenario.clientData?.filingStatus || 'Not specified'}</div>
+              <div style={styles.metricValue}>
+                {scenario.clientData?.filingStatus || 'Not specified'}
+              </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricLabel}>Projection Years</div>
@@ -665,10 +709,9 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
             <div style={styles.metric}>
               <div style={styles.metricLabel}>ROI on Strategies</div>
               <div style={styles.metricValue}>
-                {safeResults.capitalAllocated > 0 
+                {safeResults.capitalAllocated > 0
                   ? formatPercentage(safeResults.totalSavings / safeResults.capitalAllocated)
-                  : 'N/A'
-                }
+                  : 'N/A'}
               </div>
             </div>
           </div>
@@ -690,18 +733,20 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                 {enabledStrategies.map((strategy) => {
                   const amount = scenario.clientData[strategy.inputRequired] || 0;
                   const estimatedSavings = amount * 0.3; // Conservative estimate
-                  const effectiveRate = amount > 0 ? (estimatedSavings / amount) : 0;
-                  
+                  const effectiveRate = amount > 0 ? estimatedSavings / amount : 0;
+
                   return (
                     <tr key={strategy.id}>
                       <td style={styles.compactTd}>{strategy.name}</td>
-                      <td style={styles.compactTdRight}>
-                        {formatCurrency(amount)}
-                      </td>
-                      <td style={{ ...styles.compactTdRight, color: '#059669', fontWeight: 'bold' }}>
+                      <td style={styles.compactTdRight}>{formatCurrency(amount)}</td>
+                      <td
+                        style={{ ...styles.compactTdRight, color: '#059669', fontWeight: 'bold' }}
+                      >
                         {formatCurrency(estimatedSavings)}
                       </td>
-                      <td style={{ ...styles.compactTdRight, color: '#1f2937', fontWeight: 'bold' }}>
+                      <td
+                        style={{ ...styles.compactTdRight, color: '#1f2937', fontWeight: 'bold' }}
+                      >
                         {formatPercentage(effectiveRate)}
                       </td>
                     </tr>
@@ -728,15 +773,17 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
           <section style={styles.section}>
             <h2 style={styles.sectionTitle}>Strategic Tax Optimization Analysis</h2>
             {loadingInteraction ? (
-              <div style={{
-                ...styles.interactionText,
-                color: '#6b7280',
-                fontStyle: 'italic',
-                textAlign: 'center',
-                padding: '2rem',
-                backgroundColor: '#f9fafb',
-                border: '1px solid #e5e7eb'
-              }}>
+              <div
+                style={{
+                  ...styles.interactionText,
+                  color: '#6b7280',
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  padding: '2rem',
+                  backgroundColor: '#f9fafb',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
                 <p>Generating comprehensive strategy analysis...</p>
                 <p style={{ fontSize: '7pt', marginTop: '0.5rem' }}>
                   Analyzing strategy interactions, risk assessment, and implementation guidance
@@ -761,21 +808,25 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                 )}
               </div>
             ) : interactionExplanation ? (
-              <div style={{
-                ...styles.interactionText,
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                padding: '1rem',
-                lineHeight: 1.4
-              }}>
-                <div style={{ 
-                  fontSize: '9pt', 
-                  fontWeight: 'bold', 
-                  marginBottom: '0.5rem', 
-                  color: '#475569',
-                  borderBottom: '1px solid #e2e8f0',
-                  paddingBottom: '0.25rem'
-                }}>
+              <div
+                style={{
+                  ...styles.interactionText,
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  padding: '1rem',
+                  lineHeight: 1.4,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '9pt',
+                    fontWeight: 'bold',
+                    marginBottom: '0.5rem',
+                    color: '#475569',
+                    borderBottom: '1px solid #e2e8f0',
+                    paddingBottom: '0.25rem',
+                  }}
+                >
                   Professional Strategy Analysis
                 </div>
                 {formatPrintableTaxAnalysis(interactionExplanation) || (
@@ -789,14 +840,17 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                 )}
               </div>
             ) : (
-              <div style={{
-                ...styles.interactionText,
-                color: '#6b7280',
-                fontStyle: 'italic',
-                textAlign: 'center',
-                backgroundColor: '#f9fafb'
-              }}>
-                Strategy analysis will be generated when multiple strategies are selected and configured.
+              <div
+                style={{
+                  ...styles.interactionText,
+                  color: '#6b7280',
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  backgroundColor: '#f9fafb',
+                }}
+              >
+                Strategy analysis will be generated when multiple strategies are selected and
+                configured.
               </div>
             )}
           </section>
@@ -805,29 +859,36 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
         {(benefits.length > 0 || considerations.length > 0) && (
           <section style={styles.section}>
             <h2 style={styles.sectionTitle}>Implementation Guidance & Considerations</h2>
-            
+
             {benefits.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ 
-                  fontSize: '9pt', 
-                  fontWeight: 'bold', 
-                  color: '#059669', 
-                  marginBottom: '0.5rem',
-                  borderBottom: '1px solid #d1fae5',
-                  paddingBottom: '0.25rem'
-                }}>
+                <h3
+                  style={{
+                    fontSize: '9pt',
+                    fontWeight: 'bold',
+                    color: '#059669',
+                    marginBottom: '0.5rem',
+                    borderBottom: '1px solid #d1fae5',
+                    paddingBottom: '0.25rem',
+                  }}
+                >
                   Strategic Benefits
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                   {benefits.slice(0, 8).map((insight, index) => (
-                    <div key={`b-${index}`} style={{
-                      ...styles.insightCard,
-                      backgroundColor: '#f0fdf4',
-                      borderColor: '#d1fae5',
-                      padding: '0.5rem'
-                    }}>
+                    <div
+                      key={`b-${index}`}
+                      style={{
+                        ...styles.insightCard,
+                        backgroundColor: '#f0fdf4',
+                        borderColor: '#d1fae5',
+                        padding: '0.5rem',
+                      }}
+                    >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <span style={{ color: '#059669', fontSize: '8pt', fontWeight: 'bold' }}>✓</span>
+                        <span style={{ color: '#059669', fontSize: '8pt', fontWeight: 'bold' }}>
+                          ✓
+                        </span>
                         <p style={{ ...styles.insightText, fontSize: '7pt', margin: 0 }}>
                           {insight?.text || 'Benefit information not available'}
                         </p>
@@ -840,26 +901,33 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
 
             {considerations.length > 0 && (
               <div>
-                <h3 style={{ 
-                  fontSize: '9pt', 
-                  fontWeight: 'bold', 
-                  color: '#d97706', 
-                  marginBottom: '0.5rem',
-                  borderBottom: '1px solid #fed7aa',
-                  paddingBottom: '0.25rem'
-                }}>
+                <h3
+                  style={{
+                    fontSize: '9pt',
+                    fontWeight: 'bold',
+                    color: '#d97706',
+                    marginBottom: '0.5rem',
+                    borderBottom: '1px solid #fed7aa',
+                    paddingBottom: '0.25rem',
+                  }}
+                >
                   Implementation Considerations
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                   {considerations.slice(0, 8).map((insight, index) => (
-                    <div key={`c-${index}`} style={{
-                      ...styles.insightCard,
-                      backgroundColor: '#fffbeb',
-                      borderColor: '#fed7aa',
-                      padding: '0.5rem'
-                    }}>
+                    <div
+                      key={`c-${index}`}
+                      style={{
+                        ...styles.insightCard,
+                        backgroundColor: '#fffbeb',
+                        borderColor: '#fed7aa',
+                        padding: '0.5rem',
+                      }}
+                    >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <span style={{ color: '#d97706', fontSize: '8pt', fontWeight: 'bold' }}>⚠</span>
+                        <span style={{ color: '#d97706', fontSize: '8pt', fontWeight: 'bold' }}>
+                          ⚠
+                        </span>
                         <p style={{ ...styles.insightText, fontSize: '7pt', margin: 0 }}>
                           {insight?.text || 'Consideration information not available'}
                         </p>

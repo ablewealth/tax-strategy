@@ -17,26 +17,45 @@ import {
 } from '../constants';
 
 /**
- * Calculate tax based on income and tax brackets
+ * Validates and defaults input values to prevent calculation errors
+ * @param {any} value - The value to validate
+ * @param {number} defaultValue - Default value if invalid
+ * @returns {number} Validated number
+ */
+const validateAndDefault = (value, defaultValue = 0) => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return defaultValue;
+  }
+  return Math.max(0, Number(value));
+};
+
+/**
+ * Calculate tax based on income and tax brackets with proper progressive calculation
  * @param {number} income - The taxable income
  * @param {Array} brackets - Tax brackets array
  * @returns {number} Calculated tax amount
  */
 export const calculateTax = (income, brackets) => {
-  if (income <= 0) return 0;
+  const validatedIncome = validateAndDefault(income, 0);
+  if (validatedIncome <= 0 || !brackets || brackets.length === 0) return 0;
+  
   let tax = 0;
-  let remainingIncome = income;
-  let lastMax = 0;
-
+  let previousMax = 0;
+  
   for (const bracket of brackets) {
-    if (remainingIncome <= 0) break;
-    const taxableInBracket = Math.min(remainingIncome, bracket.max - lastMax);
-    tax += taxableInBracket * bracket.rate;
-    remainingIncome -= taxableInBracket;
-    lastMax = bracket.max;
+    if (validatedIncome <= previousMax) break;
+    
+    const taxableInBracket = Math.min(validatedIncome, bracket.max) - previousMax;
+    if (taxableInBracket > 0) {
+      tax += taxableInBracket * bracket.rate;
+    }
+    previousMax = bracket.max;
+    
+    // Stop if we've reached the income level
+    if (validatedIncome <= bracket.max) break;
   }
-
-  return tax;
+  
+  return Math.round(tax * 100) / 100; // Round to cents
 };
 
 /**
@@ -46,22 +65,41 @@ export const calculateTax = (income, brackets) => {
  * @returns {Object} Tax calculation results
  */
 export const getTaxesForYear = (yearData, strategies) => {
+  // Validate inputs
+  if (!yearData || typeof yearData !== 'object') {
+    throw new Error('Invalid yearData provided to getTaxesForYear');
+  }
+  
+  if (!strategies || typeof strategies !== 'object') {
+    strategies = {};
+  }
+  
+  // Validate and default all financial inputs
+  const validatedYearData = {
+    ...yearData,
+    w2Income: validateAndDefault(yearData.w2Income, 0),
+    businessIncome: validateAndDefault(yearData.businessIncome, 0),
+    longTermGains: validateAndDefault(yearData.longTermGains, 0),
+    shortTermGains: validateAndDefault(yearData.shortTermGains, 0),
+    state: yearData.state || 'NJ' // Default to NJ if not specified
+  };
+  
   const fedDeductions = { aboveAGI: 0, belowAGI: 0 };
   const stateDeductions = { total: 0 };
   let njAddBack = 0;
-  let qbiBaseIncome = yearData.businessIncome || 0;
-  let currentLtGains = yearData.longTermGains || 0;
-  let currentStGains = yearData.shortTermGains || 0;
+  let qbiBaseIncome = validatedYearData.businessIncome;
+  let currentLtGains = validatedYearData.longTermGains;
+  let currentStGains = validatedYearData.shortTermGains;
   let totalCapitalAllocated = 0;
   const insights = [];
 
-  const stateBrackets = yearData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
+  const stateBrackets = validatedYearData.state === 'NY' ? NY_TAX_BRACKETS : NJ_TAX_BRACKETS;
   const allStrategies = [...STRATEGY_LIBRARY, ...RETIREMENT_STRATEGIES];
 
   // Process each strategy
   allStrategies.forEach((strategy) => {
     if (strategies[strategy.id]) {
-      const strategyInputAmount = yearData[strategy.inputRequired] || 0;
+      const strategyInputAmount = validateAndDefault(validatedYearData[strategy.inputRequired], 0);
       if (strategy.type !== 'qbi' && strategyInputAmount > 0) {
         totalCapitalAllocated += strategyInputAmount;
       }
@@ -69,7 +107,7 @@ export const getTaxesForYear = (yearData, strategies) => {
       switch (strategy.id) {
         case 'QUANT_DEALS_01': {
           const result = processQuantDealsStrategy(
-            yearData,
+            validatedYearData,
             currentStGains,
             currentLtGains,
             fedDeductions,
@@ -82,7 +120,7 @@ export const getTaxesForYear = (yearData, strategies) => {
         }
         case 'EQUIP_S179_01': {
           const result = processSection179Strategy(
-            yearData,
+            validatedYearData,
             qbiBaseIncome,
             fedDeductions,
             stateDeductions,
@@ -94,17 +132,17 @@ export const getTaxesForYear = (yearData, strategies) => {
           break;
         }
         case 'CHAR_CLAT_01':
-          processCharitableClatStrategy(yearData, fedDeductions, stateDeductions, insights);
+          processCharitableClatStrategy(validatedYearData, fedDeductions, stateDeductions, insights);
           break;
         case 'OG_USENERGY_01':
-          processOilGasStrategy(yearData, fedDeductions, stateDeductions, insights);
+          processOilGasStrategy(validatedYearData, fedDeductions, stateDeductions, insights);
           break;
         case 'FILM_SEC181_01':
-          processFilmStrategy(yearData, fedDeductions, stateDeductions, insights);
+          processFilmStrategy(validatedYearData, fedDeductions, stateDeductions, insights);
           break;
         case 'SOLO401K_EMPLOYEE_01': {
           const result = processSolo401kEmployeeStrategy(
-            yearData,
+            validatedYearData,
             fedDeductions,
             stateDeductions,
             njAddBack,
@@ -115,7 +153,7 @@ export const getTaxesForYear = (yearData, strategies) => {
         }
         case 'SOLO401K_EMPLOYER_01': {
           const result = processSolo401kEmployerStrategy(
-            yearData,
+            validatedYearData,
             qbiBaseIncome,
             fedDeductions,
             stateDeductions,
@@ -125,7 +163,13 @@ export const getTaxesForYear = (yearData, strategies) => {
           break;
         }
         case 'DB_PLAN_01': {
-          const result = processDbPlanStrategy(yearData, qbiBaseIncome, fedDeductions, stateDeductions, insights);
+          const result = processDbPlanStrategy(
+            validatedYearData,
+            qbiBaseIncome,
+            fedDeductions,
+            stateDeductions,
+            insights
+          );
           qbiBaseIncome = result.qbiBaseIncome;
           break;
         }
@@ -135,16 +179,16 @@ export const getTaxesForYear = (yearData, strategies) => {
     }
   });
 
-  // Calculate final tax amounts
-  const ordinaryIncome = yearData.w2Income + yearData.businessIncome + currentStGains;
-  const fedAGI = ordinaryIncome - fedDeductions.aboveAGI;
+  // Calculate final tax amounts using validated data
+  const ordinaryIncome = validatedYearData.w2Income + validatedYearData.businessIncome + currentStGains;
+  const fedAGI = Math.max(0, ordinaryIncome - fedDeductions.aboveAGI);
   const amti = fedAGI;
-  const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - (amti - 1140800) * 0.25);
+  const amtExemptionAmount = Math.max(0, AMT_EXEMPTION - Math.max(0, amti - 1140800) * 0.25);
   const amtTaxableIncome = Math.max(0, amti - amtExemptionAmount);
   const amtTax = calculateTax(amtTaxableIncome, AMT_BRACKETS);
   const fedTaxableForQBI = Math.max(0, fedAGI - STANDARD_DEDUCTION - fedDeductions.belowAGI);
 
-  // QBI deduction calculation
+  // QBI deduction calculation with validation
   let qbiDeduction = 0;
   if (strategies['QBI_FINAL_01'] && qbiBaseIncome > 0) {
     if (fedTaxableForQBI <= 383900) {
@@ -169,15 +213,15 @@ export const getTaxesForYear = (yearData, strategies) => {
 
   const stateTaxableIncome = Math.max(
     0,
-    yearData.w2Income +
-      yearData.businessIncome +
+    validatedYearData.w2Income +
+      validatedYearData.businessIncome +
       currentLtGains +
       currentStGains -
       stateDeductions.total +
       njAddBack
   );
   const stateTax = calculateTax(stateTaxableIncome, stateBrackets);
-  const totalIncome = yearData.w2Income + yearData.businessIncome + currentLtGains + currentStGains;
+  const totalIncome = validatedYearData.w2Income + validatedYearData.businessIncome + currentLtGains + currentStGains;
   const afterTaxIncome = totalIncome - (fedTax + stateTax);
 
   return {
@@ -220,7 +264,7 @@ const processQuantDealsStrategy = (
     type: 'success',
     text: `DEALS strategy generated ${formatCurrency(stOffset + ltOffset)} in capital loss offsets and a ${formatCurrency(ordinaryOffset)} ordinary income deduction.`,
   });
-  
+
   return { currentStGains: updatedStGains, currentLtGains: updatedLtGains };
 };
 
@@ -238,7 +282,7 @@ const processSection179Strategy = (
   const s179Ded = Math.min(yearData.equipmentCost, qbiBaseIncome, 1220000);
   const updatedQbiBaseIncome = qbiBaseIncome - s179Ded;
   let updatedNjAddBack = njAddBack;
-  
+
   fedDeductions.aboveAGI += s179Ded;
 
   insights.push({
@@ -260,7 +304,7 @@ const processSection179Strategy = (
       });
     }
   }
-  
+
   return { qbiBaseIncome: updatedQbiBaseIncome, njAddBack: updatedNjAddBack };
 };
 
@@ -335,7 +379,7 @@ const processSolo401kEmployeeStrategy = (
 ) => {
   const s401kEmpDed = Math.min(yearData.solo401kEmployee, 23000);
   let updatedNjAddBack = njAddBack;
-  
+
   fedDeductions.aboveAGI += s401kEmpDed;
 
   insights.push({
@@ -352,7 +396,7 @@ const processSolo401kEmployeeStrategy = (
       text: `New Jersey taxes Solo 401(k) employee deferrals. A ${formatCurrency(s401kEmpDed)} add-back is required.`,
     });
   }
-  
+
   return { njAddBack: updatedNjAddBack };
 };
 
@@ -368,7 +412,7 @@ const processSolo401kEmployerStrategy = (
 ) => {
   const s401kEmployerDed = yearData.solo401kEmployer || 0;
   const updatedQbiBaseIncome = qbiBaseIncome - s401kEmployerDed;
-  
+
   fedDeductions.aboveAGI += s401kEmployerDed;
   stateDeductions.total += s401kEmployerDed;
 
@@ -376,7 +420,7 @@ const processSolo401kEmployerStrategy = (
     type: 'success',
     text: `Solo 401(k) employer contribution of ${formatCurrency(s401kEmployerDed)} reduces business income for QBI.`,
   });
-  
+
   return { qbiBaseIncome: updatedQbiBaseIncome };
 };
 
@@ -392,7 +436,7 @@ const processDbPlanStrategy = (
 ) => {
   const dbDed = yearData.dbContribution || 0;
   const updatedQbiBaseIncome = qbiBaseIncome - dbDed;
-  
+
   fedDeductions.aboveAGI += dbDed;
   stateDeductions.total += dbDed;
 
@@ -400,7 +444,7 @@ const processDbPlanStrategy = (
     type: 'success',
     text: `Defined Benefit plan contribution of ${formatCurrency(dbDed)} reduces business income for QBI.`,
   });
-  
+
   return { qbiBaseIncome: updatedQbiBaseIncome };
 };
 

@@ -11,7 +11,7 @@ import './SwissGridStyles.css';
  */
 const formatFinancialNumber = (value) => {
   if (value === 0 || value === null || value === undefined) return null;
-  
+
   const absValue = Math.abs(value);
   const formattedValue = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -19,7 +19,7 @@ const formatFinancialNumber = (value) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(absValue);
-  
+
   return (
     <span className="font-mono text-sm font-medium text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 inline-block">
       {formattedValue}
@@ -32,32 +32,33 @@ const formatFinancialNumber = (value) => {
  */
 const extractStrategyInteractions = (text) => {
   const interactions = [];
-  
+
   // Look for strategy interaction patterns
   const sections = text.split(/\*\*[^*]+\*\*/);
-  
-  sections.forEach(section => {
+
+  sections.forEach((section) => {
     if (section.trim()) {
       // Extract meaningful interactions
-      const lines = section.split('\n').filter(line => line.trim());
-      const interactionLines = lines.filter(line => 
-        line.includes('→') || 
-        line.includes('combined') || 
-        line.includes('together') ||
-        line.includes('synergy') ||
-        line.includes('interaction') ||
-        line.includes('amplifies') ||
-        line.includes('enhances')
+      const lines = section.split('\n').filter((line) => line.trim());
+      const interactionLines = lines.filter(
+        (line) =>
+          line.includes('→') ||
+          line.includes('combined') ||
+          line.includes('together') ||
+          line.includes('synergy') ||
+          line.includes('interaction') ||
+          line.includes('amplifies') ||
+          line.includes('enhances')
       );
-      
-      interactionLines.forEach(line => {
+
+      interactionLines.forEach((line) => {
         if (line.trim().length > 20) {
           interactions.push(line.trim());
         }
       });
     }
   });
-  
+
   return interactions;
 };
 
@@ -66,18 +67,18 @@ const extractStrategyInteractions = (text) => {
  */
 const extractKeyInsights = (text) => {
   const insights = [];
-  
+
   // Look for bullet points or numbered lists
   const bulletPoints = text.match(/[•\-\*]\s*([^\n]+)/g) || [];
   const numberedPoints = text.match(/\d+\.\s*([^\n]+)/g) || [];
-  
-  [...bulletPoints, ...numberedPoints].forEach(point => {
+
+  [...bulletPoints, ...numberedPoints].forEach((point) => {
     const cleanPoint = point.replace(/^[•\-\*\d\.\s]+/, '').trim();
     if (cleanPoint.length > 20 && !cleanPoint.includes('$0')) {
       insights.push(cleanPoint);
     }
   });
-  
+
   return insights.slice(0, 6); // Limit to most important insights
 };
 
@@ -86,16 +87,17 @@ const extractKeyInsights = (text) => {
  */
 const extractStateConsiderations = (text, clientState) => {
   const stateConsiderations = [];
-  
-  const stateKeywords = clientState === 'NJ' ? ['New Jersey', 'NJ', 'Jersey'] : ['New York', 'NY', 'York'];
-  
+
+  const stateKeywords =
+    clientState === 'NJ' ? ['New Jersey', 'NJ', 'Jersey'] : ['New York', 'NY', 'York'];
+
   const lines = text.split('\n');
-  lines.forEach(line => {
-    if (stateKeywords.some(keyword => line.includes(keyword)) && line.trim().length > 20) {
+  lines.forEach((line) => {
+    if (stateKeywords.some((keyword) => line.includes(keyword)) && line.trim().length > 20) {
       stateConsiderations.push(line.trim());
     }
   });
-  
+
   return stateConsiderations;
 };
 
@@ -104,24 +106,24 @@ const extractStateConsiderations = (text, clientState) => {
  */
 export const formatStrategyInteractions = (text, scenario, results) => {
   if (!text || !scenario || !results) return null;
-  
+
   const interactions = extractStrategyInteractions(text);
   const keyInsights = extractKeyInsights(text);
   const stateConsiderations = extractStateConsiderations(text, scenario.clientData?.state);
-  
+
   const totalSavings = results?.cumulative?.totalSavings || 0;
   const currentYearSavings = results?.projections?.[0]?.cumulativeSavings || 0;
-  
+
   // Get enabled strategies for context
   const enabledStrategies = [];
   if (scenario.enabledStrategies) {
-    Object.keys(scenario.enabledStrategies).forEach(strategyId => {
+    Object.keys(scenario.enabledStrategies).forEach((strategyId) => {
       if (scenario.enabledStrategies[strategyId]) {
         enabledStrategies.push(strategyId);
       }
     });
   }
-  
+
   return (
     <div className="swiss-grid-analysis">
       {/* Header Section */}
@@ -129,7 +131,8 @@ export const formatStrategyInteractions = (text, scenario, results) => {
         <div className="section-header">
           <h2 className="section-title">Strategy Interaction Analysis</h2>
           <p className="text-sm text-gray-600 mt-2">
-            Analysis of how your {enabledStrategies.length} selected strategies work together to optimize your tax situation
+            Analysis of how your {enabledStrategies.length} selected strategies work together to
+            optimize your tax situation
           </p>
         </div>
         <div className="section-content">
@@ -148,9 +151,7 @@ export const formatStrategyInteractions = (text, scenario, results) => {
             </div>
             <div className="bg-purple-50 p-4 rounded border border-purple-200">
               <div className="text-sm font-medium text-purple-900">Active Strategies</div>
-              <div className="text-2xl font-bold text-purple-700">
-                {enabledStrategies.length}
-              </div>
+              <div className="text-2xl font-bold text-purple-700">{enabledStrategies.length}</div>
             </div>
           </div>
         </div>
@@ -207,7 +208,8 @@ export const formatStrategyInteractions = (text, scenario, results) => {
         <div className="section">
           <div className="section-header">
             <h3 className="section-title">
-              {scenario.clientData?.state === 'NJ' ? 'New Jersey' : 'New York'} Specific Considerations
+              {scenario.clientData?.state === 'NJ' ? 'New Jersey' : 'New York'} Specific
+              Considerations
             </h3>
           </div>
           <div className="section-content">
@@ -234,7 +236,13 @@ export const formatStrategyInteractions = (text, scenario, results) => {
             <div className="bg-gray-50 border border-gray-200 rounded p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Strategy Analysis</h3>
               <div className="prose prose-sm max-w-none text-gray-700">
-                <div dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br>') }} />
+                <div>
+                  {text.split('\n').map((line, index) => (
+                    <p key={index} className="mb-2">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -248,30 +256,32 @@ export const formatStrategyInteractions = (text, scenario, results) => {
  * Creates a focused prompt for strategy interactions
  */
 export const createStrategyInteractionPrompt = (enabledStrategies, clientData, results) => {
-  const nonZeroStrategies = enabledStrategies.filter(strategy => {
+  const nonZeroStrategies = enabledStrategies.filter((strategy) => {
     const inputValue = clientData?.[strategy.inputRequired];
     return inputValue && typeof inputValue === 'number' && inputValue > 0;
   });
-  
+
   if (nonZeroStrategies.length < 2) return null;
-  
+
   const totalSavings = results?.cumulative?.totalSavings || 0;
   const currentYearSavings = results?.projections?.[0]?.cumulativeSavings || 0;
-  
+
   const clientState = clientData?.state || 'Not specified';
-  const stateDisplayName = clientState === 'NJ' ? 'New Jersey' : 
-                          clientState === 'NY' ? 'New York' : clientState;
-  
+  const stateDisplayName =
+    clientState === 'NJ' ? 'New Jersey' : clientState === 'NY' ? 'New York' : clientState;
+
   const w2Income = clientData?.w2Income || 0;
   const businessIncome = clientData?.businessIncome || 0;
   const shortTermGains = clientData?.shortTermGains || 0;
   const longTermGains = clientData?.longTermGains || 0;
-  
-  const strategyList = nonZeroStrategies.map(s => {
-    const amount = clientData[s.inputRequired] || 0;
-    return `${s.name}: $${amount.toLocaleString()}`;
-  }).join('\n');
-  
+
+  const strategyList = nonZeroStrategies
+    .map((s) => {
+      const amount = clientData[s.inputRequired] || 0;
+      return `${s.name}: $${amount.toLocaleString()}`;
+    })
+    .join('\n');
+
   return `You are analyzing the tax strategy interactions for a specific client. Focus ONLY on how these strategies work together, their synergies, and specific impacts for this client.
 
 CLIENT PROFILE:
