@@ -404,10 +404,8 @@ Keep analysis under 400 words total. Focus on accuracy, professionalism, and act
                     </div>
 
                     <div className="px-8 py-8 bg-white">
-                        <div className="max-w-none prose prose-slate prose-headings:text-gray-800 prose-headings:font-semibold prose-p:text-gray-700 prose-strong:text-gray-800 prose-strong:font-semibold">
-                            <div className="professional-analysis-content space-y-4">
-                                {formatAIAnalysis(interactionExplanation)}
-                            </div>
+                        <div className="max-w-none">
+                            {formatAIAnalysis(interactionExplanation)}
                         </div>
                     </div>
 
