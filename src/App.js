@@ -166,25 +166,49 @@ export default function App() {
   };
 
   return (
-    <div className="bg-background-secondary min-h-screen">
+    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
       <StyleInjector />
       <Header onPrint={handlePrint} clientName={scenario.clientData.clientName} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8">
-        <ClientInputSection scenario={scenario} updateClientData={handleUpdateClientData} />
-        <StrategiesSection
-          scenario={scenario}
-          toggleStrategy={handleToggleStrategy}
-          updateClientData={handleUpdateClientData}
-        />
-        <ResultsDashboard results={calculationResults} scenario={scenario} />
-        <InsightsSection insights={calculationResults?.withStrategies?.insights} />
-        <StrategyInteractionAnalysis
-          scenario={scenario}
-          results={calculationResults}
-          onAnalysisUpdate={setStrategyAnalysis}
-        />
-        <ChartsSection results={calculationResults} />
+      
+      {/* Premium background elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl"></div>
+      </div>
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 relative z-10">
+        {/* Page sections with enhanced styling */}
+        <div className="space-y-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50">
+            <ClientInputSection scenario={scenario} updateClientData={handleUpdateClientData} />
+          </div>
+          
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50">
+            <StrategiesSection
+              scenario={scenario}
+              toggleStrategy={handleToggleStrategy}
+              updateClientData={handleUpdateClientData}
+            />
+          </div>
+          
+          <ResultsDashboard results={calculationResults} scenario={scenario} />
+          
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50">
+            <InsightsSection insights={calculationResults?.withStrategies?.insights} />
+          </div>
+          
+          <StrategyInteractionAnalysis
+            scenario={scenario}
+            results={calculationResults}
+            onAnalysisUpdate={setStrategyAnalysis}
+          />
+          
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50">
+            <ChartsSection results={calculationResults} />
+          </div>
+        </div>
       </main>
+      
       <AppFooter />
     </div>
   );
