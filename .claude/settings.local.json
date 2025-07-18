@@ -37,7 +37,8 @@
       "Bash(npx gh-pages:*)",
       "Bash(git checkout:*)",
       "Bash(git stash:*)",
-      "WebFetch(domain:ablewealth.github.io)"
+      "WebFetch(domain:ablewealth.github.io)",
+      "Bash(gh workflow run:*)"
     ],
     "deny": []
   }
