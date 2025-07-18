@@ -27,7 +27,17 @@
       "Bash(gtimeout 300 npm run build)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(npm run start:*)"
+      "Bash(npm run start:*)",
+      "Bash(ls:*)",
+      "Bash(pkill:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(REACT_APP_BACKEND_URL=http://localhost:3001 npm start)",
+      "Bash(git reset:*)",
+      "Bash(git pull:*)",
+      "Bash(npx gh-pages:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:ablewealth.github.io)"
     ],
     "deny": []
   }
