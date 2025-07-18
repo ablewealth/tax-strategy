@@ -56,8 +56,8 @@ const InputField = React.memo(({ label, value, onChange, placeholder }) => {
       </label>
       <div className={`relative ${isCurrencyField || isPercentageField ? 'input-with-icon' : ''}`}>
         {isCurrencyField && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500">$</span>
+          <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none z-10" style={{paddingLeft: '12px'}}>
+            <span className="text-gray-400 text-sm font-medium">$</span>
           </div>
         )}
         <input
@@ -67,7 +67,7 @@ const InputField = React.memo(({ label, value, onChange, placeholder }) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={`w-full h-12 sm:h-14 ${isCurrencyField ? 'pl-8' : 'px-4'} ${isPercentageField ? 'pr-8' : ''} 
+          className={`w-full h-12 sm:h-14 ${isCurrencyField ? '' : 'px-4'} ${isPercentageField ? 'pr-8' : ''} 
             border rounded-lg text-base bg-white transition-all duration-200
             ${
               isFocused
@@ -76,6 +76,7 @@ const InputField = React.memo(({ label, value, onChange, placeholder }) => {
             }
             focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500
             touch-manipulation`}
+          style={isCurrencyField ? {paddingLeft: '32px'} : {}}
         />
 
         {isPercentageField && (

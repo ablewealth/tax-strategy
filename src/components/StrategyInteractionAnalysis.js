@@ -108,11 +108,11 @@ ${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}**
 
 Your selected strategies work together in several important ways:
 
-• **Income Reduction Strategies**: ${enabledStrategies.filter(s => s.id.includes('SOLO401K') || s.id.includes('DB_PLAN')).length > 0 ? 'Your retirement plan contributions directly reduce taxable income at both federal and state levels, creating a foundation for additional deductions.' : 'Consider adding retirement plan strategies to create a foundation of income reduction.'}
+• **Income Reduction Strategies**: ${enabledStrategies.filter(s => s.id && (s.id.includes('SOLO401K') || s.id.includes('DB_PLAN'))).length > 0 ? 'Your retirement plan contributions directly reduce taxable income at both federal and state levels, creating a foundation for additional deductions.' : 'Consider adding retirement plan strategies to create a foundation of income reduction.'}
 
-• **Deduction Amplification**: ${enabledStrategies.filter(s => s.id.includes('EQUIP_S179') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY')).length > 0 ? 'Your business deduction strategies (Section 179, film financing, energy investments) work together to maximize deductions against your highest marginal tax rates.' : 'Business deduction strategies can provide immediate tax relief.'}
+• **Deduction Amplification**: ${enabledStrategies.filter(s => s.id && (s.id.includes('EQUIP_S179') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY'))).length > 0 ? 'Your business deduction strategies (Section 179, film financing, energy investments) work together to maximize deductions against your highest marginal tax rates.' : 'Business deduction strategies can provide immediate tax relief.'}
 
-• **Capital Management**: ${enabledStrategies.filter(s => s.id.includes('QUANT_DEALS') || s.id.includes('CHAR_CLAT')).length > 0 ? 'Your capital-based strategies provide flexibility in timing and can offset gains from other investments while providing ongoing tax benefits.' : 'Capital management strategies can provide timing flexibility.'}
+• **Capital Management**: ${enabledStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.includes('CHAR_CLAT'))).length > 0 ? 'Your capital-based strategies provide flexibility in timing and can offset gains from other investments while providing ongoing tax benefits.' : 'Capital management strategies can provide timing flexibility.'}
 
 **${stateDisplayName} State Tax Optimization**
 
@@ -139,13 +139,13 @@ ${sortedStrategies.slice(6).map(s => `• **${s.name}**: Position for optimal ti
 **Risk Assessment and Mitigation**
 
 **Low Risk Strategies** (Established precedent, minimal audit exposure):
-${sortedStrategies.filter(s => s.id.includes('SOLO401K') || s.id.includes('DB_PLAN')).map(s => `• ${s.name}: Well-established retirement planning with clear regulatory framework.`).join('\n') || '• No low-risk strategies selected in current portfolio.'}
+${sortedStrategies.filter(s => s.id && (s.id.includes('SOLO401K') || s.id.includes('DB_PLAN'))).map(s => `• ${s.name}: Well-established retirement planning with clear regulatory framework.`).join('\n') || '• No low-risk strategies selected in current portfolio.'}
 
 **Medium Risk Strategies** (Require careful documentation):
-${sortedStrategies.filter(s => s.id.includes('EQUIP_S179') || s.id.includes('CHAR_CLAT')).map(s => `• ${s.name}: Requires proper documentation and compliance with regulatory requirements.`).join('\n') || '• No medium-risk strategies selected in current portfolio.'}
+${sortedStrategies.filter(s => s.id && (s.id.includes('EQUIP_S179') || s.id.includes('CHAR_CLAT'))).map(s => `• ${s.name}: Requires proper documentation and compliance with regulatory requirements.`).join('\n') || '• No medium-risk strategies selected in current portfolio.'}
 
 **Higher Risk Strategies** (Require enhanced documentation and professional oversight):
-${sortedStrategies.filter(s => s.id.includes('QUANT_DEALS') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY')).map(s => `• ${s.name}: Requires comprehensive documentation and ongoing compliance monitoring.`).join('\n') || '• No higher-risk strategies selected in current portfolio.'}
+${sortedStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY'))).map(s => `• ${s.name}: Requires comprehensive documentation and ongoing compliance monitoring.`).join('\n') || '• No higher-risk strategies selected in current portfolio.'}
 
 **Key Performance Metrics**
 
@@ -550,11 +550,14 @@ MANDATORY REQUIREMENTS: Your total response must be 1,800-2,200 words minimum. T
             </div>
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Analyzing Strategy Interactions
+                Generating Advanced Tax Strategy Analysis
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 mb-2">
                 Analyzing {enabledStrategies.length} strategies for{' '}
                 {scenario?.clientData?.state || 'your state'} residents
+              </p>
+              <p className="text-sm text-gray-500 italic">
+                Please wait - AI analysis generation may take 30-60 seconds
               </p>
             </div>
           </div>

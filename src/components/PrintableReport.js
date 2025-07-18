@@ -13,14 +13,15 @@ import { formatPrintableTaxAnalysis } from './PrintableTaxAnalysisFormatter';
 const styles = {
   page: {
     fontFamily: "'Inter', 'Helvetica Neue', 'Segoe UI', Arial, sans-serif",
-    padding: '2cm 1.5cm', // Professional margins
-    color: '#1a202c', // Deep charcoal for readability
-    lineHeight: 1.5, // Optimal line spacing
-    fontSize: '10pt', // Professional font size
-    backgroundColor: '#ffffff',
+    padding: '1.5rem 2rem', // Better web margins
+    color: '#1a202c',
+    lineHeight: 1.5,
+    fontSize: '10pt',
+    backgroundColor: '#fafafa',
     position: 'relative',
     minHeight: '100vh',
-    boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)',
+    maxWidth: '1200px',
+    margin: '0 auto',
   },
   watermark: {
     position: 'absolute',
@@ -52,18 +53,19 @@ const styles = {
     boxShadow: '0 2px 4px rgba(220, 38, 38, 0.3)',
   },
   header: {
-    borderBottom: '3px solid #1e40af', // Strong blue accent
-    paddingBottom: '2rem',
-    marginBottom: '3rem',
+    borderBottom: '2px solid #1e40af',
+    paddingBottom: '1.5rem',
+    marginBottom: '2rem',
     position: 'relative',
     width: '100%',
-    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-    borderRadius: '8px 8px 0 0',
-    padding: '2rem',
-    marginTop: '-2rem',
+    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+    borderRadius: '6px',
+    padding: '1.5rem',
+    marginTop: '-1.5rem',
     marginLeft: '-1.5rem',
     marginRight: '-1.5rem',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+    border: '1px solid #e2e8f0',
   },
   headerRow: {
     display: 'flex',
@@ -77,22 +79,24 @@ const styles = {
   },
   reportTitle: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '28pt',
+    fontSize: '24pt',
     fontWeight: '800',
     margin: 0,
     color: '#1e40af',
     letterSpacing: '-0.025em',
     textAlign: 'center',
+    lineHeight: '1.1',
     textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
   },
   reportSubtitle: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '12pt',
+    fontSize: '11pt',
     fontWeight: '500',
     color: '#64748b',
     textAlign: 'center',
-    marginTop: '0.5rem',
+    marginTop: '0.25rem',
     letterSpacing: '0.02em',
+    lineHeight: '1.2',
   },
   headerText: {
     textAlign: 'right',
@@ -114,31 +118,36 @@ const styles = {
     marginTop: '0.5rem',
   },
   section: {
-    marginBottom: '1.5rem', // Slightly increased spacing between sections
+    marginBottom: '3rem',
     pageBreakInside: 'avoid',
     position: 'relative',
+    backgroundColor: '#ffffff',
+    padding: '2rem',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+    border: '1px solid #e2e8f0',
   },
   sectionTitle: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '14pt', // Slightly larger section titles
-    fontWeight: '600',
-    borderBottom: '1px solid #e5e7eb', // Lighter border
-    paddingBottom: '0.5rem',
-    marginBottom: '1rem',
-    color: '#1e40af', // Blue color for section titles
+    fontSize: '18pt',
+    fontWeight: '700',
+    borderBottom: '2px solid #1e40af',
+    paddingBottom: '0.75rem',
+    marginBottom: '1.5rem',
+    color: '#1e40af',
     position: 'relative',
   },
   summaryGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr', // 3 columns instead of 2
-    gap: '0.75rem 1.25rem', // Slightly increased gaps for better spacing
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: '1.5rem',
   },
   metric: {
     backgroundColor: '#ffffff',
     border: '1px solid #e2e8f0',
-    padding: '1rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    padding: '1.5rem',
+    borderRadius: '12px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
     position: 'relative',
     overflow: 'hidden',
     transition: 'all 0.3s ease',
@@ -154,9 +163,9 @@ const styles = {
   },
   metricLabel: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '9pt',
+    fontSize: '10pt',
     color: '#64748b',
-    marginBottom: '0.5rem',
+    marginBottom: '0.75rem',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     fontWeight: '600',
@@ -166,7 +175,7 @@ const styles = {
   },
   metricValue: {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-    fontSize: '16pt',
+    fontSize: '20pt',
     fontWeight: '700',
     color: '#1e40af',
     lineHeight: 1.2,
@@ -649,22 +658,23 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              marginTop: '1rem',
-              paddingTop: '0.5rem',
+              marginTop: '0.75rem',
+              paddingTop: '0.75rem',
+              borderTop: '1px solid #e2e8f0',
             }}
           >
             <div style={{ flex: '1', marginRight: '1.5rem' }}>
               <p
                 style={{
                   fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                  fontSize: '6pt',
+                  fontSize: '7pt',
                   color: '#6b7280',
                   margin: 0,
                   fontWeight: '600',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  marginBottom: '0.2rem',
-                  lineHeight: '0.9',
+                  marginBottom: '0.25rem',
+                  lineHeight: '1.0',
                 }}
               >
                 Prepared for:
@@ -672,11 +682,11 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               <p
                 style={{
                   fontWeight: '700',
-                  fontSize: '10pt',
+                  fontSize: '11pt',
                   color: '#111827',
                   margin: 0,
                   fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                  lineHeight: '0.95',
+                  lineHeight: '1.1',
                 }}
               >
                 {scenario.clientData?.clientName || 'John & Jane Doe'}
@@ -686,27 +696,27 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               <p
                 style={{
                   fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                  fontSize: '6pt',
+                  fontSize: '7pt',
                   color: '#6b7280',
                   margin: 0,
                   fontWeight: '600',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  marginBottom: '0.2rem',
-                  lineHeight: '0.9',
+                  marginBottom: '0.25rem',
+                  lineHeight: '1.0',
                 }}
               >
                 Date of Analysis:
               </p>
               <p
                 style={{
-                  fontWeight: '600',
-                  fontSize: '9pt',
+                  fontWeight: '700',
+                  fontSize: '10pt',
                   margin: 0,
                   color: '#111827',
                   fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-                  marginBottom: '0.3rem',
-                  lineHeight: '0.95',
+                  marginBottom: '0.5rem',
+                  lineHeight: '1.1',
                 }}
               >
                 {today}
@@ -720,7 +730,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   margin: 0,
-                  lineHeight: '0.9',
+                  lineHeight: '1.0',
                 }}
               >
                 CONFIDENTIAL - FOR CLIENT USE ONLY
@@ -755,7 +765,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>📍 Tax Residence</div>
+              <div style={styles.metricLabel}>Tax Residence</div>
               <div style={styles.metricValue}>
                 {scenario.clientData?.state === 'NJ'
                   ? 'New Jersey'
@@ -766,14 +776,14 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>👥 Filing Status</div>
+              <div style={styles.metricLabel}>Filing Status</div>
               <div style={styles.metricValue}>
                 {scenario.clientData?.filingStatus || 'Not specified'}
               </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>📊 Projection Years</div>
+              <div style={styles.metricLabel}>Projection Years</div>
               <div style={styles.metricValue}>{scenario.clientData?.projectionYears || 5}</div>
             </div>
           </div>
@@ -784,29 +794,29 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
           <div style={styles.summaryGrid}>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>🏦 Baseline Tax</div>
+              <div style={styles.metricLabel}>Baseline Tax</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.baselineTax)}</div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>⚡ Optimized Tax</div>
+              <div style={styles.metricLabel}>Optimized Tax</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.optimizedTax)}</div>
             </div>
             <div style={{ ...styles.metric, ...styles.successMetric }}>
               <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#22c55e' }}></div>
-              <div style={{ ...styles.metricLabel, color: '#059669' }}>💰 Total Savings</div>
+              <div style={{ ...styles.metricLabel, color: '#059669' }}>Total Savings</div>
               <div style={{ ...styles.metricValue, ...styles.successValue }}>
                 {formatCurrency(safeResults.totalSavings)}
               </div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>📉 Tax Rate Reduction</div>
+              <div style={styles.metricLabel}>Tax Rate Reduction</div>
               <div style={styles.metricValue}>{formatPercentage(savingsPercentage)}</div>
             </div>
             <div style={styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>💼 Capital Allocated</div>
+              <div style={styles.metricLabel}>Capital Allocated</div>
               <div style={styles.metricValue}>{formatCurrency(safeResults.capitalAllocated)}</div>
             </div>
             <div style={safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.5 ? 
@@ -814,7 +824,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
               safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.2 ? 
               { ...styles.metric, ...styles.warningMetric } : styles.metric}>
               <div style={styles.metricAccent}></div>
-              <div style={styles.metricLabel}>📈 ROI on Strategies</div>
+              <div style={styles.metricLabel}>ROI on Strategies</div>
               <div style={{
                 ...styles.metricValue,
                 ...(safeResults.capitalAllocated > 0 && (safeResults.totalSavings / safeResults.capitalAllocated) > 0.5 ? 
@@ -1000,7 +1010,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                     >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ color: '#059669', fontSize: '8pt', fontWeight: 'bold' }}>
-                          ✓
+                          •
                         </span>
                         <p style={{ ...styles.insightText, fontSize: '7pt', margin: 0 }}>
                           {insight?.text || 'Benefit information not available'}
@@ -1039,7 +1049,7 @@ const PrintableReport = forwardRef(({ scenario, results, years, strategyAnalysis
                     >
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ color: '#d97706', fontSize: '8pt', fontWeight: 'bold' }}>
-                          ⚠
+                          !
                         </span>
                         <p style={{ ...styles.insightText, fontSize: '7pt', margin: 0 }}>
                           {insight?.text || 'Consideration information not available'}
@@ -1336,7 +1346,7 @@ const InteractionAnalysisDisplay = ({ loading, error, explanation }) => {
         }}></div>
         <div>
           <div style={{...styles.insightTitle, color: '#1e40af'}}>
-            🤖 AI Analysis in Progress
+            AI Analysis in Progress
           </div>
           <div style={styles.insightText}>
             Generating comprehensive strategy interaction analysis...
@@ -1353,7 +1363,7 @@ const InteractionAnalysisDisplay = ({ loading, error, explanation }) => {
         ...styles.errorInsightCard
       }}>
         <div style={{...styles.insightTitle, ...styles.errorInsightTitle}}>
-          ⚠️ AI Analysis Unavailable
+          AI Analysis Unavailable
         </div>
         <div style={styles.insightText}>
           <strong>Error:</strong> {error}
@@ -1373,7 +1383,7 @@ const InteractionAnalysisDisplay = ({ loading, error, explanation }) => {
       ...styles.successInsightCard
     }}>
       <div style={{...styles.insightTitle, ...styles.successInsightTitle}}>
-        🧠 AI Strategy Analysis
+        AI Strategy Analysis
       </div>
       <div style={styles.insightText}>
         {explanation || 'No specific interactions to highlight for the selected strategies.'}

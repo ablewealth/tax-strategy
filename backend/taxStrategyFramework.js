@@ -1,11 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-// Read the TaxStrategyFramework.md file
+// Read the UnifiedTaxStrategyGuide.md file (or fallback to TaxStrategyFramework.md)
 const readTaxStrategyFramework = () => {
   try {
-    // Try multiple possible locations for the file
+    // Try multiple possible locations for the file, prioritizing the unified guide
     const possiblePaths = [
+      path.join(__dirname, '..', 'data', 'UnifiedTaxStrategyGuide.md'),
+      path.join(__dirname, 'data', 'UnifiedTaxStrategyGuide.md'),
+      path.join(process.cwd(), 'data', 'UnifiedTaxStrategyGuide.md'),
+      // Fallback to original file if unified guide not found
       path.join(__dirname, '..', 'data', 'TaxStrategyFramework.md'),
       path.join(__dirname, 'data', 'TaxStrategyFramework.md'),
       path.join(process.cwd(), 'data', 'TaxStrategyFramework.md')
@@ -18,7 +22,7 @@ const readTaxStrategyFramework = () => {
     for (const filePath of possiblePaths) {
       try {
         if (fs.existsSync(filePath)) {
-          console.log(`Found TaxStrategyFramework.md at: ${filePath}`);
+          console.log(`Found framework file at: ${filePath}`);
           content = fs.readFileSync(filePath, 'utf8');
           foundPath = filePath;
           break;
@@ -54,10 +58,10 @@ const readTaxStrategyFramework = () => {
       `;
     }
     
-    console.log(`Successfully read TaxStrategyFramework.md from: ${foundPath}`);
+    console.log(`Successfully read framework file from: ${foundPath}`);
     return content;
   } catch (error) {
-    console.error('Error reading TaxStrategyFramework.md:', error);
+    console.error('Error reading framework file:', error);
     // Return a simple default framework content for testing
     return `
 <Strategy id="test">
@@ -89,7 +93,7 @@ const parseTaxStrategyFramework = (content) => {
 
   const strategies = [];
   const strategyRegex = /<Strategy id="([^"]+)">([\s\S]*?)<\/Strategy>/g;
-  const nameRegex = /<n>([\s\S]*?)<\/n>/;
+  const nameRegex = /<Name>([\s\S]*?)<\/Name>/;
   const hierarchyRegex = /<Hierarchy>([\s\S]*?)<\/Hierarchy>/;
   const descriptionRegex = /<Description>([\s\S]*?)<\/Description>/;
   const calculationLogicRegex = /<CalculationLogic>([\s\S]*?)<\/CalculationLogic>/;
@@ -167,7 +171,8 @@ const extractStateTreatment = (stateTaxContent, stateName) => {
 
 // Generate a fallback prompt when framework fails
 const generateFallbackPrompt = (clientState, enabledStrategies) => {
-  const stateName = clientState === 'NJ' ? 'New Jersey' : clientState === 'NY' ? 'New York' : clientState;
+  const stateCode = clientState?.state || clientState;
+  const stateName = stateCode === 'NJ' ? 'New Jersey' : stateCode === 'NY' ? 'New York' : stateCode === 'CA' ? 'California' : stateCode;
   
   const strategiesText = enabledStrategies.map(s => `- ${s.name}: ${s.description || 'Tax strategy'}`).join('\n');
   
@@ -180,27 +185,34 @@ You are a professional tax strategist analyzing multiple tax strategies for a ${
 ${strategiesText}
 
 **State-Specific Considerations:**
-${clientState === 'NJ' ? 
-  'New Jersey has several critical tax differences including limited Section 179 deductions ($25,000 cap), no deduction for 401(k) employee contributions, and no carryover for capital losses.' : 
-  clientState === 'NY' ? 
+${stateCode === 'NJ' ? 
+  'New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.' : 
+  stateCode === 'NY' ? 
   'New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.' :
   `Please provide state-specific tax guidance for ${stateName}.`}
 
-Provide a professional analysis of:
-1. How these strategies work together
-2. Any conflicts or synergies between them
-3. State-specific considerations for ${stateName} residents
-4. Optimal implementation sequence
+**FORMATTING REQUIREMENTS:**
+- NO asterisks anywhere in the response
+- NO placeholder amounts like "XXX,XXX" - use specific realistic dollar amounts
+- Use proper section headings and professional formatting
+- This analysis is FOR financial advisors, NOT by financial advisors
 
-Format your response with these sections:
-**Key Insights for Your Situation**
-* [3-5 bullet points with the most important insights]
+Provide a comprehensive professional analysis of:
+1. How these strategies work together for ${stateName} residents
+2. Strategy conflicts, synergies, and optimal sequencing
+3. State-specific tax implications and planning considerations
+4. Implementation timeline with specific deadlines
 
-**Strategy Interaction Analysis**
-[Detailed analysis of how the strategies interact, with state-specific considerations]
+**REQUIRED SECTIONS:**
 
-**Optimal Implementation Approach**
-[Step-by-step guidance on how to implement these strategies in the correct order]
+**SECTION 1: KEY STRATEGIC INSIGHTS**
+Provide 4-6 key insights with specific dollar calculations and ${stateName} tax implications.
+
+**SECTION 2: STRATEGY INTERACTION ANALYSIS** 
+Detailed analysis of how strategies work together, including conflicts and synergies with state-specific considerations.
+
+**SECTION 3: IMPLEMENTATION ROADMAP**
+Step-by-step implementation guidance with specific calendar dates and sequencing requirements.
 `;
 };
 
@@ -221,7 +233,8 @@ const generateAIPrompt = (clientState, enabledStrategies) => {
       return generateFallbackPrompt(clientState, enabledStrategies);
     }
   
-  const stateName = clientState === 'NJ' ? 'New Jersey' : clientState === 'NY' ? 'New York' : clientState;
+  const stateCode = clientState?.state || clientState;
+  const stateName = stateCode === 'NJ' ? 'New Jersey' : stateCode === 'NY' ? 'New York' : stateCode === 'CA' ? 'California' : stateCode;
   
   // Filter strategies that are enabled
   const activeStrategies = framework.strategies.filter(strategy => 
@@ -233,7 +246,7 @@ const generateAIPrompt = (clientState, enabledStrategies) => {
   
   // Generate strategy-specific information
   const strategyInfo = activeStrategies.map(strategy => {
-    const stateTreatment = strategy.stateTaxTreatment[clientState] || { 
+    const stateTreatment = strategy.stateTaxTreatment[stateCode] || { 
       conformity: 'Unknown', 
       deductibility: 'Unknown' 
     };
@@ -248,16 +261,27 @@ const generateAIPrompt = (clientState, enabledStrategies) => {
   }).join('\n\n');
   
   // Generate state-specific guidance
-  const stateGuidance = clientState === 'NJ' ? 
-    `New Jersey has several critical tax differences including limited Section 179 deductions ($25,000 cap), no deduction for 401(k) employee contributions, and no carryover for capital losses.` : 
-    clientState === 'NY' ? 
+  const stateGuidance = stateCode === 'NJ' ? 
+    `New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.` : 
+    stateCode === 'NY' ? 
     `New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.` :
     `Please provide state-specific tax guidance for ${stateName}.`;
   
+  // Extract analysis principles if using unified guide
+  const analysisPrinciples = frameworkContent.includes('<AnalysisPrinciples>') ? 
+    frameworkContent.match(/<AnalysisPrinciples>([\s\S]*?)<\/AnalysisPrinciples>/)?.[1] || '' : '';
+  
+  // Extract interaction matrix if available
+  const interactionMatrix = frameworkContent.includes('<InteractionMatrix>') ? 
+    frameworkContent.match(/<InteractionMatrix>([\s\S]*?)<\/InteractionMatrix>/)?.[1] || '' : '';
+
   // Generate the prompt
   const prompt = `
 You are a professional tax strategist analyzing ${activeStrategies.length} tax strategies for a ${stateName} resident. 
-Generate a concise, professional analysis focusing on strategy interactions, state-specific impacts, and optimal implementation sequencing.
+Generate a comprehensive, professional analysis focusing on strategy interactions, state-specific impacts, and optimal implementation sequencing.
+
+${analysisPrinciples ? `**Analysis Principles:**
+${analysisPrinciples}` : ''}
 
 **Client State:** ${stateName}
 
@@ -267,21 +291,73 @@ ${strategyInfo}
 **State-Specific Considerations:**
 ${stateGuidance}
 
-**Instructions for Analysis:**
+${interactionMatrix ? `**Known Strategy Interactions:**
+${interactionMatrix}` : ''}
+
+**CRITICAL FORMATTING AND CONTENT REQUIREMENTS:**
+
+**Content Guidelines:**
 1. Focus on how these strategies work together specifically for a ${stateName} resident
 2. Highlight any state-specific tax implications that affect the overall strategy
 3. Explain the optimal sequencing based on the hierarchy numbers and interactions
-4. Provide specific dollar figures and percentages when discussing tax benefits
+4. Provide specific dollar amounts and percentages when discussing tax benefits
 5. Use complete, grammatically correct sentences with proper punctuation
-6. Maintain a professional, formal tone appropriate for high-net-worth clients
-7. Organize your analysis with clear sections and bullet points where appropriate
-8. Keep your analysis concise but comprehensive (300-400 words)
+6. Maintain a professional, formal tone appropriate for ultra-high-net-worth clients
+7. This analysis is FOR financial advisors, NOT by financial advisors - do not recommend consulting financial advisors
+8. Generate a structured analysis of 1,200-1,500 words - concise but comprehensive
 
-Format your response as a professional tax strategy analysis with these sections:
-1. Strategy Effectiveness Ranking
-2. ${stateName} State Tax Optimization
-3. Strategy Sequencing for Maximum Benefit
-4. Critical Interactions
+**MANDATORY FORMATTING RULES:**
+- Use BOLD FORMATTING by wrapping text in __double underscores__ instead of asterisks
+- NO asterisks (*) anywhere in the response - use __text__ for bold emphasis
+- NO placeholder amounts like "XXX,XXX" or "$X,XXX" - use specific realistic dollar amounts
+- Use proper section headings with clear hierarchy
+- Use numbered lists and bullet points appropriately
+- Format dollar amounts properly (e.g., "$125,000" not "$XXX,XXX")
+- Use clean, professional formatting suitable for client presentation
+- Organize with clear section breaks and logical flow
+- Be CONCISE and STRUCTURED - avoid unnecessary wordiness
+- Use bullet points and short paragraphs instead of long blocks of text
+- Focus on actionable insights rather than general explanations
+- When mentioning strategy names, wrap them in __strategy name__ for special formatting
+
+REQUIRED ANALYSIS STRUCTURE (with minimum word counts):
+
+SECTION 1: EXECUTIVE SUMMARY (200-250 words)
+Provide a sophisticated analysis of the integrated tax strategy approach, explaining total optimization potential and compound benefits. Include projected savings amounts and tax rate reductions.
+
+SECTION 2: DETAILED STRATEGY ANALYSIS (300-400 words)
+This is the CRITICAL section requiring concise detail on:
+• Strategy-specific benefits with exact dollar calculations
+• ${stateName} state tax implications (be specific and brief)
+• Implementation timing with calendar dates
+• Key compliance requirements
+• Integration considerations
+
+Format this section with clear bullet points and short paragraphs for easy scanning.
+
+SECTION 3: STRATEGY SYNERGIES AND CONFLICTS (200-250 words)
+Use bullet points to identify:
+• Key synergies with dollar impact
+• Major conflicts and solutions
+• Optimal implementation sequence
+
+SECTION 4: ${stateName} STATE TAX OPTIMIZATION (150-200 words)
+• State benefit calculations with specific amounts
+• Add-back implications and mitigation
+• State-specific planning opportunities
+
+SECTION 5: IMPLEMENTATION TIMELINE (150-200 words)
+• Phase 1: Immediate actions (30 days) - list 2-3 key steps
+• Phase 2: Short-term (90 days) - list 2-3 key steps
+• Phase 3: Year-end positioning - list 2-3 key steps
+
+SECTION 6: RISK ASSESSMENT (100-150 words)
+• Low-risk strategies (list with brief description)
+• Medium-risk strategies (list with brief description)  
+• High-risk strategies (list with brief description)
+
+SECTION 7: KEY RECOMMENDATIONS (100-150 words)
+Provide 4-5 specific actionable recommendations with deadlines and responsible parties.
 `;
 
   return prompt;
