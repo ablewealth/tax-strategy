@@ -50,7 +50,9 @@ app.post('/api/gemini', async (req, res) => {
             });
         }
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        // Try gemini-2.5-pro first, fallback to gemini-2.0-flash
+        let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+        let modelUsed = 'gemini-2.5-pro';
         
         // Prepare the request payload
         const chatHistory = [];
@@ -83,11 +85,25 @@ app.post('/api/gemini', async (req, res) => {
         chatHistory.push({ role: "user", parts: [{ text: finalPrompt }] });
         const payload = { contents: chatHistory };
 
-        // Make the API call
-        const response = await axios.post(apiUrl, payload, {
-            headers: { 'Content-Type': 'application/json' },
-            timeout: 30000 // 30 second timeout
-        });
+        // Make the API call with fallback
+        let response;
+        try {
+            console.log(`Trying ${modelUsed} model...`);
+            response = await axios.post(apiUrl, payload, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 30000 // 30 second timeout
+            });
+        } catch (primaryError) {
+            console.log(`${modelUsed} failed, trying fallback to gemini-2.0-flash...`);
+            // Try fallback to gemini-2.0-flash
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            modelUsed = 'gemini-2.0-flash';
+            
+            response = await axios.post(apiUrl, payload, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 30000 // 30 second timeout
+            });
+        }
 
         // Extract and return the response
         if (response.data.candidates && response.data.candidates.length > 0 &&
@@ -95,6 +111,7 @@ app.post('/api/gemini', async (req, res) => {
             response.data.candidates[0].content.parts.length > 0) {
             res.json({ 
                 response: response.data.candidates[0].content.parts[0].text,
+                model: modelUsed, // Include which model was used
                 prompt: finalPrompt // Include the prompt used for debugging
             });
         } else {
