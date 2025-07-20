@@ -14,10 +14,10 @@ const readTaxStrategyFramework = () => {
       path.join(__dirname, 'data', 'TaxStrategyFramework.md'),
       path.join(process.cwd(), 'data', 'TaxStrategyFramework.md')
     ];
-    
+
     let content = null;
     let foundPath = null;
-    
+
     // Try each path until we find the file
     for (const filePath of possiblePaths) {
       try {
@@ -31,7 +31,7 @@ const readTaxStrategyFramework = () => {
         // Continue to next path
       }
     }
-    
+
     if (!content) {
       console.error(`File not found in any of the expected locations: ${possiblePaths.join(', ')}`);
       // Return a simple default framework content for testing
@@ -57,7 +57,7 @@ const readTaxStrategyFramework = () => {
 </Strategy>
       `;
     }
-    
+
     console.log(`Successfully read framework file from: ${foundPath}`);
     return content;
   } catch (error) {
@@ -149,19 +149,19 @@ const parseTaxStrategyFramework = (content) => {
 const extractStateTreatment = (stateTaxContent, stateName) => {
   const stateRegex = new RegExp(`<State name="${stateName}">([\\s\\S]*?)<\\/State>`, 'i');
   const stateMatch = stateRegex.exec(stateTaxContent);
-  
+
   if (!stateMatch) return { conformity: 'Unknown', deductibility: 'Unknown' };
-  
+
   const stateContent = stateMatch[1];
-  
+
   const conformityRegex = /<Conformity>([\s\S]*?)<\/Conformity>/;
   const deductibilityRegex = /<Deductibility>([\s\S]*?)<\/Deductibility>/;
   const detailsRegex = /<Details>([\s\S]*?)<\/Details>/;
-  
+
   const conformityMatch = conformityRegex.exec(stateContent);
   const deductibilityMatch = deductibilityRegex.exec(stateContent);
   const detailsMatch = detailsRegex.exec(stateContent);
-  
+
   return {
     conformity: conformityMatch ? conformityMatch[1].trim() : 'Unknown',
     deductibility: deductibilityMatch ? deductibilityMatch[1].trim() : 'Unknown',
@@ -173,9 +173,9 @@ const extractStateTreatment = (stateTaxContent, stateName) => {
 const generateFallbackPrompt = (clientState, enabledStrategies) => {
   const stateCode = clientState?.state || clientState;
   const stateName = stateCode === 'NJ' ? 'New Jersey' : stateCode === 'NY' ? 'New York' : stateCode === 'CA' ? 'California' : stateCode;
-  
+
   const strategiesText = enabledStrategies.map(s => `- ${s.name}: ${s.description || 'Tax strategy'}`).join('\n');
-  
+
   return `
 You are a professional tax strategist analyzing multiple tax strategies for a ${stateName} resident.
 
@@ -185,11 +185,11 @@ You are a professional tax strategist analyzing multiple tax strategies for a ${
 ${strategiesText}
 
 **State-Specific Considerations:**
-${stateCode === 'NJ' ? 
-  'New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.' : 
-  stateCode === 'NY' ? 
-  'New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.' :
-  `Please provide state-specific tax guidance for ${stateName}.`}
+${stateCode === 'NJ' ?
+      'New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.' :
+      stateCode === 'NY' ?
+        'New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.' :
+        `Please provide state-specific tax guidance for ${stateName}.`}
 
 **FORMATTING REQUIREMENTS:**
 - NO asterisks anywhere in the response
@@ -219,64 +219,64 @@ Step-by-step implementation guidance with specific calendar dates and sequencing
 // Generate an AI prompt based on the framework
 const generateAIPrompt = (clientState, enabledStrategies) => {
   console.log('Generating AI prompt with:', { clientState, enabledStrategies });
-  
+
   try {
     const frameworkContent = readTaxStrategyFramework();
     if (!frameworkContent) {
       console.error('Failed to read tax strategy framework');
       return generateFallbackPrompt(clientState, enabledStrategies);
     }
-    
+
     const framework = parseTaxStrategyFramework(frameworkContent);
     if (!framework) {
       console.error('Failed to parse tax strategy framework');
       return generateFallbackPrompt(clientState, enabledStrategies);
     }
-  
-  const stateCode = clientState?.state || clientState;
-  const stateName = stateCode === 'NJ' ? 'New Jersey' : stateCode === 'NY' ? 'New York' : stateCode === 'CA' ? 'California' : stateCode;
-  
-  // Filter strategies that are enabled
-  const activeStrategies = framework.strategies.filter(strategy => 
-    enabledStrategies.some(s => s.id === strategy.id)
-  );
-  
-  // Sort by hierarchy
-  activeStrategies.sort((a, b) => a.hierarchy - b.hierarchy);
-  
-  // Generate strategy-specific information
-  const strategyInfo = activeStrategies.map(strategy => {
-    const stateTreatment = strategy.stateTaxTreatment[stateCode] || { 
-      conformity: 'Unknown', 
-      deductibility: 'Unknown' 
-    };
-    
-    return `
+
+    const stateCode = clientState?.state || clientState;
+    const stateName = stateCode === 'NJ' ? 'New Jersey' : stateCode === 'NY' ? 'New York' : stateCode === 'CA' ? 'California' : stateCode;
+
+    // Filter strategies that are enabled
+    const activeStrategies = framework.strategies.filter(strategy =>
+      enabledStrategies.some(s => s.id === strategy.id)
+    );
+
+    // Sort by hierarchy
+    activeStrategies.sort((a, b) => a.hierarchy - b.hierarchy);
+
+    // Generate strategy-specific information
+    const strategyInfo = activeStrategies.map(strategy => {
+      const stateTreatment = strategy.stateTaxTreatment[stateCode] || {
+        conformity: 'Unknown',
+        deductibility: 'Unknown'
+      };
+
+      return `
 **${strategy.name}** (Hierarchy: ${strategy.hierarchy})
 - Description: ${strategy.description}
 - ${stateName} Tax Treatment: ${stateTreatment.conformity} conformity. ${stateTreatment.deductibility}
 - AGI Impact: ${strategy.agiImpact}
 - Interactions: ${strategy.interactions}
     `;
-  }).join('\n\n');
-  
-  // Generate state-specific guidance
-  const stateGuidance = stateCode === 'NJ' ? 
-    `New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.` : 
-    stateCode === 'NY' ? 
-    `New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.` :
-    `Please provide state-specific tax guidance for ${stateName}.`;
-  
-  // Extract analysis principles if using unified guide
-  const analysisPrinciples = frameworkContent.includes('<AnalysisPrinciples>') ? 
-    frameworkContent.match(/<AnalysisPrinciples>([\s\S]*?)<\/AnalysisPrinciples>/)?.[1] || '' : '';
-  
-  // Extract interaction matrix if available
-  const interactionMatrix = frameworkContent.includes('<InteractionMatrix>') ? 
-    frameworkContent.match(/<InteractionMatrix>([\s\S]*?)<\/InteractionMatrix>/)?.[1] || '' : '';
+    }).join('\n\n');
 
-  // Generate the prompt
-  const prompt = `
+    // Generate state-specific guidance
+    const stateGuidance = stateCode === 'NJ' ?
+      `New Jersey has several critical tax differences including limited Section 179 deductions ($975,000 cap for 2025), no deduction for 401(k) employee contributions, and no carryover for capital losses.` :
+      stateCode === 'NY' ?
+        `New York generally conforms to federal tax treatment with some exceptions, particularly for high-income taxpayers. NY offers valuable tax credits for certain activities like film production.` :
+        `Please provide state-specific tax guidance for ${stateName}.`;
+
+    // Extract analysis principles if using unified guide
+    const analysisPrinciples = frameworkContent.includes('<AnalysisPrinciples>') ?
+      frameworkContent.match(/<AnalysisPrinciples>([\s\S]*?)<\/AnalysisPrinciples>/)?.[1] || '' : '';
+
+    // Extract interaction matrix if available
+    const interactionMatrix = frameworkContent.includes('<InteractionMatrix>') ?
+      frameworkContent.match(/<InteractionMatrix>([\s\S]*?)<\/InteractionMatrix>/)?.[1] || '' : '';
+
+    // Generate the prompt
+    const prompt = `
 You are a professional tax strategist analyzing ${activeStrategies.length} tax strategies for a ${stateName} resident. 
 Generate a comprehensive, professional analysis focusing on strategy interactions, state-specific impacts, and optimal implementation sequencing.
 
@@ -360,7 +360,7 @@ SECTION 7: KEY RECOMMENDATIONS (100-150 words)
 Provide 4-5 specific actionable recommendations with deadlines and responsible parties.
 `;
 
-  return prompt;
+    return prompt;
   } catch (error) {
     console.error('Error in generateAIPrompt:', error);
     return generateFallbackPrompt(clientState, enabledStrategies);

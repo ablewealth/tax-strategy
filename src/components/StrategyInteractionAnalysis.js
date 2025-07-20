@@ -88,11 +88,11 @@ const StrategyInteractionAnalysis = ({ scenario, results, onAnalysisUpdate }) =>
       })
       .sort((a, b) => b.totalBenefit - a.totalBenefit);
     
-    const fallbackAnalysis = `**Executive Summary**
+    const fallbackAnalysis = `EXECUTIVE SUMMARY
 
 Based on your ${enabledStrategies.length} selected tax strategies, our comprehensive analysis reveals a total optimization potential of $${totalSavings.toLocaleString()} with an effective tax rate reduction of ${Math.round(savingsPercentage)}%. Your strategic portfolio demonstrates strong ROI potential of ${Math.round(roi)}% on $${capitalAllocated.toLocaleString()} in capital allocated. This diversified approach to tax optimization provides multiple pathways to reduce your overall tax burden while managing risk across different strategy types.
 
-**Strategy Portfolio Analysis**
+STRATEGY PORTFOLIO ANALYSIS
 
 Your tax optimization strategy consists of ${enabledStrategies.length} carefully selected approaches that work together to create substantial tax savings:
 
@@ -104,17 +104,17 @@ ${sortedStrategies.map((s, i) => `${i + 1}. **${s.name}**
    - Strategy ROI: ${Math.round(s.roi)}%
    - Implementation Notes: This strategy provides ${s.roi > 30 ? 'excellent' : s.roi > 20 ? 'strong' : 'moderate'} returns and ${s.totalBenefit > 100000 ? 'significant' : 'meaningful'} tax savings.`).join('\n\n')}
 
-**Strategy Synergies and Interactions**
+STRATEGY SYNERGIES AND INTERACTIONS
 
 Your selected strategies work together in several important ways:
 
-• **Income Reduction Strategies**: ${enabledStrategies.filter(s => s.id && (s.id.includes('SOLO401K') || s.id.includes('DB_PLAN'))).length > 0 ? 'Your retirement plan contributions directly reduce taxable income at both federal and state levels, creating a foundation for additional deductions.' : 'Consider adding retirement plan strategies to create a foundation of income reduction.'}
+Income Reduction Strategies work as the foundation of your tax optimization approach. ${enabledStrategies.filter(s => s.id && (s.id.includes('SOLO401K') || s.id.includes('DB_PLAN'))).length > 0 ? 'Your retirement plan contributions directly reduce taxable income at both federal and state levels, creating a foundation for additional deductions.' : 'Consider adding retirement plan strategies to create a foundation of income reduction.'}
 
-• **Deduction Amplification**: ${enabledStrategies.filter(s => s.id && (s.id.includes('EQUIP_S179') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY'))).length > 0 ? 'Your business deduction strategies (Section 179, film financing, energy investments) work together to maximize deductions against your highest marginal tax rates.' : 'Business deduction strategies can provide immediate tax relief.'}
+Deduction Amplification strategies maximize your tax benefits through business-related deductions. ${enabledStrategies.filter(s => s.id && (s.id.includes('EQUIP_S179') || s.id.includes('FILM_SEC181') || s.id.includes('OG_USENERGY'))).length > 0 ? 'Your business deduction strategies including Section 179 equipment purchases, film financing investments, and energy investments work together to maximize deductions against your highest marginal tax rates.' : 'Business deduction strategies can provide immediate tax relief.'}
 
-• **Capital Management**: ${enabledStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.includes('CHAR_CLAT'))).length > 0 ? 'Your capital-based strategies provide flexibility in timing and can offset gains from other investments while providing ongoing tax benefits.' : 'Capital management strategies can provide timing flexibility.'}
+Capital Management strategies provide timing flexibility and portfolio optimization benefits. ${enabledStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.includes('CHAR_CLAT'))).length > 0 ? 'Your capital-based strategies provide flexibility in timing and can offset gains from other investments while providing ongoing tax benefits.' : 'Capital management strategies can provide timing flexibility.'}
 
-**${stateDisplayName} State Tax Optimization**
+${stateDisplayName.toUpperCase()} STATE TAX OPTIMIZATION
 
 As a ${stateDisplayName} resident with a ${Math.round(federalMarginalRate)}% federal marginal rate and ${Math.round(stateMarginalRate)}% state marginal rate, your tax planning requires careful consideration of state-specific rules and limitations.
 
@@ -125,7 +125,7 @@ ${clientState === 'NY' ?
   `**State Tax Considerations**: Your state tax environment should be carefully reviewed with your tax advisor to ensure optimal strategy implementation. State-specific limitations and add-backs can significantly impact the effectiveness of federal strategies.`
 }
 
-**Implementation Roadmap**
+IMPLEMENTATION ROADMAP
 
 **Phase 1 - Immediate Implementation (Next 30 days)**
 ${sortedStrategies.slice(0, 3).map(s => `• **${s.name}**: Begin implementation immediately due to ${s.roi > 25 ? 'excellent ROI' : 'strong benefits'} and ${s.totalBenefit > 50000 ? 'significant tax impact' : 'material savings'}.`).join('\n')}
@@ -136,9 +136,9 @@ ${sortedStrategies.slice(3, 6).map(s => `• **${s.name}**: Prepare documentatio
 **Phase 3 - Long-term Strategic Positioning (Remainder of 2025)**
 ${sortedStrategies.slice(6).map(s => `• **${s.name}**: Position for optimal timing and maximum benefit realization.`).join('\n')}
 
-**Risk Assessment and Mitigation**
+RISK ASSESSMENT AND MITIGATION
 
-**Low Risk Strategies** (Established precedent, minimal audit exposure):
+Low Risk Strategies represent established precedent with minimal audit exposure.
 ${sortedStrategies.filter(s => s.id && (s.id.includes('SOLO401K') || s.id.includes('DB_PLAN'))).map(s => `• ${s.name}: Well-established retirement planning with clear regulatory framework.`).join('\n') || '• No low-risk strategies selected in current portfolio.'}
 
 **Medium Risk Strategies** (Require careful documentation):
@@ -285,14 +285,21 @@ ${sortedStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.inc
               }
               break;
             case 'FILM_SEC181_01':
-              federalBenefit = inputValue * federalMarginalRate;
-              if (clientState === 'NY') {
-                stateBenefit = inputValue * stateMarginalRate;
-                specialConsiderations = 'NY follows federal Section 181 treatment';
-              } else {
-                stateBenefit = 0;
-                specialConsiderations = 'Consider NJ film tax credits as alternative';
-              }
+              // Film financing allows deduction of total film cost under Section 181 and 168(k)
+              // Federal benefits apply uniformly regardless of investor state residency
+              const totalFilmCost = inputValue; // This represents total film cost
+              const cashDownPayment = inputValue * 0.25; // Typical 25% cash down
+              const debtAssumed = inputValue * 0.75; // Typical 75% debt assumed
+              federalBenefit = totalFilmCost * federalMarginalRate; // Deduct full film cost under Section 181/168(k)
+              
+              // State tax credits can be monetized regardless of investor residency
+              const estimatedStateCredits = totalFilmCost * 0.25; // Assume 25% state credits (e.g., Georgia)
+              const creditMonetizationValue = estimatedStateCredits * 0.9; // 90% monetization rate
+              
+              // State benefits include both state deduction and credit monetization
+              stateBenefit = (totalFilmCost * stateMarginalRate) + (creditMonetizationValue / totalFilmCost * federalMarginalRate);
+              
+              specialConsiderations = `Section 181 and 168(k) allow 100% federal deduction of ${totalFilmCost.toLocaleString()} (${cashDownPayment.toLocaleString()} cash + ${debtAssumed.toLocaleString()} debt). State film credits (~${estimatedStateCredits.toLocaleString()}) can be sold to reduce debt by ~${creditMonetizationValue.toLocaleString()}, regardless of investor state residency. Recourse debt obligation.`;
               break;
             case 'QBI_FINAL_01':
               const qbiDeduction = Math.min(inputValue * 0.2, (w2Income + businessIncome - 29200) * 0.2);
@@ -322,6 +329,21 @@ ${sortedStrategies.filter(s => s.id && (s.id.includes('QUANT_DEALS') || s.id.inc
         );
 
         const prompt = `You are a senior tax strategist at a premier wealth management firm, providing sophisticated analysis for ultra-high-net-worth clients. Conduct a comprehensive analysis of the strategic interactions between these tax optimization strategies, emphasizing synergies, timing, and implementation priorities.
+
+CRITICAL FORMATTING AND CONTENT REQUIREMENTS:
+- Use ONLY section headers in ALL CAPS followed by paragraphs in complete sentences
+- NO bullet points, asterisks, dashes, underscores, or other formatting symbols in the body text
+- Write in professional, flowing prose without lists or abbreviated text
+- Separate major sections with double line breaks for clear visual spacing
+- Use numbers (1, 2, 3) only for sequential steps, not for general lists
+- All content must be in complete, well-structured paragraphs with clear spacing between ideas
+- Be comprehensive and detailed in your analysis - provide thorough explanations rather than brief summaries
+- Each paragraph should contain substantial content with specific examples and detailed calculations
+- Ensure clear transitions between concepts and ideas within each section
+- Provide extensive detail on implementation considerations, timing, and strategic implications
+
+FILM FINANCING TAX BENEFITS GUIDANCE:
+When discussing film financing, emphasize that tax benefits are not necessarily tied to the investor's state of residency. Federal Tax Deductions under Section 181 and Section 168(k) allow investors to deduct 100% of the film's cost as an expense, including both their initial cash payment and any assumed debt. Section 168(k) also allows bonus depreciation deduction for the entire cost of a completed film once placed in service. These are federal provisions applying uniformly across the United States regardless of investor state residency. For example, a taxpayer with 10,000,000 dollars in taxable income could reduce their federal taxable income to zero by acquiring a qualifying film for 10,000,000 dollars. State Film Tax Credits are offered by many states like Georgia, typically 25% or 30% of money spent in that state for film production. Investors have options that decouple the benefit from their state residency. They can offset state income tax in the credit-issuing state if they have tax liability there, or crucially, they can assign or sell these state tax credits to third parties, often the producer or re-seller, in exchange for a reduction against the principal balance of debt they owe on the film. For instance, if an investor assigns a 300,000 dollar tax credit, their debt on the film could be reduced by an amount equal to 90% of that credit, or 270,000 dollars. This mechanism directly reduces the investor's financial obligation on the film, providing tangible benefit irrespective of their personal state tax situation or residency in the state where the film was produced. Therefore, even if an investor is not a resident of the state issuing the film tax credits, they can still monetize these credits by using them to reduce their film-related debt, demonstrating that the tax benefit is not solely dependent on their state of residency.
 
 **CLIENT WEALTH PROFILE:**
 - Total W2 Income: $${w2Income.toLocaleString()}
@@ -381,17 +403,20 @@ Please provide specific state tax considerations for comprehensive analysis.`
 
 **CRITICAL ANALYSIS REQUIREMENTS:**
 1. **MANDATORY MINIMUM LENGTH**: Your response must be AT LEAST 1,800-2,200 words. This is NOT optional.
-2. **COMPLETE SENTENCES ONLY**: Use only ** for bold text. Write ONLY in complete, professional sentences. Never use incomplete phrases or truncated text.
-3. **EXTENSIVE DETAIL REQUIRED**: Provide comprehensive explanations, not brief summaries. Each section must be thoroughly developed.
-4. **SPECIFIC CALCULATIONS**: Include exact dollar amounts and percentages in ALL recommendations with detailed calculations.
-5. **COMPREHENSIVE COVERAGE**: Address AMT, NIIT, Section 199A implications, and state-specific considerations in depth.
-6. **DETAILED CASH FLOW ANALYSIS**: Include extensive cash flow and timing considerations for each strategy.
-7. **STRATEGY SYNERGIES FOCUS**: Emphasize how strategies work together, not just individual benefits.
-8. **ACTIONABLE IMPLEMENTATION**: Provide specific, detailed implementation guidance with exact deadlines and steps.
+2. **STRUCTURED FORMAT**: Use section headers in ALL CAPS followed by detailed paragraphs. NO bullet points, asterisks, dashes, underscores, or formatting symbols in body text.
+3. **COMPLETE SENTENCES ONLY**: Write ONLY in complete, professional sentences in paragraph form. Never use incomplete phrases or truncated text.
+4. **EXTENSIVE DETAIL REQUIRED**: Provide comprehensive explanations, not brief summaries. Each section must be thoroughly developed in flowing prose.
+5. **SPECIFIC CALCULATIONS**: Include exact dollar amounts and percentages in ALL recommendations with detailed calculations.
+6. **COMPREHENSIVE COVERAGE**: Address AMT, NIIT, Section 199A implications, and state-specific considerations in depth.
+7. **DETAILED CASH FLOW ANALYSIS**: Include extensive cash flow and timing considerations for each strategy.
+8. **STRATEGY SYNERGIES FOCUS**: Emphasize how strategies work together, not just individual benefits.
+9. **ACTIONABLE IMPLEMENTATION**: Provide specific, detailed implementation guidance with exact deadlines and steps.
 
 **COMPREHENSIVE ANALYSIS FRAMEWORK (MINIMUM 1,800-2,200 WORDS):**
 
-**Executive Summary** (200-250 words)
+Format your response using section headers in ALL CAPS followed by detailed paragraphs in complete sentences. Do not use bullet points, lists, asterisks, dashes, or formatting symbols in the body text.
+
+EXECUTIVE SUMMARY
 Provide a sophisticated, comprehensive analysis of the integrated tax strategy approach. Explain in detail the total optimization potential of $${totalSavings.toLocaleString()}, the strategic rationale for the recommended portfolio approach, and how these strategies work together to create compound benefits. Include specific discussion of risk mitigation, cash flow optimization, and long-term planning considerations.
 
 **Key Insights for Your Situation** (450-550 words - CRITICAL SECTION)
@@ -427,32 +452,27 @@ Provide comprehensive state-specific analysis with extensive detail:
 - **Federal-State Timing Arbitrage**: Detailed identification of opportunities to optimize timing differences between federal and state treatment
 - **State-Specific Implementation Sequence**: Detailed recommendations for optimal order considering state tax implications
 
-**Strategic Integration Analysis** (200-250 words)
-Provide comprehensive analysis of how strategies interact across different tax areas:
-- **Income Character Optimization**: Detailed explanation of how strategies optimize the character of income (ordinary vs. capital gains)
-- **Deduction Timing Strategies**: Comprehensive analysis of how deduction timing can be optimized across strategies
-- **AMT and NIIT Considerations**: Extensive analysis of Alternative Minimum Tax and Net Investment Income Tax implications
-- **Section 199A QBI Interactions**: Detailed analysis of how strategies affect qualified business income deductions
-- **Multi-Year Tax Planning**: Comprehensive discussion of strategic timing across multiple tax years
+STRATEGIC INTEGRATION ANALYSIS
 
-**Implementation Roadmap with Specific Deadlines** (150-200 words)
-Provide detailed, actionable implementation plan:
-**Phase 1 - Immediate (Next 30 days):** [Detailed highest priority actions with specific dates and comprehensive rationale]
-**Phase 2 - Short-term (Next 90 days):** [Detailed medium priority implementations with preparation requirements]
-**Phase 3 - Long-term (Remainder of 2025):** [Detailed strategic positioning moves with complex implementation]
+Provide comprehensive analysis of how strategies interact across different tax areas in complete paragraph form. Cover income character optimization explaining how strategies optimize the character of income between ordinary and capital gains treatment. Analyze deduction timing strategies and how deduction timing can be optimized across strategies. Provide extensive analysis of Alternative Minimum Tax and Net Investment Income Tax implications. Detail how strategies affect qualified business income deductions under Section 199A. Discuss strategic timing across multiple tax years. Write this as flowing paragraphs totaling 200-250 words.
 
-**Risk Assessment and Mitigation** (150-200 words)
-- **Low Risk Strategies**: [Detailed established precedent strategies with implementation details]
-- **Medium Risk Strategies**: [Comprehensive strategies requiring careful documentation with specific compliance requirements]
-- **High Risk Strategies**: [Detailed strategies with audit considerations and mitigation approaches]
+IMPLEMENTATION ROADMAP WITH SPECIFIC DEADLINES
 
-**Professional Recommendations** (100-150 words)
-Provide 3-5 specific, detailed professional recommendations for advisors (CPAs, attorneys, financial planners) and their specific roles in implementation.
+Provide detailed, actionable implementation plan in paragraph form. Begin with Phase 1 immediate actions for the next 30 days, detailing highest priority actions with specific dates and comprehensive rationale. Continue with Phase 2 short-term implementations for the next 90 days, covering medium priority implementations with preparation requirements. Conclude with Phase 3 long-term strategic positioning for the remainder of 2025, detailing strategic positioning moves with complex implementation. Write this as flowing paragraphs totaling 150-200 words.
 
-**Conclusion and Next Steps** (100-150 words)
-Provide comprehensive summary of the strategic approach and detailed next steps for client action.
+RISK ASSESSMENT AND MITIGATION
 
-MANDATORY REQUIREMENTS: Your total response must be 1,800-2,200 words minimum. The 'Key Insights for Your Situation' section must be 450-550 words and contain complete, detailed sentences with no truncation. Do not provide abbreviated or truncated responses. Focus on comprehensive analysis, detailed strategic insights, quantified benefits, specific implementation guidance, and professional-grade recommendations suitable for ultra-high-net-worth clients.`;
+Provide comprehensive risk analysis in paragraph form. Begin with low risk strategies, detailing established precedent strategies with implementation details. Continue with medium risk strategies, providing comprehensive analysis of strategies requiring careful documentation with specific compliance requirements. Conclude with high risk strategies, detailing strategies with audit considerations and mitigation approaches. Write this as flowing paragraphs totaling 150-200 words.
+
+PROFESSIONAL RECOMMENDATIONS
+
+Provide 3 to 5 specific, detailed professional recommendations for advisors in paragraph form. Cover CPAs, attorneys, and financial planners and their specific roles in implementation. Write this as flowing paragraphs totaling 100-150 words.
+
+CONCLUSION AND NEXT STEPS
+
+Provide comprehensive summary of the strategic approach and detailed next steps for client action in paragraph form. Write this as flowing paragraphs totaling 100-150 words.
+
+MANDATORY REQUIREMENTS: Your total response must be 2,200-2,800 words minimum for comprehensive analysis. The 'Key Insights for Your Situation' section must be 550-700 words and contain complete, detailed sentences with no truncation. Be thorough and comprehensive in every section - provide extensive detail, specific examples, detailed calculations, and comprehensive explanations. Do not provide abbreviated or truncated responses. Each section should be substantive with clear spacing between different concepts and ideas. Focus on comprehensive analysis, detailed strategic insights, quantified benefits, specific implementation guidance, and professional-grade recommendations suitable for ultra-high-net-worth clients. Ensure each paragraph contains substantial content and detailed explanations rather than brief summaries.`;
 
         // Use the secure backend proxy instead of direct API call
         const controller = new AbortController();

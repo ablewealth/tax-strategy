@@ -8,11 +8,10 @@ import React from 'react';
 export const formatAIAnalysis = (text) => {
   if (!text) return null;
 
-  // Clean up any remaining asterisks that shouldn't be there
+  // Clean up text and preserve the structured format
   const cleanedText = text
-    .replace(/\*\*([^*]+)\*\*/g, '__$1__') // Convert remaining ** to __
-    .replace(/\*([^*\n]+)\*/g, '$1') // Remove single asterisks
-    .replace(/^\*\s+/gm, '• ') // Convert asterisk bullets to proper bullets
+    .replace(/\*\*([^*]+)\*\*/g, '__$1__') // Convert ** to __ for bold formatting
+    .replace(/^\*\s+/gm, '• ') // Convert any remaining asterisk bullets to proper bullets
     .replace(/\*\s*$/gm, ''); // Remove trailing asterisks
 
   // Split text into blocks separated by double line breaks to preserve paragraph structure
@@ -21,81 +20,137 @@ export const formatAIAnalysis = (text) => {
   const formattedContent = blocks.map((block, index) => {
     const trimmedBlock = block.trim();
     
-    // Handle SECTION headers (SECTION 1:, SECTION 2:, etc.)
-    if (trimmedBlock.startsWith('**SECTION') || trimmedBlock.startsWith('SECTION')) {
-      const headerText = trimmedBlock.replace(/^\*\*/, '').replace(/\*\*$/, '');
+    // Handle ALL CAPS section headers (EXECUTIVE SUMMARY, KEY INSIGHTS, etc.)
+    if (/^[A-Z][A-Z\s]+[A-Z]$/.test(trimmedBlock) || 
+        (trimmedBlock.startsWith('**') && /^[A-Z][A-Z\s]+[A-Z]$/.test(trimmedBlock.replace(/^\*\*/, '').replace(/\*\*$/, '')))) {
       
-      const sectionNum = headerText.match(/SECTION (\d+)/)?.[1] || '1';
-      const colors = [
-        'from-slate-800 to-slate-900',
-        'from-blue-900 to-indigo-900', 
-        'from-indigo-900 to-purple-900',
-        'from-purple-900 to-blue-900',
-        'from-blue-900 to-slate-900',
-        'from-slate-900 to-gray-900',
-        'from-gray-900 to-blue-900'
-      ];
-      const gradientClass = colors[(parseInt(sectionNum) - 1) % colors.length];
-      
-      return (
-        <div key={index} className="mt-8 mb-6 first:mt-0">
-          <div className={`bg-gradient-to-r ${gradientClass} text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden`}>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-            <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
-              <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
-                {sectionNum}
-              </span>
-              {headerText.replace(/SECTION \d+:\s*/, '')}
-            </h2>
-          </div>
-          <div className={`h-1 bg-gradient-to-r ${gradientClass} rounded-b`}></div>
-        </div>
-      );
-    }
-    
-    // Handle headers (lines starting with ** or just text that looks like headers)
-    if ((trimmedBlock.startsWith('**') && trimmedBlock.endsWith('**')) || 
-        /^[A-Z][A-Z\s]+:?\s*$/.test(trimmedBlock)) {
       const headerText = trimmedBlock.startsWith('**') ? 
-        trimmedBlock.slice(2, -2) : 
+        trimmedBlock.replace(/^\*\*/, '').replace(/\*\*$/, '') : 
         trimmedBlock;
       
-      // Different styles for different header types
-      if (headerText === 'Executive Summary') {
+      // Different styling for different header types
+      if (headerText === 'EXECUTIVE SUMMARY') {
         return (
-          <h3 key={index} className="text-xl font-bold text-blue-900 mt-8 mb-4 first:mt-0 pb-2 border-b-2 border-blue-800 font-serif">
-            {headerText}
-          </h3>
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  📊
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-blue-900 to-indigo-900 rounded-b"></div>
+          </div>
         );
-      } else if (headerText.includes('Analysis') || headerText.includes('Optimization')) {
+      } else if (headerText.includes('KEY INSIGHTS')) {
         return (
-          <h3 key={index} className="text-lg font-semibold text-blue-800 mt-8 mb-3 first:mt-0 bg-blue-50 px-4 py-3 rounded-md font-serif border-l-4 border-blue-800">
-            {headerText}
-          </h3>
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  💡
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-indigo-900 to-purple-900 rounded-b"></div>
+          </div>
+        );
+      } else if (headerText.includes('STRATEGY') || headerText.includes('SYNERGIES')) {
+        return (
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-purple-900 to-blue-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  🔗
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-purple-900 to-blue-900 rounded-b"></div>
+          </div>
+        );
+      } else if (headerText.includes('IMPLEMENTATION') || headerText.includes('ROADMAP')) {
+        return (
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-green-900 to-blue-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  🚀
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-green-900 to-blue-900 rounded-b"></div>
+          </div>
+        );
+      } else if (headerText.includes('RISK') || headerText.includes('ASSESSMENT')) {
+        return (
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-red-900 to-orange-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  ⚠️
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-red-900 to-orange-900 rounded-b"></div>
+          </div>
         );
       } else {
+        // Default styling for other ALL CAPS headers
         return (
-          <h3 key={index} className="text-lg font-semibold text-blue-800 mt-8 mb-3 first:mt-0 font-serif border-b border-blue-300 pb-2">
-            {headerText}
-          </h3>
+          <div key={index} className="mt-8 mb-6 first:mt-0">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-6 py-4 rounded-lg shadow-xl border border-gray-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+              <h2 className="text-xl font-bold font-serif tracking-wide relative z-10 flex items-center">
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">
+                  📋
+                </span>
+                {headerText}
+              </h2>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-slate-800 to-slate-900 rounded-b"></div>
+          </div>
         );
       }
+    }
+    
+    // Handle sub-headers (mixed case headers with ** formatting)
+    if (trimmedBlock.startsWith('**') && trimmedBlock.endsWith('**') && 
+        !/^[A-Z][A-Z\s]+[A-Z]$/.test(trimmedBlock.slice(2, -2))) {
+      const headerText = trimmedBlock.slice(2, -2);
+      
+      return (
+        <h3 key={index} className="text-lg font-semibold text-blue-800 mt-8 mb-6 first:mt-0 bg-blue-50 px-6 py-4 rounded-md font-sans border-l-4 border-blue-800 shadow-sm">
+          {headerText}
+        </h3>
+      );
     }
     
     // Handle bullet point blocks (multiple lines starting with bullet points)
     if (trimmedBlock.includes('\n') && (trimmedBlock.startsWith('- ') || trimmedBlock.startsWith('• '))) {
       const bulletLines = trimmedBlock.split('\n').filter(line => line.trim());
       return (
-        <ul key={index} className="list-disc list-inside space-y-3 mb-6 ml-4">
-          {bulletLines.map((line, lineIndex) => {
-            const bulletText = line.trim().replace(/^[-•]\s/, '');
-            return (
-              <li key={`${index}-${lineIndex}`} className="text-gray-700 leading-relaxed font-light text-base pl-2">
-                {formatInlineText(bulletText)}
-              </li>
-            );
-          })}
-        </ul>
+        <div key={index} className="mb-8 bg-gray-50 p-6 rounded-lg border-l-4 border-blue-200">
+          <ul className="list-disc list-inside space-y-4 ml-2">
+            {bulletLines.map((line, lineIndex) => {
+              const bulletText = line.trim().replace(/^[-•]\s/, '');
+              return (
+                <li key={`${index}-${lineIndex}`} className="text-gray-800 leading-loose font-sans text-base pl-3 tracking-wide">
+                  {formatInlineText(bulletText)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       );
     }
     
@@ -103,16 +158,18 @@ export const formatAIAnalysis = (text) => {
     if (trimmedBlock.includes('\n') && /^\d+\.\s/.test(trimmedBlock)) {
       const numberLines = trimmedBlock.split('\n').filter(line => line.trim());
       return (
-        <ol key={index} className="list-decimal list-inside space-y-3 mb-6 ml-4">
-          {numberLines.map((line, lineIndex) => {
-            const numberText = line.trim().replace(/^\d+\.\s/, '');
-            return (
-              <li key={`${index}-${lineIndex}`} className="text-gray-700 leading-relaxed font-light text-base pl-2">
-                {formatInlineText(numberText)}
-              </li>
-            );
-          })}
-        </ol>
+        <div key={index} className="mb-8 bg-blue-50 p-6 rounded-lg border-l-4 border-blue-300">
+          <ol className="list-decimal list-inside space-y-4 ml-2">
+            {numberLines.map((line, lineIndex) => {
+              const numberText = line.trim().replace(/^\d+\.\s/, '');
+              return (
+                <li key={`${index}-${lineIndex}`} className="text-gray-800 leading-loose font-sans text-base pl-3 tracking-wide">
+                  {formatInlineText(numberText)}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       );
     }
     
@@ -120,11 +177,13 @@ export const formatAIAnalysis = (text) => {
     if (trimmedBlock.startsWith('- ') || trimmedBlock.startsWith('• ')) {
       const bulletText = trimmedBlock.substring(2);
       return (
-        <ul key={index} className="list-disc list-inside mb-4">
-          <li className="text-gray-700 leading-relaxed">
-            {formatInlineText(bulletText)}
-          </li>
-        </ul>
+        <div key={index} className="mb-6 bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300">
+          <ul className="list-disc list-inside">
+            <li className="text-gray-800 leading-loose font-sans text-base tracking-wide">
+              {formatInlineText(bulletText)}
+            </li>
+          </ul>
+        </div>
       );
     }
     
@@ -132,11 +191,13 @@ export const formatAIAnalysis = (text) => {
     if (/^\d+\.\s/.test(trimmedBlock)) {
       const numberText = trimmedBlock.replace(/^\d+\.\s/, '');
       return (
-        <ol key={index} className="list-decimal list-inside mb-4">
-          <li className="text-gray-700 leading-relaxed">
-            {formatInlineText(numberText)}
-          </li>
-        </ol>
+        <div key={index} className="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-300">
+          <ol className="list-decimal list-inside">
+            <li className="text-gray-800 leading-loose font-sans text-base tracking-wide">
+              {formatInlineText(numberText)}
+            </li>
+          </ol>
+        </div>
       );
     }
     
@@ -144,10 +205,16 @@ export const formatAIAnalysis = (text) => {
     if (trimmedBlock.length > 0) {
       // Replace single line breaks with spaces to keep sentences together
       const paragraphText = trimmedBlock.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+      
+      // Check if this is a long paragraph (likely from structured AI output)
+      const isLongParagraph = paragraphText.length > 300;
+      
       return (
-        <p key={index} className="text-gray-700 leading-relaxed mb-6 text-base font-light text-justify">
-          {formatInlineText(paragraphText)}
-        </p>
+        <div key={index} className={`mb-8 ${isLongParagraph ? 'bg-gray-50 p-6 rounded-lg border-l-4 border-blue-200 shadow-sm' : 'bg-white p-4 rounded-md border border-gray-100'}`}>
+          <p className={`text-gray-800 leading-loose text-base font-sans ${isLongParagraph ? 'text-justify font-normal' : 'font-normal'} tracking-wide`}>
+            {formatInlineText(paragraphText)}
+          </p>
+        </div>
       );
     }
     
@@ -155,12 +222,12 @@ export const formatAIAnalysis = (text) => {
   }).filter(Boolean);
 
   return (
-    <div className="max-w-none font-serif bg-white">
-      <div className="space-y-6">
+    <div className="max-w-none font-sans bg-white">
+      <div className="space-y-8">
         {formattedContent}
       </div>
-      <div className="mt-8 pt-6 border-t-2 border-gray-200">
-        <div className="text-center text-sm text-gray-500 italic">
+      <div className="mt-12 pt-8 border-t-2 border-gray-200">
+        <div className="text-center text-sm text-gray-500 italic font-serif">
           Analysis Complete - Generated using Advanced AI Strategy Framework
         </div>
       </div>
